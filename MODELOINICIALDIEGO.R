@@ -7,8 +7,7 @@ library(psych)
 library(pheatmap)
 library(NbClust)
 
-ruta <- "P_Data_Extract_From_World_Development_Indicators.xlsx"
-datos_raw <- read_excel(ruta)
+datos_raw <- read_excel("P_Data_Extract_From_World_Development_Indicators.xlsx")
 glimpse(datos_raw)
 
 datos_raw <- datos_raw %>%
@@ -61,6 +60,12 @@ if (length(zero_var_cols) > 0) {
 
 cat("Dimensiones matriz final:", dim(datos_imputed)[1], "x", dim(datos_imputed)[2], "\n")
 
+
+#Base de datos
+
+
+Base_datos=datos_wide2
+
 #hatmap correlacion
 cor_mat <- cor(datos_imputed, use = "pairwise.complete.obs")
 pheatmap(cor_mat,
@@ -69,7 +74,7 @@ pheatmap(cor_mat,
          color = colorRampPalette(c("red", "white", "blue"))(100),
          clustering_method = "complete")
 
-#´pca
+#´PCA
 res.pca <- prcomp(datos_imputed, center = TRUE, scale. = TRUE)
 
 eig.val <- get_eigenvalue(res.pca)
@@ -87,8 +92,6 @@ fviz_pca_biplot(res.pca, repel = TRUE, col.var = "#2E9FDF", col.ind = "#696969",
 n_kaiser <- sum(eig.val[, "eigenvalue"] > 1)
 n_80 <- which(cumsum(eig.val[, "variance.percent"]) >= 80)[1]
 ncomp <- if (!is.na(n_80)) n_80 else max(2, n_kaiser)
-cat("Usaremos ncomp =", ncomp, "\n")
-
 
 #Clustering jerárquico (Ward.D2)
 
