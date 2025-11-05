@@ -80,6 +80,103 @@ cat("Países retenidos:", nrow(datos_filtrados_final), "\n")
 # Revisar resumen general
 summary(datos_filtrados_final)
 view(datos_filtrados_final)
+
+
+
+
+
+###########################
+method <- "auto"   # "auto" o "top15"
+
+# 1) proporción de NA por columna (excluyendo Country Name)
+na_prop <- sapply(datos_wide %>% select(-`Country Name`), function(x) mean(is.na(x)))
+
+# Si method == "auto": busco el menor umbral thr (desde 0.00 a 0.99) con >= 15 columnas
+if(method == "auto"){
+  thr_found <- NA
+  for(thr in seq(0, 0.99, by = 0.01)){
+    n_keep <- sum(na_prop <= thr)
+    if(n_keep >= 15){
+      thr_found <- thr
+      break
+    }
+  }
+  # Si no encontró (poco probable), entonces usa top15 como fallback
+  if(is.na(thr_found)){
+    message("No se encontró umbral que deje >=15 columnas; se usará top15 como fallback.")
+    method <- "top15"
+  } else {
+    cols_keep <- names(na_prop[na_prop <= thr_found])
+    message("Método AUTO: umbral NA <= ", thr_found, " -> columnas retenidas: ", length(cols_keep))
+  }
+}
+
+# Si method == "top15": tomar 15 indicadores con menor NA proportion
+if(method == "top15"){
+  cols_keep <- names(sort(na_prop, decreasing = FALSE))[1:15]
+  message("Método TOP15: seleccionadas 15 variables con menor proporción de NA.")
+}
+
+# Mostrar columnas elegidas
+cat("Número columnas elegidas:", length(cols_keep), "\n")
+print(cols_keep)
+
+# Construir tabla filtrada (solo país + columnas)
+datos_filtrados <- datos_wide %>% select(`Country Name`, all_of(cols_keep))
+
+# 2) Filtrar países con muchos NA (opcional)
+# Calcula NA por fila
+na_prop_row <- apply(datos_filtrados %>% select(-`Country Name`), 1, function(x) mean(is.na(x)))
+
+# Umbral de países: puedes ajustar (ej. 0.4). Lo dejamos en 0.4 por defecto.
+row_thr <- 0.4
+datos_filtrados_final <- datos_filtrados[na_prop_row < row_thr, ]
+
+# Si filtrando así te quedas con muy pocos países, relaja el umbral automáticamente:
+min_countries <- 30  # mínimo deseado de países (ajusta según tu caso)
+if(nrow(datos_filtrados_final) < min_countries){
+  message("Quedaste con < ", min_countries, " países. Se relaja row_thr automáticamente.")
+  # busca el row_thr máximo que deja al menos min_countries
+  possible_thrs <- seq(0, 0.9, by = 0.01)
+  chosen_row_thr <- NA
+  for(rt in possible_thrs){
+    n_country <- sum(na_prop_row < rt)
+    if(n_country >= min_countries){
+      chosen_row_thr <- rt
+      break
+    }
+  }
+  if(!is.na(chosen_row_thr)){
+    row_thr <- chosen_row_thr
+    datos_filtrados_final <- datos_filtrados[na_prop_row < row_thr, ]
+    message("Nuevo row_thr: ", row_thr, " -> países retenidos: ", nrow(datos_filtrados_final))
+  } else {
+    message("No se consiguió mantener ", min_countries, " países con estos filtros; mantengo resultado actual.")
+  }
+}
+
+# Informar resultados
+cat("Indicadores retenidos:", ncol(datos_filtrados_final) - 1, "\n") # -1 porque Country Name
+cat("Países retenidos:", nrow(datos_filtrados_final), "\n")
+
+# 3) Imputación por mediana (rellenar los NA restantes)
+mat <- datos_filtrados_final %>% column_to_rownames("Country Name")
+mat_imputed <- as.data.frame(lapply(mat, function(x){
+  x[is.na(x)] <- median(x, na.rm = TRUE)
+  x
+}))
+rownames(mat_imputed) <- rownames(mat)
+
+# Confirmar que no quedan NA
+cat("NA totales después de imputación:", sum(is.na(mat_imputed)), "\n")
+
+# 4) Guardar resultado temporal (opcional)
+datos_final_para_analisis <- mat_imputed %>% rownames_to_column("Country Name")
+# write_csv(datos_final_para_analisis, "datos_filtrados_imputados.csv")
+
+# 5) Resumen rápido
+print(head(datos_final_para_analisis))
+summary(datos_final_para_analisis)
 # Quitar columna "NA" si existe
 #if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
 
