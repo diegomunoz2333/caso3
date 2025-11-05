@@ -58,80 +58,105 @@ print(head(df_top15_complete, 6))
 # Si estás en RStudio puedes usar:
 View(df_top15_complete)
 
+# Renombrar base para trabajar más fácil
+Base_datos <- df_top15_complete
 
-Base_datos=datos_wide
+# Extraer matriz numérica (sin el nombre del país)
+datos_numeric <- Base_datos %>% select(-`Country Name`)
+rownames(datos_numeric) <- Base_datos$`Country Name`
 
-#hatmap correlacion
-cor_mat <- cor(datos_imputed, use = "pairwise.complete.obs")
+# ============================================================
+# 1️⃣ Heatmap de correlaciones
+# ============================================================
+cor_mat <- cor(datos_numeric, use = "pairwise.complete.obs")
+
 pheatmap(cor_mat,
          main = "Matriz de correlaciones (2022)",
          fontsize = 8,
          color = colorRampPalette(c("red", "white", "blue"))(100),
          clustering_method = "complete")
 
-#´PCA
-res.pca <- prcomp(datos_imputed, center = TRUE, scale. = TRUE)
+# ============================================================
+# 2️⃣ Análisis PCA
+# ============================================================
+res.pca <- prcomp(datos_numeric, center = TRUE, scale. = TRUE)
 
+# Valores propios
 eig.val <- get_eigenvalue(res.pca)
 print(eig.val)
 
-
 # Biplot PCA
 pca_scores <- as.data.frame(res.pca$x)
-pca_scores$Country <- datos_wide2$`Country Name`
-fviz_pca_biplot(res.pca, repel = TRUE, col.var = "#2E9FDF", col.ind = "#696969",
+pca_scores$Country <- rownames(datos_numeric)
+
+fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "#2E9FDF", col.ind = "#696969",
                 title = "Biplot PCA - Países e Indicadores")
 
-# Selección de número de componentes
-
+# ============================================================
+# 3️⃣ Selección del número de componentes
+# ============================================================
 n_kaiser <- sum(eig.val[, "eigenvalue"] > 1)
 n_80 <- which(cumsum(eig.val[, "variance.percent"]) >= 80)[1]
 ncomp <- if (!is.na(n_80)) n_80 else max(2, n_kaiser)
 
-#Clustering jerárquico (Ward.D2)
+cat("Número de componentes retenidos:", ncomp, "\n")
 
-pca_for_cluster <- pca_scores %>% select(starts_with("PC")) %>% select(1:ncomp)
+# ============================================================
+# 4️⃣ Clustering jerárquico (Ward.D2)
+# ============================================================
+pca_for_cluster <- pca_scores %>%
+  select(starts_with("PC")) %>%
+  select(1:ncomp)
 
-# eliminar países sin nombre
-pca_for_cluster <- pca_for_cluster[!is.na(pca_scores$Country), ]
-rownames(pca_for_cluster) <- na.omit(pca_scores$Country)
+rownames(pca_for_cluster) <- pca_scores$Country
 
 # Distancia y dendrograma
 dist_pca <- dist(pca_for_cluster, method = "euclidean")
 hc_ward <- hclust(dist_pca, method = "ward.D2")
-plot(as.dendrogram(hc_ward), main = "Dendrograma (Ward.D2) sobre PCs")
 
-# Determinar número de clusters
+plot(as.dendrogram(hc_ward),
+     main = "Dendrograma (Ward.D2) sobre PCs",
+     xlab = "Países", ylab = "Distancia")
 
-fviz_nbclust(pca_for_cluster, FUN = hcut, method = "silhouette") + ggtitle("Silhouette - hcut")
-fviz_nbclust(pca_for_cluster, FUN = hcut, method = "wss") + ggtitle("WSS - hcut")
+# ============================================================
+# 5️⃣ Determinar número óptimo de clusters
+# ============================================================
+fviz_nbclust(pca_for_cluster, FUN = hcut, method = "silhouette") +
+  ggtitle("Silhouette - hcut")
+
+fviz_nbclust(pca_for_cluster, FUN = hcut, method = "wss") +
+  ggtitle("WSS - hcut")
 
 set.seed(123)
-nb <- NbClust(pca_for_cluster, distance = "euclidean", min.nc = 2, max.nc = 8, method = "ward.D2", index = "all")
+nb <- NbClust(pca_for_cluster, distance = "euclidean",
+              min.nc = 2, max.nc = 8,
+              method = "ward.D2", index = "all")
 
 table(nb$Best.nc[1, ])
 k_opt <- as.integer(names(sort(table(nb$Best.nc[1, ]), decreasing = TRUE))[1])
 if (is.na(k_opt)) k_opt <- 4
 cat("k sugerido por NbClust:", k_opt, "\n")
 
-# Asignar clusters y analizar perfiles
-
+# ============================================================
+# 6️⃣ Asignar clusters y analizar perfiles
+# ============================================================
 clusters <- cutree(hc_ward, k = k_opt)
 table(clusters)
 
 resultado_paises <- data.frame(Country = rownames(pca_for_cluster),
                                cluster = factor(clusters),
                                pca_for_cluster)
-
-# Visualización
+view(resultado_paises)
+# Visualización de clusters
 fviz_cluster(list(data = pca_for_cluster, cluster = clusters),
              geom = "point", repel = TRUE,
              main = paste("Clusters sobre", ncomp, "PCs (k=", k_opt, ")"))
 
-
-#  Perfiles por cluster
-
-datos_clustered <- datos_wide2 %>%
+# ============================================================
+# 7️⃣ Perfiles promedio por cluster
+# ============================================================
+datos_clustered <- Base_datos %>%
   filter(`Country Name` %in% rownames(pca_for_cluster)) %>%
   mutate(cluster = factor(clusters[match(`Country Name`, rownames(pca_for_cluster))]))
 
@@ -142,13 +167,18 @@ cluster_profiles <- datos_clustered %>%
 
 print(cluster_profiles)
 
-# 15) Heatmap de perfiles estandarizados
-
+# ============================================================
+# 8️⃣ Heatmap de perfiles estandarizados
+# ============================================================
 profiles_mat <- cluster_profiles %>%
   select(-n) %>%
   column_to_rownames("cluster") %>%
   as.matrix()
 
 profiles_scaled <- t(scale(t(profiles_mat)))
-pheatmap(profiles_scaled, main = "Perfiles estandarizados por cluster")
+
+pheatmap(profiles_scaled,
+         main = "Perfiles estandarizados por cluster",
+         fontsize = 9,
+         clustering_method = "ward.D2")
 
