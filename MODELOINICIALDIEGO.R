@@ -82,6 +82,7 @@ summary(datos_filtrados_final)
 view(datos_filtrados_final)
 
 
+###################HASTA AQIO FILTROS 
 
 
 
@@ -159,24 +160,11 @@ if(nrow(datos_filtrados_final) < min_countries){
 cat("Indicadores retenidos:", ncol(datos_filtrados_final) - 1, "\n") # -1 porque Country Name
 cat("Países retenidos:", nrow(datos_filtrados_final), "\n")
 
-# 3) Imputación por mediana (rellenar los NA restantes)
-mat <- datos_filtrados_final %>% column_to_rownames("Country Name")
-mat_imputed <- as.data.frame(lapply(mat, function(x){
-  x[is.na(x)] <- median(x, na.rm = TRUE)
-  x
-}))
-rownames(mat_imputed) <- rownames(mat)
+view(datos_filtrados_final)
 
-# Confirmar que no quedan NA
-cat("NA totales después de imputación:", sum(is.na(mat_imputed)), "\n")
+## HASTA AQUI VA MIS FILTROS DE BASE 
 
-# 4) Guardar resultado temporal (opcional)
-datos_final_para_analisis <- mat_imputed %>% rownames_to_column("Country Name")
-# write_csv(datos_final_para_analisis, "datos_filtrados_imputados.csv")
 
-# 5) Resumen rápido
-print(head(datos_final_para_analisis))
-summary(datos_final_para_analisis)
 # Quitar columna "NA" si existe
 #if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
 
