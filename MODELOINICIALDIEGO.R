@@ -57,6 +57,29 @@ print(cols_keep)
 # Opcional: ver un resumen
 summary(datos_filtrados)
 view(datos_filtrados)
+
+na_prop_col <- sapply(datos_wide %>% select(-`Country Name`), function(x) mean(is.na(x)))
+
+A
+cols_keep <- names(na_prop_col[na_prop_col < 0.4])
+
+
+datos_filtrados <- datos_wide %>%
+  select(`Country Name`, all_of(cols_keep))
+
+
+na_prop_row <- apply(datos_filtrados %>% select(-`Country Name`), 1, function(x) mean(is.na(x)))
+
+#  Filtrar países con < 40% NA
+datos_filtrados_final <- datos_filtrados[na_prop_row < 0.4, ]
+
+
+cat("Indicadores retenidos:", length(cols_keep), "\n")
+cat("Países retenidos:", nrow(datos_filtrados_final), "\n")
+
+# Revisar resumen general
+summary(datos_filtrados_final)
+view(datos_filtrados_final)
 # Quitar columna "NA" si existe
 #if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
 
