@@ -53,6 +53,7 @@ cat("Países después de drop_na():", nrow(df_top15_complete), "\n")
 
 # Si estás en RStudio puedes usar:
 View(df_top15_complete)
+write_csv(df_top15_complete, "df_top15_complete.csv")
 
 # Renombrar base para trabajar más fácil
 Base_datos <- df_top15_complete
@@ -132,6 +133,8 @@ resultado_paises <- data.frame(Country = rownames(pca_for_cluster),
                                cluster = factor(clusters),
                                pca_for_cluster)
 view(resultado_paises)
+readr::write_csv(resultado_paises, "resultados_paises.csv")
+
 # Visualización de clusters
 fviz_cluster(list(data = pca_for_cluster, cluster = clusters),
              geom = "point", repel = TRUE,
@@ -162,3 +165,19 @@ pheatmap(profiles_scaled,
          fontsize = 9,
          clustering_method = "ward.D2")
 
+
+
+
+
+
+
+
+######
+###
+#
+#
+##
+#
+##
+#
+#
