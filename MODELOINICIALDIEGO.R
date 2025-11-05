@@ -40,8 +40,8 @@ view(datos_wide)
 #cat("Variables retenidas:", length(vars_keep), "\n")
 
 # matriz
-datos_num <- datos_wide2 %>% select(-`Country Name`) %>%
-  mutate(across(everything(), ~ as.numeric(.x)))
+#datos_num <- datos_wide2 %>% select(-`Country Name`) %>%
+#  mutate(across(everything(), ~ as.numeric(.x)))
 
 # Eliminar columnas totalmente NA
 #tot_na_cols <- names(which(colMeans(is.na(datos_num)) == 1))
@@ -55,18 +55,18 @@ datos_num <- datos_wide2 %>% select(-`Country Name`) %>%
 
 # Eliminar variables constantes
 
-zero_var_cols <- names(which(apply(datos_imputed, 2, sd, na.rm = TRUE) == 0))
-if (length(zero_var_cols) > 0) {
-  datos_imputed <- datos_imputed %>% select(-all_of(zero_var_cols))
-}
+#zero_var_cols <- names(which(apply(datos_imputed, 2, sd, na.rm = TRUE) == 0))
+#if (length(zero_var_cols) > 0) {
+#  datos_imputed <- datos_imputed %>% select(-all_of(zero_var_cols))
+#}
 
-cat("Dimensiones matriz final:", dim(datos_imputed)[1], "x", dim(datos_imputed)[2], "\n")
+#cat("Dimensiones matriz final:", dim(datos_imputed)[1], "x", dim(datos_imputed)[2], "\n")
 
 
 #Base de datos
 
 
-Base_datos=datos_wide2
+Base_datos=datos_wide
 
 #hatmap correlacion
 cor_mat <- cor(datos_imputed, use = "pairwise.complete.obs")
