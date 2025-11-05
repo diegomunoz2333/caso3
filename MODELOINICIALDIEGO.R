@@ -168,9 +168,19 @@ pheatmap(profiles_scaled,
 
 
 
+eig.val <- get_eigenvalue(res.pca)
+eig.val[1:7, ]  # muestra solo los 7 primeros componentes
 
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 50))
 
+library(factoextra)
 
+# Extrae información de las variables
+var <- get_pca_var(res.pca)
+
+# Mira las cargas (correlaciones de cada variable con cada componente)
+loadings <- as.data.frame(var$cor)
+loadings
 
 ######
 ###
