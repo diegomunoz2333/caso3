@@ -32,7 +32,7 @@ install.packages("countrycode")
 library(countrycode)
 paises_onu <- countrycode::codelist$country.name.en %>% unique() %>% na.omit()
 
-# 3. Filtrar solo los países "normales"
+# Filtrar solo los países   segun la onu
 datos_filtrados <- datos_raw %>%
   filter(`Country Name` %in% paises_onu)
 
