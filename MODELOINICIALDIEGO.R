@@ -60,7 +60,7 @@ view(datos_filtrados)
 
 na_prop_col <- sapply(datos_wide %>% select(-`Country Name`), function(x) mean(is.na(x)))
 
-A
+
 cols_keep <- names(na_prop_col[na_prop_col < 0.4])
 
 
@@ -162,6 +162,26 @@ view(datos_filtrados_final)
 ###################HASTA AQIO FILTROS 
 ###################HASTA AQIO FILTROS 
 ###################HASTA AQIO FILTROS 
+
+# parámetros
+n_vars <- 15
+
+# calcula proporción de NA por variable (excluyendo Country Name)
+na_prop <- sapply(datos_wide %>% select(-`Country Name`), function(x) mean(is.na(x)))
+
+# selecciona las n_vars con menos NA
+vars_top15 <- names(sort(na_prop, decreasing = FALSE))[1:n_vars]
+
+# construir dataset con Country Name + esas variables
+df_top15 <- datos_wide %>% select(`Country Name`, all_of(vars_top15))
+
+# eliminar filas con cualquier NA (casos completos)
+df_top15_complete <- df_top15 %>% drop_na()
+
+# resumen
+cat("Variables:", length(vars_top15), "\n")
+cat("Países después de drop_na():", nrow(df_top15_complete), "\n")
+view(df_top15_complete)
 
 
 # Quitar columna "NA" si existe
