@@ -26,6 +26,17 @@ datos_wide <- datos_raw %>%
     values_fn = mean,
     values_fill = NA_real_
   )
+
+install.packages("countrycode")
+
+library(countrycode)
+paises_onu <- countrycode::codelist$country.name.en %>% unique() %>% na.omit()
+
+# 3. Filtrar solo los países "normales"
+datos_filtrados <- datos_raw %>%
+  filter(`Country Name` %in% paises_onu)
+
+
 view(datos_wide)
 # Quitar columna "NA" si existe
 #if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
