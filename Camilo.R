@@ -43,7 +43,7 @@ Base_2022 <- Base_2022 %>%
   filter(!Pais %in% c("World", "High income", "Low income", "European Union",
                       "Latin America & Caribbean", "Middle income", "OECD members",
                       "East Asia & Pacific", "Sub-Saharan Africa", "South Asia",
-                      "North America", "Euro area", "Arab World"))
+                      "North America", "Euro area", "Arab World", "West Bank and Gaza"))
 
 # Ver resultado
 glimpse(Base_2022)
