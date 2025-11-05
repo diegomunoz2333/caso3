@@ -82,10 +82,6 @@ summary(datos_filtrados_final)
 view(datos_filtrados_final)
 
 
-###################HASTA AQIO FILTROS 
-
-
-
 ###########################
 method <- "auto"   # "auto" o "top15"
 
@@ -163,45 +159,15 @@ cat("Países retenidos:", nrow(datos_filtrados_final), "\n")
 view(datos_filtrados_final)
 
 ## HASTA AQUI VA MIS FILTROS DE BASE 
+###################HASTA AQIO FILTROS 
+###################HASTA AQIO FILTROS 
+###################HASTA AQIO FILTROS 
 
 
 # Quitar columna "NA" si existe
 #if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
 
 #cat("Países:", nrow(datos_wide), " Indicadores:", ncol(datos_wide) - 1, "\n")
-
-#variables ocn mas de 50% na
-#na_prop <- colMeans(is.na(datos_wide %>% select(-`Country Name`)))
-#umbral <- 0.5
-#vars_keep <- names(na_prop)[na_prop <= umbral]
-#datos_wide2 <- datos_wide %>% select(`Country Name`, all_of(vars_keep))
-#cat("Variables retenidas:", length(vars_keep), "\n")
-
-# matriz
-#datos_num <- datos_wide2 %>% select(-`Country Name`) %>%
-#  mutate(across(everything(), ~ as.numeric(.x)))
-
-# Eliminar columnas totalmente NA
-#tot_na_cols <- names(which(colMeans(is.na(datos_num)) == 1))
-#if (length(tot_na_cols) > 0) {
-#  datos_num <- datos_num %>% select(-all_of(tot_na_cols))
-#}
-
-# media por na
-#datos_imputed <- datos_num %>%
- # mutate(across(everything(), ~ ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)))
-
-# Eliminar variables constantes
-
-#zero_var_cols <- names(which(apply(datos_imputed, 2, sd, na.rm = TRUE) == 0))
-#if (length(zero_var_cols) > 0) {
-#  datos_imputed <- datos_imputed %>% select(-all_of(zero_var_cols))
-#}
-
-#cat("Dimensiones matriz final:", dim(datos_imputed)[1], "x", dim(datos_imputed)[2], "\n")
-
-
-#Base de datos
 
 
 Base_datos=datos_wide
