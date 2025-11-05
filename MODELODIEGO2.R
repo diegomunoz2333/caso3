@@ -6,7 +6,7 @@ library(dendextend)
 library(pheatmap)
 
 #base
-datos23 <- "P_Data_Extract_From_World_Development_Indicators.xlsx"
+datos23 <- "P_Data_Extract_From_World_Development_Indicators (1).xlsx"
 datosfinal <- read_excel(datos23)
 
 datos <- datosfinal %>%
