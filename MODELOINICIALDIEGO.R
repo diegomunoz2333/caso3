@@ -7,8 +7,10 @@ library(psych)
 library(pheatmap)
 library(NbClust)
 
-datos_raw <- read_excel("P_Data_Extract_From_World_Development_Indicators.xlsx")
-glimpse(datos_raw)
+P_Data_Extract_From_World_Development_Indicators_1_ <- read_excel("P_Data_Extract_From_World_Development_Indicators (1).xlsx")
+View(P_Data_Extract_From_World_Development_Indicators_1_)
+
+datos_raw <- P_Data_Extract_From_World_Development_Indicators_1_
 
 datos_raw <- datos_raw %>%
   mutate(`2022 [YR2022]` = as.character(`2022 [YR2022]`),
@@ -24,32 +26,32 @@ datos_wide <- datos_raw %>%
     values_fn = mean,
     values_fill = NA_real_
   )
-
+view(datos_wide)
 # Quitar columna "NA" si existe
-if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
+#if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
 
-cat("Países:", nrow(datos_wide), " Indicadores:", ncol(datos_wide) - 1, "\n")
+#cat("Países:", nrow(datos_wide), " Indicadores:", ncol(datos_wide) - 1, "\n")
 
 #variables ocn mas de 50% na
-na_prop <- colMeans(is.na(datos_wide %>% select(-`Country Name`)))
-umbral <- 0.5
-vars_keep <- names(na_prop)[na_prop <= umbral]
-datos_wide2 <- datos_wide %>% select(`Country Name`, all_of(vars_keep))
-cat("Variables retenidas:", length(vars_keep), "\n")
+#na_prop <- colMeans(is.na(datos_wide %>% select(-`Country Name`)))
+#umbral <- 0.5
+#vars_keep <- names(na_prop)[na_prop <= umbral]
+#datos_wide2 <- datos_wide %>% select(`Country Name`, all_of(vars_keep))
+#cat("Variables retenidas:", length(vars_keep), "\n")
 
 # matriz
 datos_num <- datos_wide2 %>% select(-`Country Name`) %>%
   mutate(across(everything(), ~ as.numeric(.x)))
 
 # Eliminar columnas totalmente NA
-tot_na_cols <- names(which(colMeans(is.na(datos_num)) == 1))
-if (length(tot_na_cols) > 0) {
-  datos_num <- datos_num %>% select(-all_of(tot_na_cols))
-}
+#tot_na_cols <- names(which(colMeans(is.na(datos_num)) == 1))
+#if (length(tot_na_cols) > 0) {
+#  datos_num <- datos_num %>% select(-all_of(tot_na_cols))
+#}
 
 # media por na
-datos_imputed <- datos_num %>%
-  mutate(across(everything(), ~ ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)))
+#datos_imputed <- datos_num %>%
+ # mutate(across(everything(), ~ ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)))
 
 # Eliminar variables constantes
 
