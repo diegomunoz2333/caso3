@@ -38,6 +38,25 @@ datos_filtrados <- datos_raw %>%
 
 
 view(datos_wide)
+# Filtrar columnas con menos de 40% de NA
+
+# 
+na_prop <- sapply(datos_wide %>% select(-`Country Name`), function(x) mean(is.na(x)))
+
+# Creamos un vector con las columnas que tienen menos del 40% de NA
+cols_keep <- names(na_prop[na_prop < 0.4])
+
+# Filtramos el dataset para mantener solo esas columnas + el país
+datos_filtrados <- datos_wide %>%
+  select(`Country Name`, all_of(cols_keep))
+
+# Verificamos cuántas columnas quedaron
+cat("Columnas retenidas:", length(cols_keep), "\n")
+print(cols_keep)
+
+# Opcional: ver un resumen
+summary(datos_filtrados)
+view(datos_filtrados)
 # Quitar columna "NA" si existe
 #if ("NA" %in% names(datos_wide)) datos_wide <- datos_wide %>% select(-all_of("NA"))
 
