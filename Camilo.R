@@ -47,3 +47,5 @@ Base_2022 <- Base_2022 %>%
 glimpse(Base_2022)
 
 View(Base_2022)
+
+write_csv(Base_2022, "Base_2022_filtrada.csv")
