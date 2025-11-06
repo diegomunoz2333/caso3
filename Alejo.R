@@ -63,3 +63,104 @@ ggplot(scores_pca, aes(x = PC1, y = PC2, color = cluster_hc)) +
 sil <- silhouette(as.numeric(resultados_hc$cluster_hc), dist_entre_Base)
 cat("Silhouette promedio:", mean(sil[, 3]), "\n")
 plot(sil, main = "Silhouette por observación - clustering jerárquico")
+
+# ---------------------------
+# PCA / ACP sobre la base filtrada
+# ---------------------------
+library(factoextra)   # visualizaciones PCA
+
+# 1) Ejecutar PCA (prcomp usa la matriz original y estandariza con scale = TRUE)
+res.pca <- prcomp(vars_numericas, scale. = TRUE)
+
+# 2) Eigenvalues / varianza explicada
+eig.val <- (res.pca$sdev)^2
+prop_var <- eig.val / sum(eig.val)
+cum_var  <- cumsum(prop_var)
+eig_table <- tibble(PC = paste0("PC", 1:length(eig.val)),
+                    eigenvalue = eig.val,
+                    prop_var = prop_var,
+                    cum_var = cum_var)
+print(eig_table)       # mira cuánta varianza explica cada componente
+
+# Scree plot (gráfico de barras de eigenvalues) — fviz_eig sirve con prcomp
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60)) + ggtitle("Scree plot (varianza explicada por PC)")
+
+fviz_pca_ind(res.pca,
+             col.ind = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) + ggtitle("Individuos (países) — calidad (cos2)")
+
+fviz_pca_var(res.pca,
+             col.var = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE,
+             axes = c(1,2)) + ggtitle("Variables — contribución a PC1 y PC2")
+
+fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "#2E9FDF",
+                col.ind = "#696969",
+                axes = c(1,2)) + ggtitle("Biplot PCA (PC1 vs PC2)")
+
+# ---------------------------
+# ACCEDER A LOS RESULTADOS DEL PCA (res.pca)
+# ---------------------------
+
+# 1) Eigenvalues / tabla con varianza (% y acumulada) — alternativa a eig_table
+eig_df <- get_eigenvalue(res.pca)   # devuelve eigenvalue, variance.percent, cumulative.variance.percent
+print(eig_df)
+
+# 2) Resultados para las VARIABLES (loadings, contribuciones, cos2)
+res.var <- get_pca_var(res.pca)
+
+# Coordenadas (loadings) de las variables sobre las PCs
+res.var$coord   # matrix: filas = variables, columnas = PCs
+
+# Contribuciones (%) de cada variable a cada PC
+res.var$contrib
+
+# Calidad de representación (cos2) de las variables en las PCs
+res.var$cos2
+
+# Ver rápidamente las contribuciones de las primeras 6 variables a los primeros 4 PCs
+View(round(res.var$contrib[, 1:4], 2))
+# Sumar contribuciones de las variables a las dos primeras PCs (útil para interpretar PC1+PC2)
+colSums(res.var$contrib[, 1:2])
+
+# 3) Resultados para los INDIVIDUOS (scores)
+res.ind <- get_pca_ind(res.pca)
+
+# Coordenadas (scores) de los individuos (países) en las PCs
+res.ind$coord    # filas = países, columnas = PCs
+
+# Contribuciones (%) de individuos a las PCs
+res.ind$contrib
+
+# cos2 (calidad de representación) de individuos
+res.ind$cos2
+
+# Ver las contribuciones de los primeros países en PC1-PC3
+View(round(res.ind$contrib[, 1:3], 2))
+
+# 4) (Opcional) Proyectar nuevos casos sobre el PCA
+# Ejemplo: usar las primeras 3 observaciones como "nuevos individuos"
+ind.test <- vars_numericas[1:3, , drop = FALSE]   # solo ejemplo
+ind.test.coord <- predict(res.pca, newdata = ind.test)
+ind.test.coord[, 1:2]   # coordenadas en PC1 y PC2
+
+# 5) (Opcional) Añadir clusters al gráfico PCA (si ya tienes resultados_hc$cluster_hc)
+if (exists("resultados_hc") && "cluster_hc" %in% names(resultados_hc)) {
+  fviz_pca_ind(res.pca,
+               habillage = resultados_hc$cluster_hc,  # colorea por cluster
+               addEllipses = TRUE,
+               repel = TRUE) +
+    ggtitle("PCA: individuos coloreados por cluster (Ward)")
+}
+
+# ---------------------------
+# Qué mirar / interpretar
+# ---------------------------
+# - 'eig_df' : ver % de varianza explicada por cada PC y decidir cuántas retener (p.ej. PCs hasta ~70-85% acum.)
+# - 'res.var$contrib' : variables con mayor contribución a PC1/PC2 -> te dicen qué conceptos resumen cada PC.
+# - 'colSums(res.var$contrib[,1:2])' : suma de contribuciones (comprobar qué proporción de "importancia" explican PC1+PC2).
+# - 'res.ind$cos2' : identifica países bien representados en PC1/PC2 (alto cos2) y países mal representados (bajo cos2).
+# - El gráfico coloreado por cluster te muestra visualmente si los clusters se separan en el espacio de las PCs.
