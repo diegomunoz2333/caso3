@@ -32,9 +32,7 @@ pheatmap(
   clustering_method = "complete"
 )
 
-# --------------------------------------------------------
-# 3. Análisis de Componentes Principales (PCA)
-# --------------------------------------------------------
+# PCA
 res.pca <- prcomp(datos_num, center = TRUE, scale. = TRUE)
 eig.val <- get_eigenvalue(res.pca)
 print(eig.val)
@@ -46,7 +44,7 @@ ncomp <- if (!is.na(n_80)) n_80 else max(2, n_kaiser)
 
 cat("Componentes (Kaiser):", n_kaiser, "\n")
 cat("Componentes (>=80%):", n_80, "\n")
-cat("Componentes seleccionados:", ncomp, "\n")
+cat("dimensiones seleccionados:", ncomp, "\n")
 
 # Varianza explicada por las 8 primeras dimensiones
 eig.val[1:8, c("variance.percent", "cumulative.variance.percent")]
