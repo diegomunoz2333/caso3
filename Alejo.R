@@ -104,28 +104,15 @@ fviz_pca_biplot(res.pca, repel = TRUE,
 # ---------------------------
 # ACCEDER A LOS RESULTADOS DEL PCA (res.pca)
 # ---------------------------
-
-# 1) Eigenvalues / tabla con varianza (% y acumulada) — alternativa a eig_table
-eig_df <- get_eigenvalue(res.pca)   # devuelve eigenvalue, variance.percent, cumulative.variance.percent
+eig_df <- get_eigenvalue(res.pca)
 print(eig_df)
 
-# 2) Resultados para las VARIABLES (loadings, contribuciones, cos2)
 res.var <- get_pca_var(res.pca)
-
-# Coordenadas (loadings) de las variables sobre las PCs
-res.var$coord   # matrix: filas = variables, columnas = PCs
-
-# Contribuciones (%) de cada variable a cada PC
+res.var$coord 
 res.var$contrib
-
-# Calidad de representación (cos2) de las variables en las PCs
 res.var$cos2
-
 # Ver rápidamente las contribuciones de las primeras 6 variables a los primeros 4 PCs
 View(round(res.var$contrib[, 1:4], 2))
-# Sumar contribuciones de las variables a las dos primeras PCs (útil para interpretar PC1+PC2)
-colSums(res.var$contrib[, 1:2])
-
 # 3) Resultados para los INDIVIDUOS (scores)
 res.ind <- get_pca_ind(res.pca)
 
