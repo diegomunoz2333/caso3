@@ -29,11 +29,21 @@ datos_num <- Base_2022 %>%
 
 
 
-# --------------------------------------------------------
-# Determinación del número óptimo de clusters
-# --------------------------------------------------------
+
+
+
+
+
+#2. Determinación del número óptimo de clusters
+dist_paises <- dist(pca_for_cluster, method = "euclidean")
+modelo_jerarquico <- hclust(dist_paises, method = "ward.D2")
 # Método del codo (Suma de cuadrados dentro de los grupos)
+
+fviz_nbclust(pca_for_cluster, FUN = hcut, method = "wss") +
+  ggtitle("Método del Codo (WSS) - Ward.D2")
 # Método de la silueta promedio
+fviz_nbclust(pca_for_cluster, FUN = hcut, method = "silhouette") +
+  ggtitle("Método de la Silueta (Ward.D2)")
 # (aquí usamos fviz_nbclust y NbClust — nota: pca_for_cluster debe existir para correr esto)
 fviz_nbclust(pca_for_cluster, FUN = hcut, method = "silhouette") + ggtitle("Silhouette - hcut")
 fviz_nbclust(pca_for_cluster, FUN = hcut, method = "wss") + ggtitle("WSS - hcut")
@@ -48,7 +58,6 @@ table(nb$Best.nc[1, ])
 k_opt <- as.integer(names(sort(table(nb$Best.nc[1, ]), decreasing = TRUE))[1])
 if (is.na(k_opt)) k_opt <- 4
 cat("k sugerido por NbClust:", k_opt, "\n")
-
 
 
 # --------------------------------------------------------
