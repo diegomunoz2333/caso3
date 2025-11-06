@@ -111,22 +111,21 @@ res.var <- get_pca_var(res.pca)
 res.var$coord 
 res.var$contrib
 res.var$cos2
-# Ver rápidamente las contribuciones de las primeras 6 variables a los primeros 4 PCs
-View(round(res.var$contrib[, 1:4], 2))
-# 3) Resultados para los INDIVIDUOS (scores)
+
+View(res.var$contrib[,1:17])
+colSums(res.var$contrib[, 1:2])
+
+#Resultado para individuos
 res.ind <- get_pca_ind(res.pca)
-
-# Coordenadas (scores) de los individuos (países) en las PCs
-res.ind$coord    # filas = países, columnas = PCs
-
-# Contribuciones (%) de individuos a las PCs
-res.ind$contrib
-
-# cos2 (calidad de representación) de individuos
-res.ind$cos2
-
+res.ind$coord          # Coordinates
+res.ind$contrib        # Contributions to the PCs
+res.ind$cos2           # Quality of representation 
+View(res.ind$contrib[,1:3]) # Miro los dos primeros factores
 # Ver las contribuciones de los primeros países en PC1-PC3
 View(round(res.ind$contrib[, 1:3], 2))
+
+res.ind$contrib[,1:2]
+
 
 # 4) (Opcional) Proyectar nuevos casos sobre el PCA
 # Ejemplo: usar las primeras 3 observaciones como "nuevos individuos"
