@@ -13,12 +13,12 @@ Base_2022 <- read_csv("Base_2022_filtrada.csv", show_col_types = FALSE)
 datos_num <- Base_2022 %>%
   select(where(is.numeric)) %>%
   as.data.frame()
-view(Base_2022)
-
-# 2. Reducción de dimensionalidad: Análisis de Componentes Principales (ACP)
 
 
-## Matriz de correlaciones
+#  Reducción de dimensionalidad: Análisis de Componentes Principales (ACP)
+
+
+## 2.1 Matriz de correlaciones
 cor_mat <- cor(datos_num, use = "pairwise.complete.obs")
 pheatmap(
   cor_mat,
@@ -42,13 +42,12 @@ cat("Componentes (Kaiser):", n_kaiser, "\n")
 cat("Componentes (>=80%):", n_80, "\n")
 cat("Dimensiones seleccionadas:", ncomp, "\n")
 
-# Varianza explicada por las primeras dimensiones
-eig.val[1:ncomp, c("variance.percent", "cumulative.variance.percent")]
+# Varianza explicada por las primeras 8 dimensiones
+eig.val[1:8, c("variance.percent", "cumulative.variance.percent")]
 
-#### agregar algunas graicas y explicaciones de las correlaciones mas fuertes
-
-
-## 2.3 Biplot y relación entre variables
+## 2.3 Biplot PCA
+pca_scores <- as.data.frame(res.pca$x)
+pca_scores$Pais <- Base_2022$Pais
 
 fviz_pca_biplot(
   res.pca, repel = TRUE,
@@ -56,8 +55,8 @@ fviz_pca_biplot(
   title = "Biplot PCA - Países e Indicadores"
 )
 
-## 2.4 Interpretación de variables más relevantes
-# (Título solo)
+# Interpretación de variables más relevantes
+# (Título solo, sin código)
 
 
 # ========================================================
@@ -84,6 +83,7 @@ fviz_nbclust(pca_for_cluster, FUN = hcut, method = "silhouette") +
   ggtitle("Método de la Silueta (Ward.D2)")
 
 ## 4.3 Determinación mediante NbClust
+set.seed(123)
 nb <- NbClust(
   pca_for_cluster, distance = "euclidean",
   min.nc = 2, max.nc = 8, method = "ward.D2", index = "all"
@@ -105,8 +105,8 @@ hc_ward <- hclust(dist_pca, method = "ward.D2")
 
 plot(as.dendrogram(hc_ward), main = "Dendrograma (Ward.D2) sobre PCs")
 
-## 5.2 Comparación con K-means
-# (Título solo)
+# Comparación con K-means
+
 
 
 # ========================================================
@@ -114,7 +114,7 @@ plot(as.dendrogram(hc_ward), main = "Dendrograma (Ward.D2) sobre PCs")
 # ========================================================
 
 ## 6.1 Descripción del método
-# (Título solo)
+
 
 ## 6.2 Aplicación sobre los datos
 kmeans_model <- kmeans(pca_for_cluster, centers = k_opt, nstart = 25)
@@ -126,20 +126,22 @@ fviz_cluster(
   main = paste("K-medias sobre", ncomp, "PCs (k =", k_opt, ")")
 )
 
-## 6.4 Comparación entre clusters jerárquicos y K-medias
-clusters <- cutree(hc_ward, k = k_opt)
-tabla_comparacion <- table(
-  Ward = clusters,
-  Kmeans = kmeans_model$cluster
-)
-print(tabla_comparacion)
-
 
 # ========================================================
 # 7. Descripción de los clusters
 # ========================================================
 
-## 7.1 Estadísticos descriptivos por grupo
+## 7.1 Asignar clusters (ejemplo con Ward)
+clusters <- cutree(hc_ward, k = k_opt)
+table(clusters)
+
+resultado_paises <- data.frame(
+  Pais = rownames(pca_for_cluster),
+  cluster = factor(clusters),
+  pca_for_cluster
+)
+
+## 7.2 Estadísticos descriptivos por grupo
 Base_cluster <- Base_2022 %>%
   mutate(cluster = factor(clusters[match(Pais, rownames(pca_for_cluster))])) %>%
   filter(!is.na(cluster))
@@ -148,9 +150,10 @@ cluster_profiles <- Base_cluster %>%
   group_by(cluster) %>%
   summarise(across(where(is.numeric), mean, na.rm = TRUE), n = n()) %>%
   arrange(cluster)
+
 print(cluster_profiles)
 
-## 7.2 Heatmap de perfiles estandarizados por cluster
+## 7.3 Heatmap de perfiles estandarizados por cluster
 profiles_mat <- cluster_profiles %>%
   select(-n) %>%
   column_to_rownames("cluster") %>%
@@ -166,7 +169,6 @@ pheatmap(
 # ========================================================
 # 8. Visualización final de los clusters
 # ========================================================
-
 fviz_cluster(
   list(data = pca_for_cluster, cluster = clusters),
   geom = "point", repel = TRUE,
@@ -183,3 +185,5 @@ promedios <- colMeans(Base_2022[, -c(1, 2)], na.rm = TRUE)
 lux <- Base_2022[Base_2022$Pais == "Luxembourg", -c(1, 2)]
 comparacion <- t(lux - promedios)
 comparacion
+
+  
