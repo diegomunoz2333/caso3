@@ -1,4 +1,4 @@
-
+# Librerías y carga de datos (mantener siempre al inicio)
 library(tidyverse)
 library(readxl)
 library(FactoMineR)
@@ -13,66 +13,28 @@ Base_2022 <- read_csv("Base_2022_filtrada.csv", show_col_types = FALSE)
 datos_num <- Base_2022 %>%
   select(where(is.numeric)) %>%
   as.data.frame()
-#1)k-medias 
 
 
+# --------------------------------------------------------
+# Agrupamiento K-medias (K-means)
+# --------------------------------------------------------
+# Descripción del método
+# (sin código - título solo)
 
+# Aplicación sobre los datos
+# (sin código - título solo)
+
+# Visualización de los grupos obtenidos
+# (sin código - título solo)
 
 
 
 # --------------------------------------------------------
-# 2. Matriz de correlaciones
+# Determinación del número óptimo de clusters
 # --------------------------------------------------------
-cor_mat <- cor(datos_num, use = "pairwise.complete.obs")
-pheatmap(
-  cor_mat,
-  main = "Matriz de correlaciones (2022)",
-  fontsize = 8,
-  color = colorRampPalette(c("red", "white", "blue"))(100),
-  clustering_method = "complete"
-)
-
-# PCA
-res.pca <- prcomp(datos_num, center = TRUE, scale. = TRUE)
-eig.val <- get_eigenvalue(res.pca)
-print(eig.val)
-
-# Número de componentes
-n_kaiser <- sum(eig.val$eigenvalue > 1)
-n_80 <- which(cumsum(eig.val$variance.percent) >= 80)[1]
-ncomp <- if (!is.na(n_80)) n_80 else max(2, n_kaiser)
-
-cat("Componentes (Kaiser):", n_kaiser, "\n")
-cat("Componentes (>=80%):", n_80, "\n")
-cat("dimensiones seleccionados:", ncomp, "\n")
-
-# Varianza explicada por las 8 primeras dimensiones
-eig.val[1:8, c("variance.percent", "cumulative.variance.percent")]
-
-# Biplot PCA
-pca_scores <- as.data.frame(res.pca$x)
-pca_scores$Pais <- Base_2022$Pais
-
-fviz_pca_biplot(
-  res.pca, repel = TRUE,
-  col.var = "#2E9FDF", col.ind = "#696969",
-  title = "Biplot PCA - Países e Indicadores"
-)
-
-# --------------------------------------------------------
-# 4. Cluster jerárquico (Ward.D2) sobre PCs
-# --------------------------------------------------------
-pca_for_cluster <- pca_scores %>%
-  select(starts_with("PC")) %>%
-  select(1:ncomp)
-rownames(pca_for_cluster) <- Base_2022$Pais
-
-dist_pca <- dist(pca_for_cluster, method = "euclidean")
-hc_ward <- hclust(dist_pca, method = "ward.D2")
-
-plot(as.dendrogram(hc_ward), main = "Dendrograma (Ward.D2) sobre PCs")
-
-# Determinar número óptimo de clusters
+# Método del codo (Suma de cuadrados dentro de los grupos)
+# Método de la silueta promedio
+# (aquí usamos fviz_nbclust y NbClust — nota: pca_for_cluster debe existir para correr esto)
 fviz_nbclust(pca_for_cluster, FUN = hcut, method = "silhouette") + ggtitle("Silhouette - hcut")
 fviz_nbclust(pca_for_cluster, FUN = hcut, method = "wss") + ggtitle("WSS - hcut")
 
@@ -87,9 +49,100 @@ k_opt <- as.integer(names(sort(table(nb$Best.nc[1, ]), decreasing = TRUE))[1])
 if (is.na(k_opt)) k_opt <- 4
 cat("k sugerido por NbClust:", k_opt, "\n")
 
+
+
 # --------------------------------------------------------
-# 5. Asignar clusters y visualizar
+# Agrupamiento jerárquico (Método de Ward)
 # --------------------------------------------------------
+# Dendrograma y definición de cortes
+# (Se usa pca_for_cluster como entrada)
+dist_pca <- dist(pca_for_cluster, method = "euclidean")
+hc_ward <- hclust(dist_pca, method = "ward.D2")
+
+plot(as.dendrogram(hc_ward), main = "Dendrograma (Ward.D2) sobre PCs")
+
+# (Opcional: colorear ramas / marcar corte)
+# library(dendextend)
+# dend_modelo <- as.dendrogram(hc_ward)
+# corte <- 28
+# dend_modelo %>% color_branches(h = corte) %>% color_labels(h = corte) %>% plot() %>% abline(h = corte, lty = 2)
+
+# Comparación con K-means
+# (sin código - título solo)
+
+
+
+# --------------------------------------------------------
+# Reducción de dimensionalidad: Análisis de Componentes Principales (ACP)
+# --------------------------------------------------------
+# Matriz de correlaciones
+cor_mat <- cor(datos_num, use = "pairwise.complete.obs")
+pheatmap(
+  cor_mat,
+  main = "Matriz de correlaciones (2022)",
+  fontsize = 8,
+  color = colorRampPalette(c("red", "white", "blue"))(100),
+  clustering_method = "complete"
+)
+
+# Varianza explicada y componentes principales
+res.pca <- prcomp(datos_num, center = TRUE, scale. = TRUE)
+eig.val <- get_eigenvalue(res.pca)
+print(eig.val)
+
+# Número de componentes según criterios
+n_kaiser <- sum(eig.val$eigenvalue > 1)
+n_80 <- which(cumsum(eig.val$variance.percent) >= 80)[1]
+ncomp <- if (!is.na(n_80)) n_80 else max(2, n_kaiser)
+
+cat("Componentes (Kaiser):", n_kaiser, "\n")
+cat("Componentes (>=80%):", n_80, "\n")
+cat("dimensiones seleccionados:", ncomp, "\n")
+
+# Varianza explicada por las 8 primeras dimensiones
+eig.val[1:8, c("variance.percent", "cumulative.variance.percent")]
+
+# Biplot y relación entre variables
+pca_scores <- as.data.frame(res.pca$x)
+pca_scores$Pais <- Base_2022$Pais
+
+fviz_pca_biplot(
+  res.pca, repel = TRUE,
+  col.var = "#2E9FDF", col.ind = "#696969",
+  title = "Biplot PCA - Países e Indicadores"
+)
+
+# Interpretación de variables más relevantes
+# (sin código - título solo)
+
+
+
+# --------------------------------------------------------
+# Integración ACP–Clusterización
+# --------------------------------------------------------
+# Agrupamiento sobre los factores principales
+pca_for_cluster <- pca_scores %>%
+  select(starts_with("PC")) %>%
+  select(1:ncomp)
+rownames(pca_for_cluster) <- Base_2022$Pais
+
+# Visualización de grupos en el espacio factorial
+# (si ya se tienen clusters, se puede visualizar con fviz_cluster)
+# Aquí dejamos la función para usar luego cuando estén los clusters definidos
+# Ejemplo (requiere objeto 'clusters'):
+# fviz_cluster(list(data = pca_for_cluster, cluster = clusters),
+#              geom = "point", repel = TRUE,
+#              main = paste("Clusters sobre", ncomp, "PCs (k =", k_opt, ")"))
+
+
+
+# --------------------------------------------------------
+# Descripción de los clusters
+# --------------------------------------------------------
+# Estadísticos descriptivos por grupo (medias, desviaciones, proporciones)
+# (Se asume que ya se han asignado clusters; el código siguiente asigna y resume)
+
+# Asignar clusters (ejemplo con el k sugerido por NbClust)
 clusters <- cutree(hc_ward, k = k_opt)
 table(clusters)
 
@@ -99,15 +152,13 @@ resultado_paises <- data.frame(
   pca_for_cluster
 )
 
+# Tablas y gráficos de resumen
 fviz_cluster(
   list(data = pca_for_cluster, cluster = clusters),
   geom = "point", repel = TRUE,
   main = paste("Clusters sobre", ncomp, "PCs (k =", k_opt, ")")
 )
 
-# --------------------------------------------------------
-# 6. Análisis de perfiles por cluster
-# --------------------------------------------------------
 Base_cluster <- Base_2022 %>%
   mutate(cluster = factor(clusters[match(Pais, rownames(pca_for_cluster))])) %>%
   filter(!is.na(cluster))
@@ -119,16 +170,7 @@ cluster_profiles <- Base_cluster %>%
 
 print(cluster_profiles)
 
-# --------------------------------------------------------
-# 7. Comparación Luxemburgo vs promedio mundial
-# --------------------------------------------------------
-promedios <- colMeans(Base_2022[ , -c(1,2)], na.rm = TRUE)
-lux <- Base_2022[Base_2022$Pais == "Luxembourg", -c(1,2)]
-comparacion <- t(lux - promedios)
-comparacion
-
-#  Heatmap de perfiles estandarizados por cluster
-
+# Heatmap de perfiles estandarizados por cluster
 profiles_mat <- cluster_profiles %>%
   select(-n) %>%
   column_to_rownames("cluster") %>%
@@ -140,3 +182,10 @@ pheatmap(
   profiles_scaled,
   main = "Perfiles estandarizados por cluster"
 )
+
+# Comparación ejemplo: Luxemburgo vs promedio mundial
+promedios <- colMeans(Base_2022[ , -c(1,2)], na.rm = TRUE)
+lux <- Base_2022[Base_2022$Pais == "Luxembourg", -c(1,2)]
+comparacion <- t(lux - promedios)
+comparacion
+
