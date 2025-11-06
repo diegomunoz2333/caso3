@@ -4,10 +4,8 @@ library(readr)
 # Cargar la base
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv")
 
-# Ver estructura
 glimpse(Base)
 
-# Seleccionar solo las variables relevantes y renombrarlas a español
 Base_2022 <- Base %>%
   select(
     Pais = `Country Name`,
@@ -38,14 +36,14 @@ Base_2022[Base_2022 == ".."] <- NA
 Base_2022 <- Base_2022 %>%
   drop_na()
 
-# Filtrar solo países reales (no regiones o grupos)
+# Filtrar solo países reales
 Base_2022 <- Base_2022 %>%
   filter(!Pais %in% c("World", "High income", "Low income", "European Union",
                       "Latin America & Caribbean", "Middle income", "OECD members",
                       "East Asia & Pacific", "Sub-Saharan Africa", "South Asia",
                       "North America", "Euro area", "Arab World", "West Bank and Gaza"))
 
-# Ver resultado
+
 glimpse(Base_2022)
 
 View(Base_2022)
