@@ -1,4 +1,3 @@
-
 library(tidyverse)
 library(readxl)
 library(FactoMineR)
@@ -7,6 +6,7 @@ library(dendextend)
 library(psych)
 library(pheatmap)
 library(NbClust)
+set.seed(28)
 
 Base_2022 <- read_csv("Base_2022_filtrada.csv", show_col_types = FALSE)
 
