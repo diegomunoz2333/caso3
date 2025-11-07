@@ -4,6 +4,7 @@ library(dendextend)
 library(cluster)
 library(ggrepel)
 library(readr)
+library(FactoClass)
 Base_2022_filtrada <- read_csv("Base_2022_filtrada.csv")
 
 vars_numericas <- Base_2022_filtrada %>% select(3:ncol(.))
@@ -64,10 +65,6 @@ sil <- silhouette(as.numeric(resultados_hc$cluster_hc), dist_entre_Base)
 cat("Silhouette promedio:", mean(sil[, 3]), "\n")
 plot(sil, main = "Silhouette por observación - clustering jerárquico")
 
-# ---------------------------
-# PCA / ACP sobre la base filtrada
-# ---------------------------
-library(factoextra)   # visualizaciones PCA
 
 # 1) Ejecutar PCA (prcomp usa la matriz original y estandariza con scale = TRUE)
 res.pca <- prcomp(vars_numericas, scale. = TRUE)
@@ -127,12 +124,12 @@ View(round(res.ind$contrib[, 1:3], 2))
 res.ind$contrib[,1:2]
 
 
-# 4) (Opcional) Proyectar nuevos casos sobre el PCA
 # Ejemplo: usar las primeras 3 observaciones como "nuevos individuos"
 ind.test <- vars_numericas[1:3, , drop = FALSE]   # solo ejemplo
+view(ind.test)
 ind.test.coord <- predict(res.pca, newdata = ind.test)
 ind.test.coord[, 1:2]   # coordenadas en PC1 y PC2
-
+ind.test.coord
 # 5) (Opcional) Añadir clusters al gráfico PCA (si ya tienes resultados_hc$cluster_hc)
 if (exists("resultados_hc") && "cluster_hc" %in% names(resultados_hc)) {
   fviz_pca_ind(res.pca,
@@ -141,7 +138,8 @@ if (exists("resultados_hc") && "cluster_hc" %in% names(resultados_hc)) {
                repel = TRUE) +
     ggtitle("PCA: individuos coloreados por cluster (Ward)")
 }
-
+p <- fviz_pca_ind(res.pca, repel = TRUE)
+fviz_add(p, ind.test.coord, color ="blue")
 # ---------------------------
 # Qué mirar / interpretar
 # ---------------------------
@@ -150,3 +148,47 @@ if (exists("resultados_hc") && "cluster_hc" %in% names(resultados_hc)) {
 # - 'colSums(res.var$contrib[,1:2])' : suma de contribuciones (comprobar qué proporción de "importancia" explican PC1+PC2).
 # - 'res.ind$cos2' : identifica países bien representados en PC1/PC2 (alto cos2) y países mal representados (bajo cos2).
 # - El gráfico coloreado por cluster te muestra visualmente si los clusters se separan en el espacio de las PCs.
+resultado_ACP <- FactoClass(vars_numericas, dudi.pca)
+3
+3
+4
+
+resultado_ACP$cluster
+
+NuevaBase <- data.frame(Cluster = resultado_ACP$cluster,
+                        Base_2022_filtrada)
+
+View(NuevaBase)
+
+# Gráfico del análisis general
+plot(resultado_ACP$dudi)
+
+s.corcircle((resultado_ACP$dudi)$co)
+
+# Gráfico de individuos (países)
+s.label((resultado_ACP$dudi)$li,
+        label = row.names(vars_numericas),
+        sub = "Individuos (países) - Componentes 1 y 2",
+        possub = "bottomright")
+
+# Gráfico de variables
+s.label((resultado_ACP$dudi)$co,
+        xax = 1, yax = 2,
+        sub = "Variables - Componentes 1 y 2",
+        possub = "bottomright")
+
+# Gráfico combinado de individuos y variables
+scatter(resultado_ACP$dudi, xax = 1, yax = 2)
+
+# Colorear individuos por cluster
+Grupo <- NuevaBase$Cluster
+s.class((resultado_ACP$dudi)$li,
+        fac = as.factor(Grupo),
+        sub = "Componentes 1 y 2 por grupo (FactoClass)",
+        possub = "bottomright",
+        xax = 1, yax = 2,
+        col = c(1, 2, 3, 4))
+
+
+resultado_ACP$carac.cont
+
