@@ -1,20 +1,17 @@
-
 library(tidyverse)
 library(FactoClass)
 library(ade4)
 
 
-
-
-datos_analisis <- Base_2022_filtrada%>%
-  select(-Codigo) %>%         # si no tienes columna "Codigo", elimina esta línea
+datos_analisis <- Base_2022_filtrada %>%
+  filter(Pais != "Luxembourg") %>% 
+  select(-Codigo) %>% 
   column_to_rownames("Pais")
 
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
-# --- 2. DETERMINAR NÚMERO DE COMPONENTES PARA ≥80% VARIANZA ---
-
+# ACP
 acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
 varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
 n_componentes <- which(varianza_acum >= 80)[1]
@@ -22,8 +19,6 @@ n_componentes <- which(varianza_acum >= 80)[1]
 cat("=== SELECCIÓN DE COMPONENTES ===\n")
 cat("Componentes necesarios para ≥80% varianza:", n_componentes, "\n")
 cat("Varianza explicada:", round(varianza_acum[n_componentes], 2), "%\n\n")
-
-# --- 3. ACP FINAL ---
 
 acp_resultado <- dudi.pca(
   df = datos_analisis,
@@ -33,45 +28,46 @@ acp_resultado <- dudi.pca(
   nf = n_componentes
 )
 
-# --- 4. CLUSTERING JERÁRQUICO (Ward) ---
+# Extraer los factores 
+factores <- acp_resultado$li  # cada país con sus coordenadas 
 
-distancia <- dist(acp_resultado$li)
+#  CLUSTERING SOBRE LOS FACTORES
+distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
 
-# Calcular within sum of squares (WSS) para 2–10 clusters
+# Método del codo (WSS)
 wss <- sapply(2:10, function(k) {
-  clusters_temp <- cutree(arbol, k = k)
-  sum(tapply(1:nrow(acp_resultado$li), clusters_temp, function(idx) {
-    if(length(idx) > 1) {
-      sum(dist(acp_resultado$li[idx, ])^2) / (2 * length(idx))
-    } else {
-      0
-    }
+  grupos <- cutree(arbol, k = k)
+  sum(tapply(1:nrow(factores), grupos, function(idx) {
+    if (length(idx) > 1) {
+      sum(dist(factores[idx, ])^2) / (2 * length(idx))
+    } else 0
   }))
 })
 
-# Detectar el "codo" en la curva WSS
+# Detectar número óptimo
 diff_wss <- diff(wss)
 diff_diff <- diff(diff_wss)
 k_optimo <- which.max(diff_diff) + 2
-if(k_optimo > 6) k_optimo <- 5
-if(k_optimo < 2) k_optimo <- 2
+if (k_optimo > 6) k_optimo <- 5
+if (k_optimo < 2) k_optimo <- 2
 
 cat("=== CLUSTERING ===\n")
 cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
 
-# --- 5. ASIGNACIÓN DE CLUSTERS ---
-
+# ASIGNAR CLUSTERS
 clusters <- cutree(arbol, k = k_optimo)
+
+# Nueva base con clusters
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 
+# Promedios por cluster
 carac_cont <- NuevaBase %>%
   group_by(Cluster) %>%
   summarise(across(everything(), mean, na.rm = TRUE), .groups = "drop") %>%
   as.data.frame()
 
-# --- 6. RESULTADO FINAL ---
-
+# RESULTADOS
 resultado_ACP <- list(
   dudi = acp_resultado,
   cluster = clusters,
@@ -81,20 +77,14 @@ resultado_ACP <- list(
 
 cat("Clusters formados:", length(unique(clusters)), "\n\n")
 
-# --- 7. OPCIONAL: VISUALIZACIONES ---
 
 # Círculo de correlaciones
-s.corcircle(resultado_ACP$dudi$co)
+s.corcircle(acp_resultado$co)
 
-# Gráfico de individuos (países)
-s.label(resultado_ACP$dudi$li, label = rownames(datos_analisis))
+# Gráfico de países en espacio de factores
+s.class(factores, as.factor(clusters), sub = "Clusters en el espacio factorial", possub = "bottomright")
 
-# Gráfico de variables
-s.label(resultado_ACP$dudi$co, xax = 1, yax = 2, sub = "Componente 1 y 2", possub = "bottomright")
+# Dendrograma
+plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
+rect.hclust(arbol, k = k_optimo, border = 2:5)
 
-# Gráfico conjunto
-scatter(resultado_ACP$dudi, xax = 1, yax = 2)
-
-# Gráfico por grupos
-Grupo <- as.factor(NuevaBase$Cluster)
-s.class(resultado_ACP$dudi$li, Grupo, sub = "Componentes 1 y 2", possub = "bottomright")
