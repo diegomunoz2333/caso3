@@ -251,7 +251,7 @@ clusters <- cutree(arbol, k = k_optimo)
 
 # Nueva base con clusters
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
-
+view(NuevaBase)
 # Promedios por cluster
 carac_cont <- NuevaBase %>%
   group_by(Cluster) %>%
@@ -278,4 +278,128 @@ s.class(factores, as.factor(clusters), sub = "Clusters en el espacio factorial",
 # Dendrograma
 plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
 rect.hclust(arbol, k = k_optimo, border = 2:5)
+
+
+# 1. Dendrograma clústers
+fviz_dend(arbol, k = k_optimo, 
+          rect = TRUE, rect_fill = TRUE, # recuadros de colores en los clústeres
+          cex = 0.6,                     # tamaño de texto de etiquetas
+          lwd = 0.8,                     # grosor de líneas
+          main = "Dendrograma (Ward) con clústeres") 
+
+# 2. Crear objeto hcut (clustering jerárquico con corte) para usar con factoextra
+
+res_hc <- hcut(datos_analisis, k = k_optimo, 
+               hc_method = "ward.D2", stand = TRUE, graph = FALSE)
+
+# 3. Gráfico de clústeres (ejes principales)
+#    Muestra los puntos en función de los dos primeros componentes (por defecto)
+fviz_cluster(res_hc, 
+             ellipse.type = "convex",  # dibuja elipses convexas alrededor de los grupos
+             show.clust.cent = TRUE,   # muestra el centro de cada clúster
+             main = "Distribución de clústeres (en los dos primeros ejes PCA)")
+
+# 4. Gráfico de silueta para evaluar la calidad del agrupamiento
+#    El propio objeto res_hc contiene la información de silueta (res_hc$silinfo)
+fviz_silhouette(res_hc, 
+                palette = "jco", 
+                print.summary = TRUE) +
+  labs(title = "Gráfico de silueta de los clústeres")
+
+# 5. Tamaño de cada clúster
+tamaños <- table(res_hc$cluster)
+print(tamaños)
+# Opcional: mostrar en formato tabla con kable
+tamaños <- as.data.frame(table(res_hc$cluster))
+colnames(tamaños) <- c("Cluster", "N")
+tamaños <- tamaños %>% arrange(as.integer(as.character(Cluster)))
+
+tamaños %>%
+  knitr::kable(caption = "Tamaño de cada clúster", digits = 0, align = "c") %>%
+  kableExtra::kable_styling(bootstrap_options = c("striped","hover"),
+                            full_width = FALSE, position = "center")
+
+# 6. Medias de las variables por clúster (perfiles de clúster)
+#    Usamos el data frame original de análisis con la columna Cluster
+datos_con_cluster <- datos_analisis %>%
+  mutate(Cluster = factor(res_hc$cluster))  # convertimos a factor para claridad
+
+carac_cluster <- datos_con_cluster %>%
+  group_by(Cluster) %>%
+  summarise(across(everything(), mean, na.rm = TRUE))
+
+# Tabla de medias por clúster
+kable(carac_cluster, 
+      caption = "Medias de variables por clúster",
+      digits = 2, align = "c") %>%
+  kable_styling(bootstrap_options = c("striped","hover","condensed"),
+                full_width = FALSE, position = "center") %>%
+  row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
+
+res.pca <- prcomp(NuevaBase, scale = TRUE)
+
+res.pca
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+
+
+fviz_eig(res.pca)
+
+
+
+fviz_pca_ind(res.pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE
+)
+
+
+fviz_pca_var(res.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE,
+             axes = c(1,2)# Avoid text overlapping
+)
+
+fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969",
+                axes=c(1,2)# Individuals color
+)
+
+
+
+# Eigenvalues
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+
+
+# Resultados para Variables
+res.var <- get_pca_var(res.pca)
+res.var$coord          # Coordinates
+res.var$contrib        # Contributions to the PCs
+res.var$cos2           # Quality of representation 
+
+View(res.var$contrib[,1:8]) # Miro los dos primeros factores
+colSums( res.var$contrib[,1:2] )
+
+
+# Results for individuals
+res.ind <- get_pca_ind(res.pca)
+res.ind$coord          # Coordinates
+res.ind$contrib        # Contributions to the PCs
+res.ind$cos2           # Quality of representation 
+View(res.ind$contrib[,1:3]) # Miro los dos primeros factores
+res.ind$contrib[,1:2]
+
+# 2) Gráfico s.class aplicado a la base (ACP) y mostrar descripción de grupos
+Grupo <- as.factor(NuevaBase$Cluster)  # 🔹 conversión a factor
+
+# Graficar clasificación en el espacio factorial (usa resultado_ACP$dudi$li)
+s.class((resultado_ACP$dudi)$li,
+        fac = Grupo,
+        sub = "Componentes 1 y 2",
+        possub = "bottomright",
+        xax = 1, yax = 3,
+        col = c(1,2,3,4))
 
