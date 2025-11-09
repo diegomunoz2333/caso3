@@ -94,28 +94,54 @@ varianza_df <- data.frame(
   VarianzaAcum = varianza_acum
 )
 
+
+
+
+#///////////////////////Gráfico de Codo/////////////////////////////////////////
+
+
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
-  geom_col(fill = "#2E86AB", alpha = 0.8) +
-  geom_line(aes(y = VarianzaAcum, group = 1), color = "#E74C3C", linewidth = 1.2) +
-  geom_point(aes(y = VarianzaAcum), color = "#E74C3C", size = 2.5) +
-  geom_hline(yintercept = 80, linetype = "dashed", color = "darkgreen", linewidth = 1) +
-  geom_vline(xintercept = 8, linetype = "dotted", color = "#F39C12", linewidth = 1.1) +
+  geom_col(fill = "#1B4965", alpha = 0.85) +
+  geom_line(aes(y = VarianzaAcum, group = 1), color = "#047857", linewidth = 1.3) +
+  geom_point(aes(y = VarianzaAcum), color = "#047857", size = 3) +
+  geom_hline(yintercept = 80, linetype = "dashed", color = "#8B5CF6", linewidth = 1) +
+  geom_vline(xintercept = 8, linetype = "dotted", color = "#2E86AB", linewidth = 1.1) +
   annotate("text", x = 8.3, y = max(varianza_df$Varianza) * 0.9,
-           label = "Componente 8", color = "#F39C12", angle = 90, hjust = 0) +
+           label = "Componente 8", color = "#2E86AB", angle = 90, hjust = 0, 
+           fontface = "bold", size = 3.5) +
   annotate("text", x = 1.5, y = 82,
-           label = "80% varianza acumulada", color = "darkgreen", hjust = 0) +
+           label = "80% varianza acumulada", color = "#8B5CF6", hjust = 0,
+           fontface = "bold", size = 3.5) +
   scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
   labs(
-    title = "Scree Plot — Varianza Explicada por Componente Principal",
+    title = "Scree Plot: Varianza Explicada por Componente Principal",
+    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥80%",
     x = "Componentes Principales",
     y = "% de Varianza Explicada"
   ) +
   theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#1B4965"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2E86AB"),
+    axis.text = element_text(size = 10),
     axis.text.x = element_text(angle = 45, vjust = 0.8),
-    panel.grid.minor = element_blank()
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
   )
+
+
+#===============================================================================
+
+
+
+
+
+
+
+
 
 # Círculo de correlaciones
 
@@ -371,47 +397,157 @@ plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", s
 rect.hclust(arbol, k = k_optimo, border = 2:5)
 
 
-# 1. Dendrograma clústers
-fviz_dend(arbol, k = k_optimo, 
-          rect = TRUE, rect_fill = TRUE, # recuadros de colores en los clústeres
-          cex = 0.6,                     # tamaño de texto de etiquetas
-          lwd = 0.8,                     # grosor de líneas
-          main = "Dendrograma (Ward) con clústeres") 
 
-# 2. Crear objeto hcut (clustering jerárquico con corte) para usar con factoextra
+#//////////////////////// 1).Dendrograma Ward /////////////////////////////////
 
-res_hc <- hcut(datos_analisis, k = k_optimo, 
-               hc_method = "ward.D2", stand = TRUE, graph = FALSE)
 
-# 3. Gráfico de clústeres (ejes principales)
-#    Muestra los puntos en función de los dos primeros componentes (por defecto)
+pal <- c("#08306B", "#2171B5", "#6BAED6")
+
+fviz_dend(arbol,
+          k = k_optimo,
+          k_colors = pal,           
+          color_labels_by_k = TRUE, 
+          rect = TRUE,               
+          rect_fill = TRUE,          
+          rect_border = "gray30",    
+          cex = 0.8,                 
+          lwd = 0.8,                 
+          show_labels = TRUE,
+          main = "Dendrograma — 3 Clústeres",
+          sub = "Agrupamiento jerárquico (Ward.D2) sobre espacio factorial",
+          xlab = "",               
+          ylab = "Altura de fusión"
+) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5, color = pal[1]),
+    plot.subtitle = element_text(size = 10.5, hjust = 0.5, color = "gray40"),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank()
+  )
+
+
+
+
+#===============================================================================
+
+
+
+
+
+
+#////////////Gráfico de Dispersión de Clústeres en Espacio Factorial///////////
+
+
+library(factoextra)
+paleta_personalizada <- c("#2E86AB", "#047857", "#8B5CF6")
+
 fviz_cluster(res_hc, 
-             ellipse.type = "convex",  # dibuja elipses convexas alrededor de los grupos
-             show.clust.cent = TRUE,   # muestra el centro de cada clúster
-             main = "Distribución de clústeres (en los dos primeros ejes PCA)")
+             ellipse.type = "convex",
+             show.clust.cent = TRUE,
+             palette = paleta_personalizada,
+             geom = c("point", "text"),
+             repel = TRUE,
+             ggtheme = theme_minimal(),
+             xlab = "Dimensión 1 (Componente Principal 1)",
+             ylab = "Dimensión 2 (Componente Principal 2)",
+             legend.title = "Clúster") +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#1B4965"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2E86AB"),
+    axis.text = element_text(size = 10),
+    legend.title = element_text(face = "bold", size = 11, color = "#2E86AB"),
+    legend.text = element_text(size = 10),
+    legend.position = "right",
+    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.grid.minor = element_line(color = "gray95", size = 0.2),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    legend.background = element_rect(fill = "white", color = "gray80")
+  ) +
+  labs(
+    title = "Gráfico de Dispersión de Clústeres en Espacio Factorial",
+    subtitle = "Clústeres formados mediante Ward.D2 en espacio factorial del ACP"
+  )
 
-# 4. Gráfico de silueta para evaluar la calidad del agrupamiento
-#    El propio objeto res_hc contiene la información de silueta (res_hc$silinfo)
+
+#===============================================================================
+
+
+
+
+#////////////////////////Gráfico de Silueta (Silhouette Plot)////////////////////
+
+library(factoextra)
+
+paleta_personalizada <- c("#2E86AB", "#047857", "#8B5CF6")
+
 fviz_silhouette(res_hc, 
-                palette = "jco", 
+                palette = paleta_personalizada, 
                 print.summary = TRUE) +
-  labs(title = "Gráfico de silueta de los clústeres")
+  labs(
+    title = "Análisis de Calidad del Agrupamiento mediante Coeficiente de Silueta",
+    subtitle = "Evaluación de la cohesión y separación de los clústeres identificados"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", size = 15, hjust = 0.5, color = "#1B4965"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 11, color = "#2E86AB"),
+    axis.text = element_text(size = 10),
+    legend.title = element_text(face = "bold", size = 11, color = "#2E86AB"),
+    legend.text = element_text(size = 10),
+    legend.position = "right",
+    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    axis.text.y = element_text(size = 8)
+  )
 
-# 5. Tamaño de cada clúster
-tamaños <- table(res_hc$cluster)
-print(tamaños)
 
-# Opcional: mostrar en formato tabla con kable
+#===============================================================================
+
+
+
+
+
+#/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
+
+
 tamaños <- as.data.frame(table(res_hc$cluster))
 colnames(tamaños) <- c("Cluster", "N")
 tamaños <- tamaños %>% arrange(as.integer(as.character(Cluster)))
 
 tamaños %>%
-  knitr::kable(caption = "Tamaño de cada clúster", digits = 0, align = "c") %>%
-  kableExtra::kable_styling(bootstrap_options = c("striped","hover"),
-                            full_width = FALSE, position = "center")
+  knitr::kable(
+    caption = "Tamaño de cada clúster",
+    digits = 0,
+    align = "c",
+    col.names = c("Clúster", "Número de Países")
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "10em", color = "#1B4965") %>%
+  column_spec(2, width = "12em")
 
-# 6. Medias de las variables por clúster (perfiles de clúster)
+
+
+#===============================================================================
+
+
+
+
+
+
+#///////////////////////////Tabla de medias por clúster////////////////////////
+
 #    Usamos el data frame original de análisis con la columna Cluster
 datos_con_cluster <- datos_analisis %>%
   mutate(Cluster = factor(res_hc$cluster))  # convertimos a factor para claridad
@@ -420,7 +556,6 @@ carac_cluster <- datos_con_cluster %>%
   group_by(Cluster) %>%
   summarise(across(everything(), mean, na.rm = TRUE))
 
-# Tabla de medias por clúster
 kable(carac_cluster, 
       caption = "Medias de variables por clúster",
       digits = 2, align = "c") %>%
@@ -429,7 +564,14 @@ kable(carac_cluster,
   row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
 
 
-# Crear tabla interpretativa de los clusters
+#===============================================================================
+
+
+
+
+
+#///////////////////// Tabla interpretativa de los clusters/////////////////////
+
 clusters_tabla <- tribble(
   ~`Cluster`, ~`Nombre propuesto`, ~`Características principales`, ~`Justificación del nombre`, ~`Ejemplos de Países`,
   
@@ -470,7 +612,14 @@ clusters_tabla %>%
   column_spec(4, width = "22em") %>%
   column_spec(5, width = "16em")
 
-#### base de datos con cluster con nombre
+
+#===============================================================================
+
+
+
+
+
+#///////////////////Base de datos con cluster con nombre////////////////////////
 NuevaBase <- read_csv("NuevaBase_clusters.csv")
 nombres_clusters <- c(
   "1" = "Desarrollado",
@@ -482,10 +631,17 @@ NuevaBase <- NuevaBase %>%
 view(NuevaBase)
 
 
-###################
-#################
-################
-#base cluster x dimension con nombre
+
+
+
+
+#===============================================================================
+
+
+
+
+
+#///////////////Base cluster x dimension con nombre////////////////////////////
 NuevaBase <- readr::read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
 possible_names <- c("Pais", "pais", "PAIS", "Country", "country", "COUNTRY", "Row.names", "Rowname", "X1", "...1")
 country_col <- intersect(possible_names, names(NuevaBase)) %>% first()
@@ -531,8 +687,19 @@ Base_Final <- NuevaBase %>%
   left_join(scores, by = "Pais")
 View(Base_Final)
 
+#===============================================================================
 
-#########predicion
+
+
+
+
+
+
+
+
+
+
+#//////////////////////////////////Predicción////////////////////////////////////
 
 nuevo_pais <- data.frame(
   PIB_per = 18000,
