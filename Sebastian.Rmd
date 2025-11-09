@@ -277,7 +277,7 @@ knitr::opts_chunk$set(
   fig.height = 6,
   out.width = "90%"
 )
-
+library(gt)
 library(ggplot2)
 library(dplyr)
 library(knitr)
@@ -324,9 +324,560 @@ El dataset construido para este análisis integra 19 variables cuantitativas que
 
 ### Dimensión economica
 
-Las variables económicas capturan tanto el nivel de riqueza como la dinámica y estructura de la economía nacional, incluyendo su grado de inserción en la economía global.
+La inclusión de variables económicas es fundamental porque el desarrollo ha sido históricamente conceptualizado como un proceso de transformación estructural impulsado por el crecimiento económico (World Bank, 2023; Piketty, 2022). Sin embargo, el crecimiento económico no es unidimensional: requiere tanto un nivel absoluto de riqueza (PIB per cápita) como dinamismo y expansión (crecimiento del PIB), diversificación productiva (industria), y capacidad de atracción de inversión internacional (IED) que transfiera conocimiento y capital (ECB, 2018). Además, las economías contemporáneas están integradas globalmente, por lo que exportaciones, importaciones y remesas son transmisores clave de oportunidades y vulnerabilidades económicas (World Bank, 2023)., en la tabla 1 las observamos.
 
-### Base de datos del modelo
+```{r Variables economicas}
+variables_economicas <- data.frame(
+  Variable = c(
+    "PIB per cápita (US$)",
+    "Crecimiento del PIB (% anual)",
+    "Inversión extranjera directa (% PIB)",
+    "Remesas recibidas (% PIB)",
+    "Industria (% PIB)",
+    "Exportaciones (% PIB)",
+    "Importaciones (% PIB)"
+  ),
+  
+  Descripción = c(
+    "PIB dividido por población, en dólares corrientes. Indicador principal del nivel de ingreso y producción económica por persona.",
+    "Tasa de variación anual del PIB en precios constantes. Refleja la expansión o contracción económica de un país.",
+    "Flujos netos de inversión con interés gerencial duradero. Fuente crucial de financiamiento externo y transferencia tecnológica.",
+    "Transferencias personales de migrantes que trabajan en el extranjero. Flujo financiero clave para muchas economías en desarrollo.",
+    "Valor agregado del sector industrial. Refleja el grado de industrialización y la estructura productiva de una economía.",
+    "Valor de bienes y servicios vendidos al exterior. Mide el grado de apertura comercial y oportunidades de crecimiento.",
+    "Valor de bienes y servicios comprados al exterior. Indica la dependencia de la economía respecto al comercio internacional."
+  ),
+  
+  Interpretación = c(
+    ">20,000 USD: economía desarrollada\n5,000-20,000 USD: economía emergente\n<5,000 USD: economía en desarrollo",
+    ">3%: crecimiento robusto\n0-3%: crecimiento moderado\n<0%: recesión económica",
+    ">5%: alta atracción de IED\n2-5%: nivel moderado\n<2%: baja atracción de inversión",
+    ">10%: alta dependencia\n2-10%: contribución significativa\n<2%: impacto limitado",
+    ">30%: economía industrializada\n20-30%: sector industrial sólido\n<20%: base industrial reducida", 
+    ">50%: economía muy abierta\n30-50%: apertura moderada\n<30%: economía relativamente cerrada",
+    ">40%: alta dependencia importaciones\n25-40%: nivel moderado\n<25%: autosuficiencia relativa"
+  )
+)
+
+tabla_1 <- variables_economicas %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 1**"),
+    subtitle = "Variables Macroeconómicas y su Interpretación"
+  ) %>%
+  cols_label(
+    Variable = md("**Variable**"),
+    Descripción = md("**Descripción**"),
+    Interpretación = md("**Interpretación**")
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Variable, Descripción))
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_style(
+    style = cell_text(size = "small"),
+    locations = cells_body(columns = c(Descripción, Interpretación))
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(8),
+    heading.title.font.size = 14,
+    heading.subtitle.font.size = 12,
+    heading.padding = px(4),
+    footnotes.padding = px(4)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuentes:** Elaboración propia con base en World Bank (2023), UN (2015), ECB (2018)")
+  ) %>%
+  tab_footnote(
+    footnote = "Los umbrales de interpretación son referenciales y pueden variar según el contexto regional y temporal",
+    locations = cells_title(groups = "subtitle")
+  )
+
+tabla_1
+```
+
+### Dimension de salud y bienestar
+
+La inclusión de variables sanitarias responde a que el desarrollo no es puramente económico sino que debe reflejarse en mejoras sustantivas en la calidad de vida, particularmente en indicadores de salud poblacional (Sachs et al., 2022; World Bank, 2023). La esperanza de vida es considerada por organismos internacionales como el indicador sintético más robusto de desarrollo humano, capturando tanto el acceso a servicios de salud como condiciones generales de vida (OECD, 2024). La mortalidad infantil es particularmente sensible a la calidad del sistema sanitario, y el gasto en salud refleja el esfuerzo institucional de un país por asegurar bienestar poblacional (World Bank, 2023)., en la tabla 2 las observamos.
+
+```{r Variables bienestar}
+
+variables_salud <- data.frame(
+  Variable = c(
+    "Esperanza de vida al nacer (años)",
+    "Mortalidad infantil (por cada 1,000 nacidos vivos)",
+    "Gasto en salud (% del PIB)"
+  ),
+  
+  Descripción = c(
+    "Número promedio de años que se espera que viva un recién nacido si los patrones de mortalidad prevalecientes al momento de su nacimiento permanecen constantes a lo largo de su vida. Es uno de los indicadores más robustos para medir el estado de salud poblacional, reflejando la calidad del sistema sanitario, acceso a servicios médicos, condiciones de vida, nutrición y factores ambientales.",
+    "Número de muertes de niños menores de un año por cada 1,000 nacimientos vivos. Es un indicador sensible de la calidad de atención sanitaria materno-infantil, condiciones sanitarias, acceso a agua potable y nutrición adecuada, funcionando como proxy de desarrollo social y capacidad institucional del sistema de salud.",
+    "Gasto corriente en salud expresado como porcentaje del PIB, incluyendo tanto gasto público como privado. Refleja la prioridad presupuestaria que un país asigna al sector salud y su capacidad de financiar infraestructura sanitaria, siendo un determinante clave de resultados de salud poblacional."
+  ),
+  
+  Interpretación = c(
+    ">75 años: salud poblacional avanzada\n70-75 años: nivel medio de desarrollo sanitario\n<70 años: desafíos significativos en salud pública",
+    "<10: excelentes condiciones sanitarias\n10-25: condiciones moderadas\n>25: necesidades críticas en salud infantil",
+    ">8%: alta prioridad en salud\n5-8%: compromiso moderado\n<5%: recursos sanitarios limitados"
+  )
+)
+
+tabla_2 <- variables_salud %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 2**"),
+    subtitle = "Indicadores de Salud Pública y su Interpretación"
+  ) %>%
+  cols_label(
+    Variable = md("**Variable**"),
+    Descripción = md("**Descripción**"),
+    Interpretación = md("**Interpretación**")
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Variable, Descripción))
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_style(
+    style = cell_text(size = "small"),
+    locations = cells_body(columns = c(Descripción, Interpretación))
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(8),
+    heading.title.font.size = 14,
+    heading.subtitle.font.size = 12,
+    heading.padding = px(4),
+    footnotes.padding = px(4)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuentes:** Elaboración propia con base en WHO (2020), OECD (2024), World Bank (2023)")
+  ) %>%
+  tab_footnote(
+    footnote = "Los umbrales de interpretación son referenciales y pueden variar según el contexto regional y nivel de desarrollo",
+    locations = cells_title(groups = "subtitle")
+  ) %>%
+  tab_style(
+    style = cell_text(whitespace = "normal"),
+    locations = cells_body()
+  )
+
+tabla_2
+
+```
+
+### Dimension tecnologica y de conectividad
+
+La inclusión de variables tecnológicas es justificada por la importancia creciente de la transformación digital en el desarrollo contemporáneo (UNCTAD, 2021; World Bank, 2023). La acceso a electricidad, internet y telefonía móvil no son lujos sino infraestructuras esenciales que habilitan participación en la economía del conocimiento, acceso a información, servicios financieros y oportunidades económicas (UNCTAD, 2021). La brecha digital ha emergido como una nueva dimensión de desigualdad internacional, donde países con penetración digital menor enfrentan desventajas competitivas significativas (World Bank, 2023)., en la tabla 3 las observamos.
+
+```{r Variables tecnologicas}
+variables_tecnologia <- data.frame(
+  Variable = c(
+    "Acceso a electricidad (% de la población)",
+    "Uso de internet (% de la población)",
+    "Suscripciones móviles (por cada 100 personas)"
+  ),
+  
+  Descripción = c(
+    "Porcentaje de la población con acceso a electricidad. Indicador fundamental de infraestructura energética básica, condición necesaria para actividad económica moderna, educación, salud y conectividad digital.",
+    "Porcentaje de individuos que han utilizado internet en los últimos 3 meses. Proxy de conectividad digital, acceso a información, y participación en la economía del conocimiento, siendo cada vez más relevante para productividad económica y reducción de brechas informativas.",
+    "Número de suscripciones a servicios de telefonía celular móvil por cada 100 habitantes. Refleja la penetración de tecnología móvil, que ha sido un vector fundamental de inclusión digital y acceso a servicios financieros en economías en desarrollo."
+  ),
+  
+  Interpretación = c(
+    ">95%: cobertura eléctrica universal\n80-95%: acceso extendido\n<80%: déficit significativo de infraestructura",
+    ">70%: sociedad digitalmente integrada\n30-70%: adopción media de internet\n<30%: brecha digital significativa",
+    ">100: alta penetración móvil\n80-100: cobertura adecuada\n<80: oportunidades de expansión del mercado"
+  )
+)
+
+tabla_3 <- variables_tecnologia %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 3**"),
+    subtitle = "Indicadores de Infraestructura y Tecnología"
+  ) %>%
+  cols_label(
+    Variable = md("**Variable**"),
+    Descripción = md("**Descripción**"),
+    Interpretación = md("**Interpretación**")
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Variable, Descripción))
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_style(
+    style = cell_text(size = "small"),
+    locations = cells_body(columns = c(Descripción, Interpretación))
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(8),
+    heading.title.font.size = 14,
+    heading.subtitle.font.size = 12,
+    heading.padding = px(4),
+    footnotes.padding = px(4)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuentes:** Elaboración propia con base en World Bank (2023)")
+  ) %>%
+  tab_footnote(
+    footnote = "Los valores superiores a 100 en suscripciones móviles indican múltiples suscripciones por persona",
+    locations = cells_body(
+      rows = 3,
+      columns = Interpretación
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "Los umbrales de interpretación son referenciales y pueden variar según el nivel de desarrollo regional",
+    locations = cells_title(groups = "subtitle")
+  )
+
+tabla_3
+
+```
+
+
+### Dimension ambiental y de recursos
+
+La inclusión de variables ambientales responde al creciente reconocimiento de que el desarrollo sostenible debe integrar consideraciones ecológicas (PNUD, 2023; World Bank, 2023). Aunque el crecimiento económico tradicional ha sido alcanzado frecuentemente mediante degradación ambiental, la sostenibilidad del desarrollo requiere preservación de capital natural, particularmente bosques (para captura de carbono y biodiversidad) y tierra cultivable (para seguridad alimentaria) (PNUD, 2023; World Bank, 2023), en la tabla 4 las vemos.
+
+```{r Variables ambiental}
+variables_ambientales <- data.frame(
+  Variable = c(
+    "Área boscosa (% del área terrestre)",
+    "Tierra cultivable (% del área terrestre)"
+  ),
+  
+  Descripción = c(
+    "Porcentaje del territorio nacional cubierto por bosques. Es un indicador de conservación ambiental, biodiversidad y sostenibilidad, siendo relevante tanto para mitigación del cambio climático como para servicios ecosistémicos.",
+    "Porcentaje de tierra apta para cultivos agrícolas. Refleja el potencial agrícola y la base de recursos naturales para producción de alimentos, siendo particularmente relevante para economías con sectores agrícolas significativos."
+  ),
+  
+  Interpretación = c(
+    ">30%: alta cobertura forestal\n15-30%: cobertura media\n<15%: deforestación significativa",
+    ">20%: alta disponibilidad agrícola\n10-20%: capacidad moderada\n<10%: limitaciones para agricultura"
+  )
+)
+
+tabla_4 <- variables_ambientales %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 4**"),
+    subtitle = "Indicadores Ambientales y de Uso de la Tierra"
+  ) %>%
+  cols_label(
+    Variable = md("**Variable**"),
+    Descripción = md("**Descripción**"),
+    Interpretación = md("**Interpretación**")
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Variable, Descripción))
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_style(
+    style = cell_text(size = "small"),
+    locations = cells_body(columns = c(Descripción, Interpretación))
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(8),
+    heading.title.font.size = 14,
+    heading.subtitle.font.size = 12,
+    heading.padding = px(4),
+    footnotes.padding = px(4)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuentes:** Elaboración propia con base en World Bank (2023)")
+  ) %>%
+  tab_footnote(
+    footnote = "Los servicios ecosistémicos incluyen regulación hídrica, conservación de biodiversidad y secuestro de carbono",
+    locations = cells_body(
+      rows = 1,
+      columns = Descripción
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "La tierra cultivable incluye tierras arables, cultivos permanentes y pastos permanentes",
+    locations = cells_body(
+      rows = 2,
+      columns = Descripción
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "Los umbrales de interpretación pueden variar según las características geográficas y ecológicas de cada región",
+    locations = cells_title(groups = "subtitle")
+  )
+
+tabla_4
+
+
+```
+
+### Dimension demografica
+
+La inclusión de variables demográficas es justificada porque la dinámica poblacional condiciona fundamentalmente los desafíos y oportunidades de desarrollo: presión sobre recursos, mercado laboral, demanda por servicios públicos, y sostenibilidad fiscal (CEPAL, 2023; World Bank, 2023). Países con crecimiento poblacional acelerado enfrentan distintos desafíos que aquellos con envejecimiento poblacional, impactando tasas de ahorro, inversión, y provisión de servicios (CEPAL, 2023), vemos las variables en la tabla 5.
+
+```{r Variables demograficas}
+variables_demograficas <- data.frame(
+  Variable = c(
+    "Población total",
+    "Crecimiento poblacional (% anual)"
+  ),
+  
+  Descripción = c(
+    "Número total de habitantes de un país a mitad de año. El tamaño poblacional determina tanto el mercado interno como la escala de demanda por servicios públicos y recursos naturales.",
+    "Tasa de variación porcentual anual de la población. Refleja la presión demográfica y sus implicaciones para sostenibilidad, mercados laborales, y provisión de servicios públicos."
+  ),
+  
+  Interpretación = c(
+    ">100M: país muy poblado\n10-100M: población media\n<10M: país poco poblado",
+    ">2%: crecimiento rápido\n0.5-2%: crecimiento moderado\n<0.5%: crecimiento lento"
+  )
+)
+
+tabla_5 <- variables_demograficas %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 5**"),
+    subtitle = "Indicadores Demográficos Básicos"
+  ) %>%
+  cols_label(
+    Variable = md("**Variable**"),
+    Descripción = md("**Descripción**"),
+    Interpretación = md("**Interpretación**")
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Variable, Descripción))
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_style(
+    style = cell_text(size = "small"),
+    locations = cells_body(columns = c(Descripción, Interpretación))
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(8),
+    heading.title.font.size = 14,
+    heading.subtitle.font.size = 12,
+    heading.padding = px(4),
+    footnotes.padding = px(4)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuentes:** Elaboración propia con base en World Bank (2023)")
+  ) %>%
+  tab_footnote(
+    footnote = "La población se refiere a residentes totales independientemente de su estatus legal o ciudadanía",
+    locations = cells_body(
+      rows = 1,
+      columns = Descripción
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "El crecimiento poblacional incluye nacimientos, muertes y migración neta",
+    locations = cells_body(
+      rows = 2,
+      columns = Descripción
+    )
+  ) %>%
+  tab_footnote(
+    footnote = "Los umbrales de interpretación son referenciales y pueden variar según el contexto regional y nivel de desarrollo",
+    locations = cells_title(groups = "subtitle")
+  )
+
+tabla_5
+```
+
 
 ```{r Base de datos, warning=FALSE,message=FALSE}
 Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
@@ -352,7 +903,6 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
     Industria = `Industry (including construction), value added (% of GDP) [NV.IND.TOTL.ZS]`,
     Remesas = `Personal remittances, received (% of GDP) [BX.TRF.PWKR.DT.GD.ZS]`
   )%>%
-  drop_na() %>%
   filter(!Pais %in% c("World", "High income", "Low income", "European Union",
                       "Latin America & Caribbean", "Middle income", "OECD members",
                       "East Asia & Pacific", "Sub-Saharan Africa", "South Asia",
@@ -366,37 +916,38 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
                       "Caribbean small states", "Other small states", 
                       "IDA & IBRD total", "IDA only", "IBRD only",
                       "Pre-demographic dividend", "Post-demographic dividend", 
-                      "Early-demographic dividend", "Late-demographic dividend"))
+                      "Early-demographic dividend", "Late-demographic dividend")) %>% 
+  mutate(across(3:19, as.numeric)) %>% drop_na()
 
-# Crear tabla interactiva profesional
-tabla_interactiva <- datatable(
+
+tabla_elegante <- datatable(
   Base_2022,
   extensions = c('Buttons', 'Scroller', 'Responsive', 'FixedHeader'),
   options = list(
-    # Configuración de botones de exportación
-    dom = 'Bfrtip',
+    dom = '<"top"lBf>rt<"bottom"ip><"clear">',
     buttons = list(
-      list(extend = 'copy', text = 'Copiar'),
-      list(extend = 'csv', text = 'CSV'),
-      list(extend = 'excel', text = 'Excel'),
-      list(extend = 'pdf', text = 'PDF'),
-      list(extend = 'print', text = 'Imprimir')
+      list(extend = 'copy', text = 'Copiar', className = 'btn-outline-primary'),
+      list(extend = 'csv', text = 'CSV', className = 'btn-outline-secondary'),
+      list(extend = 'excel', text = 'Excel', className = 'btn-outline-success'),
+      list(extend = 'pdf', text = 'PDF', className = 'btn-outline-danger'),
+      list(extend = 'print', text = 'Imprimir', className = 'btn-outline-warning')
     ),
     
-    # Configuración de visualización
-    pageLength = 10,
-    lengthMenu = list(c(5, 10, 15, 20, -1), 
-                     c('5', '10', '15', '20', 'Todos')),
+    # Configuración de visualización elegante
+    pageLength = 12,
+    lengthMenu = list(c(8, 12, 20, 50, -1), 
+                     c('8', '12', '20', '50', 'Todos')),
     scrollX = TRUE,
-    scrollY = "600px",
+    scrollY = "550px",
     scroller = TRUE,
+    deferRender = TRUE,
     
-    # Configuración de idioma en español
+    # Configuración de idioma
     language = list(
       url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
       search = "Buscar:",
       lengthMenu = "Mostrar _MENU_ registros",
-      info = "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      info = "_START_ - _END_ de _TOTAL_",
       paginate = list(
         first = "Primero",
         last = "Último",
@@ -405,54 +956,57 @@ tabla_interactiva <- datatable(
       )
     ),
     
-    # Configuración adicional
-    autoWidth = FALSE,
+    # Configuración profesional
+    autoWidth = TRUE,
     fixedHeader = TRUE,
     searchHighlight = TRUE
   ),
   rownames = FALSE,
   filter = 'top',
-  class = c('cell-border', 'stripe', 'hover', 'row-border'),
-  caption = 'Tabla de Indicadores Económicos y Sociales 2022'
+  class = c('display', 'compact', 'hover'),
+  caption = 'Indicadores Económicos y Sociales Globales 2022'
 ) %>%
-  # Formato numérico
-  formatRound(columns = c('PIB_per', 'Poblacion'), digits = 0) %>%
-  formatRound(columns = c('Esperanza vida', 'Acceso electricidad', 'Area boscosa',
-                         'Suscripciones movil', 'Crecimiento PIB', 'Mortalidad infantil',
-                         'Inversion extranjera', 'Gasto salud', 'Uso internet',
-                         'Importaciones', 'Exportaciones', 'Tierra cultivable',
-                         'Crecimiento poblacion', 'Industria', 'Remesas'), 
-             digits = 2) %>%
   
-  # Formato condicional para mejor visualización
-  formatStyle(
-    columns = names(Base_2022)[3:19],
-    backgroundColor = styleEqual(
-      NA, 
-      'lightgray'  # Color para valores faltantes (aunque usaste drop_na())
-    )
+  # Formato numérico limpio y profesional
+  formatCurrency(
+    columns = 'PIB_per', 
+    currency = "$", 
+    digits = 0,
+    before = TRUE
+  ) %>%
+  formatRound(
+    columns = 'Poblacion', 
+    digits = 0,
+    mark = ","
+  ) %>%
+  formatRound(
+    columns = c('Esperanza vida', 'Acceso electricidad', 'Area boscosa',
+               'Suscripciones movil', 'Crecimiento PIB', 'Inversion extranjera', 
+               'Gasto salud', 'Uso internet', 'Importaciones', 'Exportaciones', 
+               'Tierra cultivable', 'Crecimiento poblacion', 'Industria', 'Remesas'), 
+    digits = 2
+  ) %>%
+  formatRound(
+    columns = 'Mortalidad infantil',
+    digits = 1
   ) %>%
   
-  # Barras de progreso para columnas clave (CORREGIDO)
+  # Estilo minimalista para mejor legibilidad
   formatStyle(
-    'PIB_per',
-    background = styleColorBar(range(Base_2022$PIB_per, na.rm = TRUE), 'lightblue'),
-    backgroundSize = '98% 88%',
-    backgroundRepeat = 'no-repeat',
-    backgroundPosition = 'center'
+    columns = names(Base_2022),
+    fontSize = '12px',
+    fontFamily = 'Arial, sans-serif'
   ) %>%
   
-  # Colores para esperanza de vida
+  # Encabezados limpios
   formatStyle(
-    'Esperanza vida',
-    backgroundColor = styleInterval(
-      c(70, 80), 
-      c('#FF6B6B', '#FFE66D', '#90EE90')
-    )
+    columns = names(Base_2022),
+    target = 'cell',
+    fontWeight = 'bold'
   )
 
-# Mostrar tabla
-tabla_interactiva
+# Mostrar la tabla elegante
+tabla_elegante
 
 ```
 
