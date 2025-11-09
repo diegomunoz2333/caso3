@@ -12,7 +12,7 @@ library(kableExtra)
 library(dplyr)
 library(ggrepel)
 library(ggforce)
-
+library(plotly)
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
@@ -59,7 +59,6 @@ Base_2022 <- Base_2022 %>%
                       "Pre-demographic dividend", "Post-demographic dividend", 
                       "Early-demographic dividend", "Late-demographic dividend")) %>% 
   filter(Pais != "Luxembourg")
-
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
@@ -123,11 +122,9 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
 
-# Data frame para el círculo
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
 
-# crear puntos para el círculo unitario (usando 100 puntos)
 theta <- seq(0, 2*pi, length.out = 200)
 circle_df <- data.frame(
   x = cos(theta),
@@ -252,6 +249,8 @@ clusters <- cutree(arbol, k = k_optimo)
 # Nueva base con clusters
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 view(NuevaBase)
+write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
+
 # Promedios por cluster
 carac_cont <- NuevaBase %>%
   group_by(Cluster) %>%
@@ -309,6 +308,7 @@ fviz_silhouette(res_hc,
 # 5. Tamaño de cada clúster
 tamaños <- table(res_hc$cluster)
 print(tamaños)
+
 # Opcional: mostrar en formato tabla con kable
 tamaños <- as.data.frame(table(res_hc$cluster))
 colnames(tamaños) <- c("Cluster", "N")
@@ -336,30 +336,69 @@ kable(carac_cluster,
                 full_width = FALSE, position = "center") %>%
   row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
 
+
+# Crear tabla interpretativa de los clusters
+clusters_tabla <- tribble(
+  ~`Cluster`, ~`Nombre propuesto`, ~`Características principales`, ~`Justificación del nombre`, ~`Ejemplos de Países`,
+  
+  "Cluster 1", "Países Desarrollados / Economías Avanzadas",
+  "Alto PIB per cápita, larga esperanza de vida, baja mortalidad infantil, acceso casi total a electricidad e internet, gasto alto en salud.",
+  "Agrupa países con indicadores sociales y económicos altos. Corresponde a economías de alto ingreso y alto desarrollo humano según ONU y Banco Mundial.",
+  "Alemania, Estados Unidos, Japón, Australia",
+  
+  "Cluster 2", "Países en Desarrollo / Economías Emergentes",
+  "PIB medio, crecimiento económico sostenido, buena industrialización, pero con desigualdades sociales y de acceso a servicios.",
+  "Incluye países en transición hacia el desarrollo; presentan expansión industrial y tecnológica, pero aún brechas de ingreso.",
+  "México, Turquía, Vietnam, Marruecos",
+  
+  "Cluster 3", "Países Subdesarrollados / Economías de Bajo Ingreso",
+  "Bajo PIB, esperanza de vida reducida, alta mortalidad infantil, acceso limitado a electricidad, educación y salud.",
+  "Refleja países con grandes desafíos estructurales y económicos. Clasificados como de bajo desarrollo humano o renta baja.",
+  "Angola, Uganda, Haití, Zimbabue"
+)
+
+clusters_tabla %>%
+  knitr::kable(
+    caption = "Resumen interpretativo de los Clusters identificados mediante ACP y Análisis Jerárquico",
+    col.names = c("Cluster", "Nombre propuesto", "Características principales", "Justificación del nombre", "Ejemplos de Países"),
+    align = c("c", "l", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "6em") %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "22em") %>%
+  column_spec(4, width = "22em") %>%
+  column_spec(5, width = "16em")
+
+#### base de datos con cluster con nombre
+NuevaBase <- read_csv("NuevaBase_clusters.csv")
+nombres_clusters <- c(
+  "1" = "Desarrollado",
+  "2" = "Emergente",
+  "3" = "Subdesarrollado"
+)
+NuevaBase <- NuevaBase %>%
+  mutate(Cluster = recode(as.character(Cluster), !!!nombres_clusters))
+view(NuevaBase)
+
+
+### nombreamiento de las dimensiones##############################
+################################################################################
 res.pca <- prcomp(NuevaBase, scale = TRUE)
 
 res.pca
 eig.val <- get_eigenvalue(res.pca)
 eig.val
-################################################################################
 
 fviz_eig(res.pca)
-
-
-
-fviz_pca_ind(res.pca,
-             col.ind = "cos2", # Color by the quality of representation
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE
-)
-
-
-fviz_pca_var(res.pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE,
-             axes = c(1,2)# Avoid text overlapping
-)
 
 
 # Eigenvalues
@@ -385,14 +424,60 @@ res.ind$cos2           # Quality of representation
 View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
 res.ind$contrib[,1:2]
 
-# 2) Gráfico s.class aplicado a la base (ACP) y mostrar descripción de grupos
-Grupo <- as.factor(NuevaBase$Cluster)  # 🔹 conversión a factor
+##########tabla nuevas dimensiones 
+# Crear la tabla manualmente con las dimensiones y variables
+dimensiones_tabla <- tribble(
+  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
+  "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
+  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
+  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  
+  "Dimensión 2", "Industrialización y crecimiento demográfico, desarrollo industrial, dependencia económica de remesas", 
+  "Industria, Crecimiento.poblacion, Remesas", 
+  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  
+  "Dimensión 3", "Apertura comercial, actividad comercial internacional, comercio exterior", 
+  "Importaciones, Exportaciones, Inversión.Extranjera", 
+  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  
+  "Dimensión 4", "Presión demográfica y uso del suelo", 
+  "Área.boscosa, Tierra.cultivable, Población", 
+  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+  
+  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
+  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
+  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
+  
+  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
+  "Gasto.salud, PIB_per, Inversión.Extranjera", 
+  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
+  
+  "Dimensión 7", "Crecimiento económico intensivo", 
+  "Área.boscosa, Población, Crecimiento.PIB", 
+  "Malta (Poca, Poca, Media); India (Poca, Mucha, Mucha); China (Poca, Mucha, Media)",
+  
+  "Dimensión 8", "Conectividad y dinamismo económico", 
+  "Suscripciones.móvil, Inversión.extranjera, Crecimiento.PIB", 
+  "Malta (Mucha, Mucha, Media); Ireland (Mucha, Poca, Mucha); Sri Lanka (Mucha, Poca, Poca)"
+)
 
-# Graficar clasificación en el espacio factorial (usa resultado_ACP$dudi$li)
-s.class((resultado_ACP$dudi)$li,
-        fac = Grupo,
-        sub = "Componentes 1 y 2",
-        possub = "bottomright",
-        xax = 1, yax = 3,
-        col = c(1,2,3,4))
-
+# Crear la tabla con kableExtra
+dimensiones_tabla %>%
+  knitr::kable(
+    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
+    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
+    align = c("c", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "8em") %>%
+  column_spec(2, width = "22em") %>%
+  column_spec(3, width = "16em") %>%
+  column_spec(4, width = "18em")
