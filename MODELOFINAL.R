@@ -219,6 +219,98 @@ varianza_tabla %>%
   column_spec(1, bold = TRUE, width = "7em") %>%
   column_spec(2:3, width = "10em")
 
+### nombreamiento de las dimensiones##############################
+################################################################################
+res.pca <- prcomp(NuevaBase, scale = TRUE)
+
+res.pca
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+
+fviz_eig(res.pca)
+
+
+# Eigenvalues
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+
+
+# Resultados para Variables
+res.var <- get_pca_var(res.pca)
+res.var$coord          # Coordinates
+res.var$contrib        # Contributions to the PCs
+res.var$cos2           # Quality of representation 
+
+View(res.var$contrib[,1:8]) # Miro los dos primeros factores
+colSums( res.var$contrib[,1:2] )
+
+
+# Results for individuals
+res.ind <- get_pca_ind(res.pca)
+res.ind$coord          # Coordinates
+res.ind$contrib        # Contributions to the PCs
+res.ind$cos2           # Quality of representation 
+View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
+res.ind$contrib[,1:2]
+
+##########tabla nuevas dimensiones 
+# Crear la tabla manualmente con las dimensiones y variables
+dimensiones_tabla <- tribble(
+  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
+  "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
+  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
+  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  
+  "Dimensión 2", "Industrialización y crecimiento demográfico, desarrollo industrial, dependencia económica de remesas", 
+  "Industria, Crecimiento.poblacion, Remesas", 
+  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  
+  "Dimensión 3", "Apertura comercial, actividad comercial internacional, comercio exterior", 
+  "Importaciones, Exportaciones, Inversión.Extranjera", 
+  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  
+  "Dimensión 4", "Presión demográfica y uso del suelo", 
+  "Área.boscosa, Tierra.cultivable, Población", 
+  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+  
+  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
+  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
+  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
+  
+  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
+  "Gasto.salud, PIB_per, Inversión.Extranjera", 
+  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
+  
+  "Dimensión 7", "Crecimiento económico intensivo", 
+  "Área.boscosa, Población, Crecimiento.PIB", 
+  "Malta (Poca, Poca, Media); India (Poca, Mucha, Mucha); China (Poca, Mucha, Media)",
+  
+  "Dimensión 8", "Conectividad y dinamismo económico", 
+  "Suscripciones.móvil, Inversión.extranjera, Crecimiento.PIB", 
+  "Malta (Mucha, Mucha, Media); Ireland (Mucha, Poca, Mucha); Sri Lanka (Mucha, Poca, Poca)"
+)
+
+# Crear la tabla con kableExtra
+dimensiones_tabla %>%
+  knitr::kable(
+    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
+    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
+    align = c("c", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "8em") %>%
+  column_spec(2, width = "22em") %>%
+  column_spec(3, width = "16em") %>%
+  column_spec(4, width = "18em")
+
 #  CLUSTERING SOBRE LOS FACTORES########################################3
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
@@ -390,94 +482,52 @@ NuevaBase <- NuevaBase %>%
 view(NuevaBase)
 
 
-### nombreamiento de las dimensiones##############################
-################################################################################
-res.pca <- prcomp(NuevaBase, scale = TRUE)
-
-res.pca
-eig.val <- get_eigenvalue(res.pca)
-eig.val
-
-fviz_eig(res.pca)
-
-
-# Eigenvalues
-eig.val <- get_eigenvalue(res.pca)
-eig.val
-
-
-# Resultados para Variables
-res.var <- get_pca_var(res.pca)
-res.var$coord          # Coordinates
-res.var$contrib        # Contributions to the PCs
-res.var$cos2           # Quality of representation 
-
-View(res.var$contrib[,1:8]) # Miro los dos primeros factores
-colSums( res.var$contrib[,1:2] )
-
-
-# Results for individuals
-res.ind <- get_pca_ind(res.pca)
-res.ind$coord          # Coordinates
-res.ind$contrib        # Contributions to the PCs
-res.ind$cos2           # Quality of representation 
-View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
-res.ind$contrib[,1:2]
-
-##########tabla nuevas dimensiones 
-# Crear la tabla manualmente con las dimensiones y variables
-dimensiones_tabla <- tribble(
-  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
-  "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
-  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
-  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
-  
-  "Dimensión 2", "Industrialización y crecimiento demográfico, desarrollo industrial, dependencia económica de remesas", 
-  "Industria, Crecimiento.poblacion, Remesas", 
-  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
-  
-  "Dimensión 3", "Apertura comercial, actividad comercial internacional, comercio exterior", 
-  "Importaciones, Exportaciones, Inversión.Extranjera", 
-  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
-  
-  "Dimensión 4", "Presión demográfica y uso del suelo", 
-  "Área.boscosa, Tierra.cultivable, Población", 
-  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
-  
-  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
-  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
-  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
-  
-  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
-  "Gasto.salud, PIB_per, Inversión.Extranjera", 
-  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
-  
-  "Dimensión 7", "Crecimiento económico intensivo", 
-  "Área.boscosa, Población, Crecimiento.PIB", 
-  "Malta (Poca, Poca, Media); India (Poca, Mucha, Mucha); China (Poca, Mucha, Media)",
-  
-  "Dimensión 8", "Conectividad y dinamismo económico", 
-  "Suscripciones.móvil, Inversión.extranjera, Crecimiento.PIB", 
-  "Malta (Mucha, Mucha, Media); Ireland (Mucha, Poca, Mucha); Sri Lanka (Mucha, Poca, Poca)"
+###################
+#################
+################
+#base cluster x dimension con nombre
+NuevaBase <- readr::read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
+possible_names <- c("Pais", "pais", "PAIS", "Country", "country", "COUNTRY", "Row.names", "Rowname", "X1", "...1")
+country_col <- intersect(possible_names, names(NuevaBase)) %>% first()
+if (is.null(country_col)) {
+  if (!is.numeric(NuevaBase[[1]])) {
+    country_col <- names(NuevaBase)[1]
+  } else stop("No se pudo detectar la columna 'Pais'.")
+}
+if (country_col != "Pais") NuevaBase <- NuevaBase %>% rename(Pais = all_of(country_col))
+if (!"Cluster" %in% names(NuevaBase)) stop("La tabla no tiene columna 'Cluster'.")
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+NuevaBase <- NuevaBase %>%
+  mutate(Cluster = as.character(Cluster),
+         Cluster_nombre = recode(Cluster, !!!nombres_clusters, .default = Cluster)) %>%
+  relocate(Cluster_nombre, .after = Cluster)
+vars_num <- NuevaBase %>%
+  select(-Pais, -Cluster, -Cluster_nombre) %>%
+  select(where(is.numeric)) %>%
+  names()
+if (length(vars_num) < 2) stop("No hay suficientes variables numéricas para hacer PCA (mínimo 2).")
+mat <- NuevaBase %>%
+  select(Pais, all_of(vars_num)) %>%
+  column_to_rownames("Pais")
+n_comp_requested <- 8
+n_comp_available <- min(n_comp_requested, ncol(mat))
+res.pca <- prcomp(mat, center = TRUE, scale. = TRUE, rank. = n_comp_available)
+scores <- as.data.frame(res.pca$x[, 1:n_comp_available, drop = FALSE]) %>%
+  rownames_to_column("Pais")
+nombre_dimensiones <- c(
+  "DesarrolloHumano",
+  "Industrializacion",
+  "ComercioApertura",
+  "PresionDemografica",
+  "Agricultura_Remesas",
+  "Salud_Inversion",
+  "CrecimientoIntensivo",
+  "Conectividad_Dinamismo"
 )
+nombre_dimensiones <- nombre_dimensiones[1:n_comp_available]
+colnames(scores)[-1] <- nombre_dimensiones
+Base_Final <- NuevaBase %>%
+  select(Pais, Cluster_nombre) %>%
+  left_join(scores, by = "Pais")
+View(Base_Final)
 
-# Crear la tabla con kableExtra
-dimensiones_tabla %>%
-  knitr::kable(
-    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
-    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
-    align = c("c", "l", "l", "l"),
-    format = "html",
-    escape = FALSE
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE,
-    position = "center",
-    font_size = 13
-  ) %>%
-  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "8em") %>%
-  column_spec(2, width = "22em") %>%
-  column_spec(3, width = "16em") %>%
-  column_spec(4, width = "18em")
