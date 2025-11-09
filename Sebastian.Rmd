@@ -880,6 +880,8 @@ tabla_5
 
 ## Base de datos del modelo
 
+A continuacion, se muestra la base de datos que se usara para el modelo de aprendizaje no supervisado.
+
 ```{r Base de datos, warning=FALSE,message=FALSE}
 Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE) %>%
@@ -1005,13 +1007,15 @@ La implementación del análisis se estructura en cuatro etapas secuenciales, ca
 
 ### Preparación y Estandarización de Datos
 
-Previo a cualquier análisis multivariado, es fundamental estandarizar las variables originales para garantizar que todas contribuyan en igualdad de condiciones al cálculo de componentes principales (KeepCoding, 2025). Las 19 variables fueron normalizadas mediante una transformación de z-score estándar:
+Previo a cualquier análisis multivariado, es fundamental estandarizar las variables originales para garantizar que todas contribuyan en igualdad de condiciones al cálculo de componentes principales (KeepCoding, 2025). La estandarización se realizó mediante la transformación z-score: $Z_i = \frac{X_i - \mu_i}{\sigma_i}$ donde $Z_i$ es la variable estandarizada, $X_i$ la variable original, $\mu_i$ la media y $\sigma_i$ la desviación estándar.
+
+Esta estandarización es crítica porque el análisis de componentes principales se fundamenta en la varianza de los datos: sin estandarizar, variables con escalas numéricas mayores (como población total en millones) dominarían el cálculo de componentes, distorsionando la interpretación y otorgando influencia desproporcionada a magnitudes en lugar de patrones (LinkedIn, 2023; Ciencia de Datos, 2016). Adicionalmente, la estandarización garantiza que el análisis capture relaciones entre variables y no simplemente diferencias en escala.
 
 ### Análisis de Componentes Principales (ACP)
 
 Con las 17 variables estandarizadas, se aplica el Análisis de Componentes Principales para transformar el conjunto de variables originales, potencialmente correlacionadas, en un conjunto menor de componentes principales ortogonales (Jolliffe, 2002; OpenWebinars, 2025). El ACP identifica las direcciones en el espacio de datos donde la varianza es máxima, creando nuevas dimensiones (componentes) que son combinaciones lineales ponderadas de las variables originales (Jolliffe, 2002; KeepCoding, 2025).
 
-Matemáticamente, el ACP comienza construyendo la matriz de covarianza C de las variables estandarizadas, cuyas entradas representan cómo varían conjuntamente pares de variables (KeepCoding, 2025). Los vectores propios de esta matriz de covarianza definen las direcciones principales (componentes), ordenados según sus correspondientes valores propios, que representan la cantidad de varianza explicada en cada dirección (Jolliffe, 2002). El primer componente principal captura la máxima varianza; el segundo, la máxima varianza restante sujeto a ortogonalidad respecto al primero; y así sucesivamente (Jolliffe, 2002).
+Matemáticamente, el ACP comienza construyendo la matriz de covarianza $C$ de las variables estandarizadas, cuyas entradas representan cómo varían conjuntamente pares de variables (KeepCoding, 2025). Los vectores propios de esta matriz de covarianza definen las direcciones principales (componentes), ordenados según sus correspondientes valores propios, que representan la cantidad de varianza explicada en cada dirección (Jolliffe, 2002). El primer componente principal captura la máxima varianza; el segundo, la máxima varianza restante sujeto a ortogonalidad respecto al primero; y así sucesivamente (Jolliffe, 2002).
 
 El objetivo es identificar cuántos componentes son necesarios para capturar la mayor parte de la varianza total de los datos—típicamente entre 70-90% según el contexto (OpenWebinars, 2025). Esto permite reducir significativamente la dimensionalidad: en lugar de trabajar con 17 variables potencialmente redundantes, se trabaja con un número reducido de componentes sintéticos que capturan la esencia de la heterogeneidad internacional (Jolliffe, 2002).
 
