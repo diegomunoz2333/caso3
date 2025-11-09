@@ -531,3 +531,38 @@ Base_Final <- NuevaBase %>%
   left_join(scores, by = "Pais")
 View(Base_Final)
 
+
+#########predicion
+
+nuevo_pais <- data.frame(
+  PIB_per = 18000,
+  Poblacion = 12000000,
+  Esperanza.vida = 76,
+  Acceso.electricidad = 98,
+  Area.boscosa = 35,
+  Suscripciones.movil = 120,
+  Crecimiento.PIB = 3.2,
+  Mortalidad.infantil = 15,
+  Inversion.extranjera = 4,
+  Gasto.salud = 7,
+  Uso.internet = 85,
+  Importaciones = 25,
+  Exportaciones = 22,
+  Tierra.cultivable = 12,
+  Crecimiento.poblacion = 1.1,
+  Industria = 28,
+  Remesas = 2
+)
+
+nuevo_pais_pca <- predict(res.pca, newdata = nuevo_pais)
+
+centroides <- aggregate(res.pca$x[, 1:8], 
+                        by = list(Cluster = res_hc$cluster), 
+                        FUN = mean)
+
+distancias <- apply(centroides[, -1], 1, function(c) dist(rbind(c, nuevo_pais_pca[1, 1:8])))
+cluster_predicho <- centroides$Cluster[which.min(distancias)]
+
+cat("El nuevo país se clasifica en el Cluster:", cluster_predicho, "\n")
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+cat("Nombre del cluster:", nombres_clusters[as.character(cluster_predicho)], "\n")
