@@ -1,0 +1,463 @@
+---
+title: "Pruebas de texto"
+author: "Joan Aguirre"
+date: "`r format(Sys.Date(), '%d de %B de %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: textmate
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    fig_width: 10
+    fig_height: 6
+    css: styles.css
+    code_folding: hide
+---
+<style type="text/css">
+/* Estilos personalizados con texto justificado como Word */
+body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #2c3e50;
+    background-color: #fafafa;
+    text-align: justify;
+    hyphens: auto;
+}
+
+.main-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 0 25px rgba(0,0,0,0.08);
+    border-radius: 5px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.header-section {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 50px 0;
+    margin: -20px -20px 30px -20px;
+    text-align: center;
+    border-bottom: 5px solid #bdc3c7;
+}
+
+.title {
+    font-size: 2.8em;
+    font-weight: 400;
+    margin-bottom: 15px;
+    color: white;
+    font-family: 'Times New Roman', Times, serif;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 1.3em;
+    font-weight: 300;
+    opacity: 0.95;
+    font-style: italic;
+    text-align: center;
+}
+
+.section {
+    padding: 30px 40px;
+    border-bottom: 1px solid #ecf0f1;
+    text-align: justify;
+}
+
+.section:last-child {
+    border-bottom: none;
+}
+
+h1, h2, h3, h4 {
+    color: #2c3e50;
+    font-weight: 400;
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif;
+    margin-bottom: 25px;
+}
+
+h1 {
+    font-size: 2.2em;
+    border-bottom: 2px solid #bdc3c7;
+    padding-bottom: 15px;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.8em;
+    color: #34495e;
+    margin-top: 35px;
+    text-align: center;
+}
+
+h3 {
+    font-size: 1.4em;
+    color: #7f8c8d;
+    margin-top: 30px;
+    text-align: center;
+}
+
+p {
+    text-align: justify;
+    margin: 15px 0;
+    line-height: 1.7;
+    text-justify: inter-word;
+}
+
+.content-block {
+    text-align: justify;
+    margin: 20px 0;
+    line-height: 1.7;
+}
+
+.table-container {
+    margin: 20px auto;
+    text-align: center;
+}
+
+.table {
+    border-collapse: collapse;
+    margin: 25px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    font-size: 0.95em;
+}
+
+.table th {
+    background-color: #34495e;
+    color: white;
+    padding: 14px 18px;
+    text-align: center;
+    font-weight: 500;
+    border: 1px solid #2c3e50;
+}
+
+.table td {
+    padding: 12px 16px;
+    border: 1px solid #ecf0f1;
+    text-align: center;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.table tr:hover {
+    background-color: #e8f4f8;
+}
+
+pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 20px;
+    font-size: 0.9em;
+    text-align: left;
+    margin: 25px auto;
+    max-width: 90%;
+}
+
+.code {
+    background-color: #f8f9fa;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    border: 1px solid #e9ecef;
+}
+
+.blockquote {
+    border-left: 4px solid #bdc3c7;
+    padding: 20px 30px;
+    margin: 30px 0;
+    font-style: italic;
+    color: #7f8c8d;
+    background-color: #f8f9fa;
+    text-align: justify;
+    border-radius: 0 5px 5px 0;
+    border-left: 5px solid #3498db;
+}
+
+.footer {
+    text-align: center;
+    padding: 40px;
+    background-color: #2c3e50;
+    color: white;
+    margin-top: 40px;
+    margin: 30px -20px -20px -20px;
+    font-size: 0.95em;
+}
+
+.footer p {
+    text-align: center;
+    margin: 8px 0;
+}
+
+/* Estilos para gráficos y figuras */
+.figure {
+    text-align: center;
+    margin: 35px auto;
+    display: block;
+}
+
+.caption {
+    font-style: italic;
+    color: #7f8c8d;
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.95em;
+}
+
+/* Listas justificadas */
+ul, ol {
+    text-align: justify;
+    margin: 20px 0;
+    padding-left: 40px;
+}
+
+li {
+    margin: 12px 0;
+    line-height: 1.7;
+    text-align: justify;
+}
+
+li p {
+    text-align: justify;
+}
+
+/* Mejoras para la tabla de contenidos */
+#TOC {
+    text-align: left;
+    margin: 20px auto;
+    display: inline-block;
+}
+
+.toc-content {
+    text-align: justify;
+}
+
+.highlight-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 5px solid #3498db;
+    padding: 25px;
+    margin: 25px 0;
+    text-align: justify;
+    border-radius: 5px;
+}
+
+/* Estilo para párrafos con sangría como en Word */
+.indented {
+    text-indent: 2em;
+    text-align: justify;
+}
+
+/* Justificación mejorada */
+.justified-text {
+    text-align: justify;
+    text-justify: inter-word;
+    line-height: 1.7;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "90%"
+)
+
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(DT)
+library(tidyverse)
+```
+
+# Introducción
+
+En el corazón de la economía global existe una paradoja fundamental: mientras que algunos indicadores sugieren una relación lineal y predecible entre el desarrollo económico y el bienestar social, la realidad es mucho más compleja y matizada. Tomemos un ejemplo: Costa Rica tiene una esperanza de vida comparable a la de países europeos desarrollados, pero con un PIB per cápita significativamente menor; Qatar, por su parte, lidera en PIB per cápita pero no encabeza necesariamente en todos los indicadores de bienestar social (Shkolnikov et al., 2019). Estas "anomalías" no son excepciones sino revelaciones de una verdad fundamental: el desarrollo no es unidimensional.
+
+El problema central que motiva este trabajo es fundamental: ¿Cuáles son realmente los "tipos" de desarrollo que caracterizan la economía mundial cuando se analiza simultáneamente un conjunto amplio de 19 indicadores económicos, sociales, tecnológicos y ambientales? No se trata de responder cuál país es más "rico", sino algo más profundo: descubrir si existen estructuras ocultas en los datos que agrupen países con perfiles similares más allá de la geografía o las clasificaciones convencionales. Específicamente, la pregunta es: ¿Colombia y Uruguay podrían compartir más similitudes con algunos países asiáticos que con sus propios vecinos latinoamericanos? ¿Existe realmente un "grupo de países con baja renta pero alto acceso tecnológico"? ¿Las características ambientales y demográficas se alinean con la riqueza económica o presentan patrones independientes?
+
+Históricamente, el desarrollo internacional se ha medido mediante indicadores aislados. El PIB per cápita domina los rankings; la esperanza de vida se analiza independientemente; la conectividad digital se observa separadamente. Este enfoque fragmentado es problemático porque el desarrollo no es unidimensional: un país puede ser económicamente exitoso pero frágil en salud pública, o tener excelente conectividad digital pero vulnerabilidad ambiental crítica (Jolliffe, 2002; World Bank, 2023). Los datos del año 2022 capturan un momento único en la historia económica global: post-pandemia de COVID-19, con efectos heterogéneos según país. Algunos recuperaron rápidamente su dinamismo; otros enfrentaron cicatrices estructurales persistentes en empleo, salud y finanzas públicas (World Bank, 2023).
+
+El Banco Mundial proporciona 19 indicadores reconocidos internacionalmente que miden dimensiones distintas: factores económicos (PIB per cápita, crecimiento del PIB, inversión extranjera, remesas, industria, comercio), indicadores de salud y bienestar (esperanza de vida, mortalidad infantil, gasto en salud), variables de conectividad tecnológica (acceso a electricidad, uso de internet, suscripciones móviles) y aspectos ambientales y demográficos (área boscosa, tierra cultivable, crecimiento poblacional) (World Bank, 2023). Analizar estas 19 variables de forma independiente genera ruido; analizarlas de manera integrada puede revelar patrones coherentes que informan políticas públicas, estrategias de cooperación internacional y decisiones de inversión.
+
+El desafío es modelar una pregunta sin respuesta predefinida: ¿Qué agrupamientos naturales de países emergen cuando se analiza simultáneamente esta multiplicidad de indicadores? Este es precisamente el rol del aprendizaje no supervisado—un conjunto de técnicas que descubren patrones en datos sin etiquetas previas, sin clasificaciones arbitrarias impuestas externamente (Charrad et al., 2014; Jolliffe, 2002).
+
+Lo que sigue es una cartografía multidimensional de la economía global en el contexto post-pandemia: no solo se responde "¿en qué grupos se dividen los países?", sino, más profundamente, "¿qué revelan estos grupos sobre mecanismos reales del desarrollo, oportunidades compartidas, restricciones comunes y trayectorias viables para diferentes sociedades?" Los resultados no serán una clasificación administrativa sino un descubrimiento empírico basado en lo que los datos de 180 países en 2022 efectivamente revelan.
+
+# Metodologia
+
+## Base de datos
+
+La base de datos utilizada en este análisis proviene de la compilación World Development Indicators (WDI) del Banco Mundial, considerada la principal fuente internacional de estadísticas comparables sobre desarrollo económico y social (World Bank, 2023). Los WDI representan el esfuerzo más comprehensivo del Banco Mundial para consolidar indicadores de desarrollo de fuentes oficialmente reconocidas, incluyendo oficinas nacionales de estadística, bancos centrales, agencias de las Naciones Unidas, instituciones de investigación y contribuyentes del sector privado (World Bank, 2023; Jeanty, 2010).
+
+La base WDI contiene aproximadamente 1,600 indicadores de series temporales para 217 economías y más de 40 grupos de países, con datos para muchos indicadores que se remontan más de 50 años (World Bank, 2023). Los datos son compilados mediante metodologías estandarizadas que garantizan comparabilidad internacional, transparencia metodológica y robustez estadística (World Bank, 2019). El proceso de selección de indicadores del WDI sigue cuatro criterios fundamentales: facilidad de uso (accesibilidad y claridad para usuarios diversos), confiabilidad (reputación y credibilidad de la fuente), cobertura (amplitud geográfica y temporal), y calidad (rigor metodológico y precisión) (Behar & Mok, 2024).
+
+Para este análisis, se filtro información exclusivamente para países individuales (eliminando bloques regionales o agrupaciones económicas) del año 2022. El dataset resultante contiene aproximadamente 180-200 países, según la disponibilidad de datos completos, donde cada observación representa una unidad soberana comparable en un único punto temporal.
+
+El año 2022 marca un punto de inflexión crítico en la economía global, representa el momento post-pandemia en que las trayectorias de recuperación de cada país se hacen visibles y diferenciadas. Mientras algunos países desarrollados con capacidad fiscal recuperaron o superaron niveles pre-COVID-19, economías emergentes enfrentaban cicatrices estructurales persistentes en empleo, inflación descontrolada, y aumento de deuda pública (Banco Mundial, 2022; FMI, 2023; CEPAL, 2023). La desigualdad global se amplió drásticamente: el crecimiento proyectado para América Latina en 2022 era apenas 2.6%, mientras la desigualdad de ingresos aumentó significativamente después de dos décadas de mejoras (BID, 2022). 
+
+En este contexto, 2022 funciona como un "revelador" excepcional de vulnerabilidades y fortalezas estructurales subyacentes de los países: aquellos con sistemas de salud robustos, infraestructura tecnológica consolidada y economías diversificadas mostraron resiliencia; los que enfrentaban fragilidades estructurales experimentaron impactos persistentes (Banco Mundial, 2022; CIDOB, 2022). Por tanto, 2022 es un año extraordinariamente informativo para identificar perfiles reales de desarrollo, ya que las diferencias entre países se magnificaron visiblemente, permitiendo observar no clasificaciones arbitrarias sino estructuras auténticas de capacidad nacional.
+
+
+
+
+
+
+## Descripción de las variables
+
+El dataset construido para este análisis integra 19 variables cuantitativas que capturan las múltiples dimensiones del desarrollo contemporáneo. Estas variables se organizan en cinco áreas temáticas que, en conjunto, ofrecen una perspectiva comprehensiva del desempeño socioeconómico, tecnológico y ambiental de cada país. A continuación, se presenta una descripción detallada de cada variable según su área temática.
+
+### Dimensión economica
+
+Las variables económicas capturan tanto el nivel de riqueza como la dinámica y estructura de la economía nacional, incluyendo su grado de inserción en la economía global.
+
+### Base de datos del modelo
+
+```{r Base de datos, warning=FALSE,message=FALSE}
+Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
+                 show_col_types = FALSE) %>%
+  select(
+    Pais = `Country Name`,
+    Codigo = `Country Code`,
+    PIB_per = `GDP per capita (current US$) [NY.GDP.PCAP.CD]`,
+    Poblacion = `Population, total [SP.POP.TOTL]`,
+    `Esperanza vida` = `Life expectancy at birth, total (years) [SP.DYN.LE00.IN]`,
+    `Acceso electricidad` = `Access to electricity (% of population) [EG.ELC.ACCS.ZS]`,
+    `Area boscosa` = `Forest area (% of land area) [AG.LND.FRST.ZS]`,
+    `Suscripciones movil` = `Mobile cellular subscriptions (per 100 people) [IT.CEL.SETS.P2]`,
+    `Crecimiento PIB` = `GDP growth (annual %) [NY.GDP.MKTP.KD.ZG]`,
+    `Mortalidad infantil` = `Mortality rate, infant (per 1,000 live births) [SP.DYN.IMRT.IN]`,
+    `Inversion extranjera` = `Foreign direct investment, net inflows (% of GDP) [BX.KLT.DINV.WD.GD.ZS]`,
+    `Gasto salud` = `Current health expenditure (% of GDP) [SH.XPD.CHEX.GD.ZS]`,
+    `Uso internet` = `Individuals using the Internet (% of population) [IT.NET.USER.ZS]`,
+    Importaciones = `Imports of goods and services (% of GDP) [NE.IMP.GNFS.ZS]`,
+    Exportaciones = `Exports of goods and services (% of GDP) [NE.EXP.GNFS.ZS]`,
+    `Tierra cultivable` = `Arable land (% of land area) [AG.LND.ARBL.ZS]`,
+    `Crecimiento poblacion` = `Population growth (annual %) [SP.POP.GROW]`,
+    Industria = `Industry (including construction), value added (% of GDP) [NV.IND.TOTL.ZS]`,
+    Remesas = `Personal remittances, received (% of GDP) [BX.TRF.PWKR.DT.GD.ZS]`
+  )%>%
+  drop_na() %>%
+  filter(!Pais %in% c("World", "High income", "Low income", "European Union",
+                      "Latin America & Caribbean", "Middle income", "OECD members",
+                      "East Asia & Pacific", "Sub-Saharan Africa", "South Asia",
+                      "North America", "Euro area", "Arab World", "West Bank and Gaza",
+                      "Lower middle income", "Upper middle income", 
+                      "Least developed countries: UN classification",
+                      "Fragile and conflict affected situations", 
+                      "Heavily indebted poor countries (HIPC)",
+                      "IDA total", "Low & middle income", "Middle East & North Africa",
+                      "Pacific island small states", "Small states", 
+                      "Caribbean small states", "Other small states", 
+                      "IDA & IBRD total", "IDA only", "IBRD only",
+                      "Pre-demographic dividend", "Post-demographic dividend", 
+                      "Early-demographic dividend", "Late-demographic dividend"))
+
+# Crear tabla interactiva profesional
+tabla_interactiva <- datatable(
+  Base_2022,
+  extensions = c('Buttons', 'Scroller', 'Responsive', 'FixedHeader'),
+  options = list(
+    # Configuración de botones de exportación
+    dom = 'Bfrtip',
+    buttons = list(
+      list(extend = 'copy', text = 'Copiar'),
+      list(extend = 'csv', text = 'CSV'),
+      list(extend = 'excel', text = 'Excel'),
+      list(extend = 'pdf', text = 'PDF'),
+      list(extend = 'print', text = 'Imprimir')
+    ),
+    
+    # Configuración de visualización
+    pageLength = 10,
+    lengthMenu = list(c(5, 10, 15, 20, -1), 
+                     c('5', '10', '15', '20', 'Todos')),
+    scrollX = TRUE,
+    scrollY = "600px",
+    scroller = TRUE,
+    
+    # Configuración de idioma en español
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
+      search = "Buscar:",
+      lengthMenu = "Mostrar _MENU_ registros",
+      info = "Mostrando _START_ a _END_ de _TOTAL_ registros",
+      paginate = list(
+        first = "Primero",
+        last = "Último",
+        `next` = "Siguiente",
+        previous = "Anterior"
+      )
+    ),
+    
+    # Configuración adicional
+    autoWidth = FALSE,
+    fixedHeader = TRUE,
+    searchHighlight = TRUE
+  ),
+  rownames = FALSE,
+  filter = 'top',
+  class = c('cell-border', 'stripe', 'hover', 'row-border'),
+  caption = 'Tabla de Indicadores Económicos y Sociales 2022'
+) %>%
+  # Formato numérico
+  formatRound(columns = c('PIB_per', 'Poblacion'), digits = 0) %>%
+  formatRound(columns = c('Esperanza vida', 'Acceso electricidad', 'Area boscosa',
+                         'Suscripciones movil', 'Crecimiento PIB', 'Mortalidad infantil',
+                         'Inversion extranjera', 'Gasto salud', 'Uso internet',
+                         'Importaciones', 'Exportaciones', 'Tierra cultivable',
+                         'Crecimiento poblacion', 'Industria', 'Remesas'), 
+             digits = 2) %>%
+  
+  # Formato condicional para mejor visualización
+  formatStyle(
+    columns = names(Base_2022)[3:19],
+    backgroundColor = styleEqual(
+      NA, 
+      'lightgray'  # Color para valores faltantes (aunque usaste drop_na())
+    )
+  ) %>%
+  
+  # Barras de progreso para columnas clave (CORREGIDO)
+  formatStyle(
+    'PIB_per',
+    background = styleColorBar(range(Base_2022$PIB_per, na.rm = TRUE), 'lightblue'),
+    backgroundSize = '98% 88%',
+    backgroundRepeat = 'no-repeat',
+    backgroundPosition = 'center'
+  ) %>%
+  
+  # Colores para esperanza de vida
+  formatStyle(
+    'Esperanza vida',
+    backgroundColor = styleInterval(
+      c(70, 80), 
+      c('#FF6B6B', '#FFE66D', '#90EE90')
+    )
+  )
+
+# Mostrar tabla
+tabla_interactiva
+
+```
+
+## Descripción del modelo
+
+
+
+# Bibliografia
