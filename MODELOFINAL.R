@@ -341,7 +341,7 @@ res.pca <- prcomp(NuevaBase, scale = TRUE)
 res.pca
 eig.val <- get_eigenvalue(res.pca)
 eig.val
-
+################################################################################
 
 fviz_eig(res.pca)
 
@@ -360,13 +360,6 @@ fviz_pca_var(res.pca,
              repel = TRUE,
              axes = c(1,2)# Avoid text overlapping
 )
-
-fviz_pca_biplot(res.pca, repel = TRUE,
-                col.var = "#2E9FDF", # Variables color
-                col.ind = "#696969",
-                axes=c(1,2)# Individuals color
-)
-
 
 
 # Eigenvalues
