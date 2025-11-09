@@ -101,36 +101,37 @@ varianza_df <- data.frame(
 
 
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
-  geom_col(fill = "#1B4965", alpha = 0.85) +
-  geom_line(aes(y = VarianzaAcum, group = 1), color = "#047857", linewidth = 1.3) +
-  geom_point(aes(y = VarianzaAcum), color = "#047857", size = 3) +
-  geom_hline(yintercept = 80, linetype = "dashed", color = "#8B5CF6", linewidth = 1) +
-  geom_vline(xintercept = 8, linetype = "dotted", color = "#2E86AB", linewidth = 1.1) +
+  geom_col(fill = "#2C5F8D", alpha = 0.9) +
+  geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
+  geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
+  geom_hline(yintercept = 80, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  geom_vline(xintercept = 8, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
   annotate("text", x = 8.3, y = max(varianza_df$Varianza) * 0.9,
-           label = "Componente 8", color = "#2E86AB", angle = 90, hjust = 0, 
-           fontface = "bold", size = 3.5) +
-  annotate("text", x = 1.5, y = 82,
-           label = "80% varianza acumulada", color = "#8B5CF6", hjust = 0,
-           fontface = "bold", size = 3.5) +
+           label = "8 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
+           fontface = "bold", size = 3.8) +
+  annotate("text", x = 1.8, y = 83,
+           label = "80% varianza acumulada", color = "#27AE60", hjust = 0,
+           fontface = "bold", size = 3.8) +
   scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
   labs(
-    title = "Scree Plot: Varianza Explicada por Componente Principal",
+    title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
     subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥80%",
     x = "Componentes Principales",
     y = "% de Varianza Explicada"
   ) +
   theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#1B4965"),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
     plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2E86AB"),
-    axis.text = element_text(size = 10),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
     axis.text.x = element_text(angle = 45, vjust = 0.8),
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = "gray90", size = 0.3),
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
+
 
 
 #===============================================================================
@@ -143,7 +144,7 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
 
 
 
-# Círculo de correlaciones
+#////////////////////// Círculo de correlaciones ///////////////////////////////
 
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
@@ -158,32 +159,51 @@ circle_df <- data.frame(
 )
 max_coord <- max(1, max(abs(vars_df$Comp1), abs(vars_df$Comp2)))
 lims <- c(-max_coord * 1.05, max_coord * 1.05) 
-ggplot() +geom_path(data = circle_df, aes(x = x, y = y), color = "gray60", linetype = "dashed", size = 0.6) +
+
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
   geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
   geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
   geom_segment(data = vars_df,
                aes(x = 0, y = 0, xend = Comp1, yend = Comp2),
-               color = "#2E86AB", alpha = 0.8,
-               arrow = grid::arrow(length = unit(0.18, "cm"), type = "closed"),
-               size = 0.8) + geom_point(data = vars_df, aes(x = Comp1, y = Comp2), color = "#E74C3C", size = 2.6) +
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = vars_df, aes(x = Comp1, y = Comp2), 
+             color = "#8E44AD", size = 3) +
   geom_text_repel(data = vars_df, aes(x = Comp1, y = Comp2, label = Variable),
-                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5) +
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
   coord_equal(xlim = lims, ylim = lims) +
   labs(
-    title = "Círculo de correlaciones — Variables (PC1 vs PC2)",
+    title = "Círculo de Correlaciones de Variables en el Plano Factorial",
     x = "Componente Principal 1",
     y = "Componente Principal 2",
-    subtitle = "Vectores muestran correlación de variables con los primeros dos ejes"
+    subtitle = "Vectores indican la correlación de cada variable con los dos primeros componentes"
   ) +
   theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
     plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
     panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray95")
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
   )
 
-#  Países en el espacio factorial
+
+
+#===============================================================================
+
+
+
+
+
+# Países en el espacio factorial
 paises_df <- as.data.frame(acp_resultado$li)
 paises_df$Pais <- rownames(paises_df)
 
