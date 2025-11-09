@@ -203,6 +203,9 @@ ggplot() +
 
 
 
+
+#////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
+
 # Países en el espacio factorial
 paises_df <- as.data.frame(acp_resultado$li)
 paises_df$Pais <- rownames(paises_df)
@@ -211,36 +214,53 @@ paises_df$Pais <- rownames(paises_df)
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
 
 ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
-  geom_point(aes(color = Distancia), size = 3.2, alpha = 0.85) +
+  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
   geom_text_repel(
     aes(label = Pais),
-    size = 3.3,
-    color = "gray15",
+    size = 3.4,
+    color = "gray20",
+    fontface = "bold",
     max.overlaps = 20,
     segment.color = "gray70",
     segment.size = 0.3
   ) +
   geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
   geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_gradient(low = "#7FB3D5", high = "#1B4F72", name = "Distancia\nal origen") +
+  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
   labs(
-    title = "Países en el Espacio Factorial (ACP)",
-    subtitle = "Representación de los países según los dos primeros componentes principales",
+    title = "Países en el Espacio Factorial del ACP",
+    subtitle = "Distribución de países según los dos primeros componentes principales",
     x = "Componente Principal 1",
     y = "Componente Principal 2"
   ) +
   theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold", hjust = 0.5, size = 15),
-    plot.subtitle = element_text(hjust = 0.5, color = "gray40"),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
     panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray90"),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
     legend.position = "right",
-    legend.title = element_text(face = "bold")
+    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
+    legend.text = element_text(size = 10),
+    legend.background = element_rect(fill = "white", color = "gray80")
   )
 
 
-##tabla de variaanza
+
+
+#===============================================================================
+
+
+
+
+
+
+#//////////////////////////Tabla de variaanza///////////////////////////////////
+
 library(kableExtra)
 varianza_tabla <- varianza_df %>%
   mutate(
@@ -265,8 +285,16 @@ varianza_tabla %>%
   column_spec(1, bold = TRUE, width = "7em") %>%
   column_spec(2:3, width = "10em")
 
-### nombreamiento de las dimensiones##############################
-################################################################################
+
+#===============================================================================
+
+
+
+
+
+
+#///////////////// Nombramiento de las dimensiones /////////////////////////////
+
 res.pca <- prcomp(NuevaBase, scale = TRUE)
 
 res.pca
@@ -299,7 +327,7 @@ res.ind$cos2           # Quality of representation
 View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
 res.ind$contrib[,1:2]
 
-##########tabla nuevas dimensiones 
+#////////////////////// Tabla nuevas dimensiones ///////////////////////////////
 # Crear la tabla manualmente con las dimensiones y variables
 dimensiones_tabla <- tribble(
   ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
@@ -357,7 +385,14 @@ dimensiones_tabla %>%
   column_spec(3, width = "16em") %>%
   column_spec(4, width = "18em")
 
-#  CLUSTERING SOBRE LOS FACTORES########################################3
+
+#===============================================================================
+
+
+
+
+
+#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
 
@@ -409,8 +444,86 @@ cat("Clusters formados:", length(unique(clusters)), "\n\n")
 # Círculo de correlaciones
 s.corcircle(acp_resultado$co)
 
-# Gráfico de países en espacio de factores
+#//////////////////// Gráfico de países en espacio de factores//////////////////
 s.class(factores, as.factor(clusters), sub = "Clusters en el espacio factorial", possub = "bottomright")
+
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+
+# Preparar datos
+paises_clusters <- data.frame(
+  Pais = rownames(factores),
+  Comp1 = factores[, 1],
+  Comp2 = factores[, 2],
+  Cluster = as.factor(clusters)
+)
+
+# Calcular centroides para cada cluster
+centroides <- paises_clusters %>%
+  group_by(Cluster) %>%
+  summarise(
+    Centroid1 = mean(Comp1),
+    Centroid2 = mean(Comp2)
+  )
+
+# Gráfico
+ggplot(paises_clusters, aes(x = Comp1, y = Comp2, color = Cluster)) +
+  geom_point(size = 3.5, alpha = 0.8) +
+  stat_ellipse(aes(fill = Cluster), 
+               type = "norm", 
+               level = 0.68,
+               geom = "polygon", 
+               alpha = 0.15,
+               size = 1.2) +
+  geom_point(data = centroides, 
+             aes(x = Centroid1, y = Centroid2, color = Cluster),
+             size = 6, shape = 17, stroke = 1.5) +
+  geom_text_repel(
+    aes(label = Pais),
+    size = 3.2,
+    max.overlaps = 15,
+    segment.alpha = 0.4,
+    fontface = "bold",
+    show.legend = FALSE
+  ) +
+  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  scale_color_manual(
+    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+    name = "Clúster",
+    labels = c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+  ) +
+  scale_fill_manual(
+    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+    guide = "none"
+  ) +
+  labs(
+    title = "Distribución de Clústeres en el Espacio Factorial",
+    subtitle = "Agrupamiento de países según los dos primeros componentes principales",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
+    legend.text = element_text(size = 10),
+    legend.background = element_rect(fill = "white", color = "gray80")
+  )
+
+#===============================================================================
+
+
+
 
 # Dendrograma
 plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
@@ -418,10 +531,10 @@ rect.hclust(arbol, k = k_optimo, border = 2:5)
 
 
 
-#//////////////////////// 1).Dendrograma Ward /////////////////////////////////
+#////////////////////////// Dendrograma Ward /////////////////////////////////
 
 
-pal <- c("#08306B", "#2171B5", "#6BAED6")
+pal <- c("#2C5F8D", "#27AE60", "#8E44AD")
 
 fviz_dend(arbol,
           k = k_optimo,
@@ -429,22 +542,26 @@ fviz_dend(arbol,
           color_labels_by_k = TRUE, 
           rect = TRUE,               
           rect_fill = TRUE,          
-          rect_border = "gray30",    
-          cex = 0.8,                 
-          lwd = 0.8,                 
+          rect_border = "gray40",    
+          cex = 0.85,                 
+          lwd = 0.9,                 
           show_labels = TRUE,
-          main = "Dendrograma — 3 Clústeres",
-          sub = "Agrupamiento jerárquico (Ward.D2) sobre espacio factorial",
+          main = "Dendrograma de Agrupamiento Jerárquico",
+          sub = "Método Ward.D2 aplicado sobre el espacio factorial del ACP",
           xlab = "",               
-          ylab = "Altura de fusión"
+          ylab = "Altura de Fusión"
 ) +
   theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold", size = 18, hjust = 0.5, color = pal[1]),
-    plot.subtitle = element_text(size = 10.5, hjust = 0.5, color = "gray40"),
+    plot.title = element_text(face = "bold", size = 17, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title.y = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text.y = element_text(size = 10, color = "gray30"),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
-    panel.grid = element_blank()
+    panel.grid = element_blank(),
+    plot.background = element_rect(fill = "white"),
+    panel.background = element_rect(fill = "white")
   )
 
 
