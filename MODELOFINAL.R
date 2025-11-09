@@ -389,7 +389,7 @@ res.ind <- get_pca_ind(res.pca)
 res.ind$coord          # Coordinates
 res.ind$contrib        # Contributions to the PCs
 res.ind$cos2           # Quality of representation 
-View(res.ind$contrib[,1:3]) # Miro los dos primeros factores
+View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
 res.ind$contrib[,1:2]
 
 # 2) Gráfico s.class aplicado a la base (ACP) y mostrar descripción de grupos
