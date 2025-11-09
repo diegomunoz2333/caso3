@@ -289,11 +289,11 @@ library(tidyverse)
 
 En el corazón de la economía global existe una paradoja fundamental: mientras que algunos indicadores sugieren una relación lineal y predecible entre el desarrollo económico y el bienestar social, la realidad es mucho más compleja y matizada. Tomemos un ejemplo: Costa Rica tiene una esperanza de vida comparable a la de países europeos desarrollados, pero con un PIB per cápita significativamente menor; Qatar, por su parte, lidera en PIB per cápita pero no encabeza necesariamente en todos los indicadores de bienestar social (Shkolnikov et al., 2019). Estas "anomalías" no son excepciones sino revelaciones de una verdad fundamental: el desarrollo no es unidimensional.
 
-El problema central que motiva este trabajo es fundamental: ¿Cuáles son realmente los "tipos" de desarrollo que caracterizan la economía mundial cuando se analiza simultáneamente un conjunto amplio de 19 indicadores económicos, sociales, tecnológicos y ambientales? No se trata de responder cuál país es más "rico", sino algo más profundo: descubrir si existen estructuras ocultas en los datos que agrupen países con perfiles similares más allá de la geografía o las clasificaciones convencionales. Específicamente, la pregunta es: ¿Colombia y Uruguay podrían compartir más similitudes con algunos países asiáticos que con sus propios vecinos latinoamericanos? ¿Existe realmente un "grupo de países con baja renta pero alto acceso tecnológico"? ¿Las características ambientales y demográficas se alinean con la riqueza económica o presentan patrones independientes?
+El problema central que motiva este trabajo es fundamental: ¿Cuáles son realmente los "tipos" de desarrollo que caracterizan la economía mundial cuando se analiza simultáneamente un conjunto amplio de 17 indicadores económicos, sociales, tecnológicos y ambientales? No se trata de responder cuál país es más "rico", sino algo más profundo: descubrir si existen estructuras ocultas en los datos que agrupen países con perfiles similares más allá de la geografía o las clasificaciones convencionales. Específicamente, la pregunta es: ¿Colombia y Uruguay podrían compartir más similitudes con algunos países asiáticos que con sus propios vecinos latinoamericanos? ¿Existe realmente un "grupo de países con baja renta pero alto acceso tecnológico"? ¿Las características ambientales y demográficas se alinean con la riqueza económica o presentan patrones independientes?
 
 Históricamente, el desarrollo internacional se ha medido mediante indicadores aislados. El PIB per cápita domina los rankings; la esperanza de vida se analiza independientemente; la conectividad digital se observa separadamente. Este enfoque fragmentado es problemático porque el desarrollo no es unidimensional: un país puede ser económicamente exitoso pero frágil en salud pública, o tener excelente conectividad digital pero vulnerabilidad ambiental crítica (Jolliffe, 2002; World Bank, 2023). Los datos del año 2022 capturan un momento único en la historia económica global: post-pandemia de COVID-19, con efectos heterogéneos según país. Algunos recuperaron rápidamente su dinamismo; otros enfrentaron cicatrices estructurales persistentes en empleo, salud y finanzas públicas (World Bank, 2023).
 
-El Banco Mundial proporciona 19 indicadores reconocidos internacionalmente que miden dimensiones distintas: factores económicos (PIB per cápita, crecimiento del PIB, inversión extranjera, remesas, industria, comercio), indicadores de salud y bienestar (esperanza de vida, mortalidad infantil, gasto en salud), variables de conectividad tecnológica (acceso a electricidad, uso de internet, suscripciones móviles) y aspectos ambientales y demográficos (área boscosa, tierra cultivable, crecimiento poblacional) (World Bank, 2023). Analizar estas 19 variables de forma independiente genera ruido; analizarlas de manera integrada puede revelar patrones coherentes que informan políticas públicas, estrategias de cooperación internacional y decisiones de inversión.
+El Banco Mundial proporciona 17 indicadores reconocidos internacionalmente que miden dimensiones distintas: factores económicos (PIB per cápita, crecimiento del PIB, inversión extranjera, remesas, industria, comercio), indicadores de salud y bienestar (esperanza de vida, mortalidad infantil, gasto en salud), variables de conectividad tecnológica (acceso a electricidad, uso de internet, suscripciones móviles) y aspectos ambientales y demográficos (área boscosa, tierra cultivable, crecimiento poblacional) (World Bank, 2023). Analizar estas 17 variables de forma independiente genera ruido; analizarlas de manera integrada puede revelar patrones coherentes que informan políticas públicas, estrategias de cooperación internacional y decisiones de inversión.
 
 El desafío es modelar una pregunta sin respuesta predefinida: ¿Qué agrupamientos naturales de países emergen cuando se analiza simultáneamente esta multiplicidad de indicadores? Este es precisamente el rol del aprendizaje no supervisado—un conjunto de técnicas que descubren patrones en datos sin etiquetas previas, sin clasificaciones arbitrarias impuestas externamente (Charrad et al., 2014; Jolliffe, 2002).
 
@@ -320,7 +320,7 @@ En este contexto, 2022 funciona como un "revelador" excepcional de vulnerabilida
 
 ## Descripción de las variables
 
-El dataset construido para este análisis integra 19 variables cuantitativas que capturan las múltiples dimensiones del desarrollo contemporáneo. Estas variables se organizan en cinco áreas temáticas que, en conjunto, ofrecen una perspectiva comprehensiva del desempeño socioeconómico, tecnológico y ambiental de cada país. A continuación, se presenta una descripción detallada de cada variable según su área temática.
+El dataset construido para este análisis integra 17 variables cuantitativas que capturan las múltiples dimensiones del desarrollo contemporáneo. Estas variables se organizan en cinco áreas temáticas que, en conjunto, ofrecen una perspectiva comprehensiva del desempeño socioeconómico, tecnológico y ambiental de cada país. A continuación, se presenta una descripción detallada de cada variable según su área temática.
 
 ### Dimensión economica
 
@@ -878,6 +878,7 @@ tabla_5 <- variables_demograficas %>%
 tabla_5
 ```
 
+## Base de datos del modelo
 
 ```{r Base de datos, warning=FALSE,message=FALSE}
 Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
@@ -920,7 +921,7 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
   mutate(across(3:19, as.numeric)) %>% drop_na()
 
 
-tabla_elegante <- datatable(
+tabla_inicial <- datatable(
   Base_2022,
   extensions = c('Buttons', 'Scroller', 'Responsive', 'FixedHeader'),
   options = list(
@@ -932,8 +933,6 @@ tabla_elegante <- datatable(
       list(extend = 'pdf', text = 'PDF', className = 'btn-outline-danger'),
       list(extend = 'print', text = 'Imprimir', className = 'btn-outline-warning')
     ),
-    
-    # Configuración de visualización elegante
     pageLength = 12,
     lengthMenu = list(c(8, 12, 20, 50, -1), 
                      c('8', '12', '20', '50', 'Todos')),
@@ -941,8 +940,6 @@ tabla_elegante <- datatable(
     scrollY = "550px",
     scroller = TRUE,
     deferRender = TRUE,
-    
-    # Configuración de idioma
     language = list(
       url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
       search = "Buscar:",
@@ -955,8 +952,6 @@ tabla_elegante <- datatable(
         previous = "Anterior"
       )
     ),
-    
-    # Configuración profesional
     autoWidth = TRUE,
     fixedHeader = TRUE,
     searchHighlight = TRUE
@@ -966,8 +961,6 @@ tabla_elegante <- datatable(
   class = c('display', 'compact', 'hover'),
   caption = 'Indicadores Económicos y Sociales Globales 2022'
 ) %>%
-  
-  # Formato numérico limpio y profesional
   formatCurrency(
     columns = 'PIB_per', 
     currency = "$", 
@@ -990,28 +983,65 @@ tabla_elegante <- datatable(
     columns = 'Mortalidad infantil',
     digits = 1
   ) %>%
-  
-  # Estilo minimalista para mejor legibilidad
   formatStyle(
     columns = names(Base_2022),
     fontSize = '12px',
     fontFamily = 'Arial, sans-serif'
   ) %>%
-  
-  # Encabezados limpios
   formatStyle(
     columns = names(Base_2022),
     target = 'cell',
     fontWeight = 'bold'
   )
 
-# Mostrar la tabla elegante
-tabla_elegante
+
+tabla_inicial
 
 ```
 
 ## Descripción del modelo
 
+La implementación del análisis se estructura en cuatro etapas secuenciales, cada una construida sobre los resultados de la anterior, garantizando que la información y patrones descubiertos se preserven y amplifiquen a través del pipeline de análisis.
 
+### Preparación y Estandarización de Datos
+
+Previo a cualquier análisis multivariado, es fundamental estandarizar las variables originales para garantizar que todas contribuyan en igualdad de condiciones al cálculo de componentes principales (KeepCoding, 2025). Las 19 variables fueron normalizadas mediante una transformación de z-score estándar:
+
+### Análisis de Componentes Principales (ACP)
+
+Con las 17 variables estandarizadas, se aplica el Análisis de Componentes Principales para transformar el conjunto de variables originales, potencialmente correlacionadas, en un conjunto menor de componentes principales ortogonales (Jolliffe, 2002; OpenWebinars, 2025). El ACP identifica las direcciones en el espacio de datos donde la varianza es máxima, creando nuevas dimensiones (componentes) que son combinaciones lineales ponderadas de las variables originales (Jolliffe, 2002; KeepCoding, 2025).
+
+Matemáticamente, el ACP comienza construyendo la matriz de covarianza C de las variables estandarizadas, cuyas entradas representan cómo varían conjuntamente pares de variables (KeepCoding, 2025). Los vectores propios de esta matriz de covarianza definen las direcciones principales (componentes), ordenados según sus correspondientes valores propios, que representan la cantidad de varianza explicada en cada dirección (Jolliffe, 2002). El primer componente principal captura la máxima varianza; el segundo, la máxima varianza restante sujeto a ortogonalidad respecto al primero; y así sucesivamente (Jolliffe, 2002).
+
+El objetivo es identificar cuántos componentes son necesarios para capturar la mayor parte de la varianza total de los datos—típicamente entre 70-90% según el contexto (OpenWebinars, 2025). Esto permite reducir significativamente la dimensionalidad: en lugar de trabajar con 17 variables potencialmente redundantes, se trabaja con un número reducido de componentes sintéticos que capturan la esencia de la heterogeneidad internacional (Jolliffe, 2002).
+
+### Cálculo de Distancias Euclidianas
+
+Una vez obtenidos los componentes principales, se utiliza la distancia euclidiana como métrica de disimilaridad entre países. Para cada par de países, la distancia euclidiana se calcula como:
+
+$$ d_{ij} = \sqrt{\sum_{k=1}^{p} (PC_{ik} - PC_{jk})^2} $$
+Donde: 
+
+- $d_{ij}$ = Distancia euclidiana entre los países $i$ y $j$
+- $p$ = Número de componentes principales utilizados
+- $PC_{ik}$ = Valor del $k$-ésimo componente principal para el país $i$
+- $PC_{jk}$ = Valor del $k$-ésimo componente principal para el país $j$
+
+Esta distancia mide la proximidad multidimensional entre países: distancias pequeñas indican perfiles similares, distancias grandes indican disimilaridad (Universidad de Granada, 2016; ArcGIS, 2024).
+
+La distancia euclidiana es particularmente apropiada para el método de Ward porque, en su implementación aglomerativa, se utiliza el cuadrado de la distancia euclidiana—formalmente conocida como "distancia euclidiana semicuadrada"—como medida de disimilaridad (Ward, 1963; Wikipedia, 2013; TIBCO, 2024).
+
+### Clusterización Jerárquica Aglomerativa con Método de Ward
+
+El método de Ward es un algoritmo jerárquico aglomerativo que opera iterativamente sobre el conjunto de países para formar una jerarquía de clusters (Ward, 1963). El procedimiento inicia considerando cada país como un cluster individual independiente, creando n grupos iniciales. En cada iteración subsecuente, se identifican los dos clusters más próximos según el criterio de Ward y se fusionan en un único cluster más grande (Ward, 1963; Universidad de Granada, 2016; ICESI, 2025).
+
+El criterio de Ward minimiza específicamente la suma total de cuadrados dentro de los clusters (within-cluster sum of squares, WCSS). Matemáticamente, en cada paso, Ward selecciona el par de clusters cuya fusión produce el incremento mínimo en la varianza total intra-cluster (Ward, 1963; Wikipedia, 2013).
+
+El algoritmo se ejecuta recursivamente hasta que todos los países quedan englobados en un único cluster. El resultado es un dendrograma—diagrama en forma de árbol invertido—que visualiza el proceso completo de fusión: cada rama representa un país individual, cada nodo de fusión representa la unión de dos clusters, y la altura de cada nodo indica el nivel de disimilaridad en el cual ocurrió la fusión (Universidad de Granada, 2016; ICESI, 2025). El dendrograma permite identificar visualmente el número óptimo de clusters "cortando" el árbol a un nivel específico de altura, determinando así cuántos grupos finales son más interpretables y útiles (Ward, 1963; Universidad de Granada, 2016).
+
+En síntesis, el modelo integra: (1) estandarización para igualar contribuciones relativas, (2) reducción de dimensionalidad mediante ACP para simplificar sin perder información, (3) cálculo de distancias euclidianas para cuantificar disimilaridad, y (4) clusterización jerárquica Ward para crear una taxonomía multidimensional de desarrollo. Esta arquitectura metodológica asegura que los agrupamientos emergentes sean producto exclusivamente de los datos y no de imposiciones externas, permitiendo descubrimientos genuinos sobre la estructura del desarrollo internacional (Jolliffe, 2002; Charrad et al., 2014).
+
+# Analisis descriptivo de los indicadores
 
 # Bibliografia
+
