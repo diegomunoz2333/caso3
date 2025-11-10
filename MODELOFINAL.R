@@ -132,16 +132,33 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
+library(kableExtra)
+varianza_tabla <- varianza_df %>%
+  mutate(
+    Varianza = round(Varianza, 2),
+    VarianzaAcum = round(VarianzaAcum, 2)
+  )
+
+varianza_tabla %>%
+  knitr::kable(
+    caption = "Varianza explicada por componente principal",
+    col.names = c("Componente", "% Varianza", "% Varianza Acumulada"),
+    align = c("c", "c", "c"),
+    format = "html"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "7em") %>%
+  column_spec(2:3, width = "10em")
+
 
 
 #===============================================================================
-
-
-
-
-
-
-
 
 
 #////////////////////// Círculo de correlaciones ///////////////////////////////
@@ -261,30 +278,6 @@ ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
 
 #//////////////////////////Tabla de variaanza///////////////////////////////////
 
-library(kableExtra)
-varianza_tabla <- varianza_df %>%
-  mutate(
-    Varianza = round(Varianza, 2),
-    VarianzaAcum = round(VarianzaAcum, 2)
-  )
-
-varianza_tabla %>%
-  knitr::kable(
-    caption = "Varianza explicada por componente principal",
-    col.names = c("Componente", "% Varianza", "% Varianza Acumulada"),
-    align = c("c", "c", "c"),
-    format = "html"
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE,
-    position = "center",
-    font_size = 14
-  ) %>%
-  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "7em") %>%
-  column_spec(2:3, width = "10em")
-
 
 #===============================================================================
 
@@ -315,7 +308,6 @@ res.var$coord          # Coordinates
 res.var$contrib        # Contributions to the PCs
 res.var$cos2           # Quality of representation 
 
-View(res.var$contrib[,1:8]) # Miro los dos primeros factores
 colSums( res.var$contrib[,1:2] )
 
 
@@ -703,10 +695,6 @@ kable(carac_cluster,
 
 #===============================================================================
 
-
-
-
-
 #///////////////////// Tabla interpretativa de los clusters/////////////////////
 
 clusters_tabla <- tribble(
@@ -751,6 +739,10 @@ clusters_tabla %>%
 
 
 #===============================================================================
+
+
+
+
 
 
 
