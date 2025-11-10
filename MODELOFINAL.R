@@ -296,7 +296,7 @@ ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
 
 
 
-
+#////////////Gráfico de Eigenvalores (Scree Plot alternativo) //////////////////
 #///////////////// Nombramiento de las dimensiones /////////////////////////////
 
 res.pca <- prcomp(NuevaBase, scale = TRUE)
@@ -305,7 +305,29 @@ res.pca
 eig.val <- get_eigenvalue(res.pca)
 eig.val
 
-fviz_eig(res.pca)
+fviz_eig(res.pca,
+         addlabels = TRUE,
+         ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
+         choice = "variance") +
+  labs(
+    title = "Varianza Explicada por Componente Principal",
+    subtitle = "Autovalores del análisis de componentes principales",
+    x = "Componentes Principales",
+    y = "Porcentaje de Varianza Explicada (%)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  ) +
+  scale_fill_manual(values = "#2C5F8D") +
+  scale_color_manual(values = "#2C5F8D")
 
 
 # Eigenvalues
