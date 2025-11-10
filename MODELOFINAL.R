@@ -1,18 +1,17 @@
-library(tidyverse)
-library(FactoClass)
-library(ade4)
-library(factoextra)
-library(dendextend)
-library(cluster)
-library(ggrepel)
-library(readr)
-library(ggplot2)
-library(ggrepel)
-library(kableExtra)
-library(dplyr)
-library(ggrepel)
-library(ggforce)
-library(plotly)
+library(tidyverse)     
+library(FactoClass)    
+library(ade4)          
+library(factoextra)    
+library(cluster)       
+library(dendextend)    
+library(ggrepel)      
+library(kableExtra)    
+library(ggforce)       
+library(plotly)        
+library(sf)            
+library(leaflet)       
+library(rnaturalearth)
+library(RColorBrewer)  
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
@@ -761,6 +760,34 @@ view(NuevaBase)
 
 
 
+#############mapa
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+Base_2022_con_cluster <- Base_2022 %>%
+  mutate(Cluster = clusters) %>%  
+  select(Codigo, Cluster, Pais)   
+Base_con_mapa <- world %>%
+  left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
+  filter(!is.na(Cluster))  
+
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+
+ggplot(Base_con_mapa) +
+  geom_sf(aes(fill = factor(Cluster))) +
+  scale_fill_manual(values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+                    name = "Clúster", labels = nombres_clusters) +
+  theme_minimal() +
+  labs(title = "Mapa Mundial de Países por Clúster",
+       subtitle = "Distribución geográfica de los grupos identificados") +
+  theme(legend.position = "bottom")  
+
+pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), domain = 1:3)
+leaflet(Base_con_mapa) %>%
+  addTiles() %>%  
+  addPolygons(fillColor = ~pal(Cluster), weight = 1, opacity = 1,
+              color = "white", fillOpacity = 0.7,
+              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)]))  
 
 
 
@@ -862,3 +889,12 @@ cluster_predicho <- centroides$Cluster[which.min(distancias)]
 cat("El nuevo país se clasifica en el Cluster:", cluster_predicho, "\n")
 nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
 cat("Nombre del cluster:", nombres_clusters[as.character(cluster_predicho)], "\n")
+
+# Obtener mapa mundial de rnaturalearth
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+
+
+
+###########################
+#########################
