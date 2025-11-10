@@ -96,7 +96,7 @@ varianza_df <- data.frame(
 #///////////////////////// Gráfico de silhouette /////////////////////////////
 
 fviz_nbclust(
-  factores, 
+  datos_analisis, 
   FUN = kmeans, 
   method = "silhouette"
 ) +
@@ -117,6 +117,20 @@ fviz_nbclust(
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
+
+#LEER
+
+#Si el codo te da 3, y Silhouette te da 2, NO es un error. Significa que:
+  
+  #Hay dos grupos fuertemente compactados, y el tercero quizás está más disperso o cerca de uno de los anteriores.
+
+#Silhouette se va a lo más "conservador" para la separación óptima; el codo enfatiza que añadir un tercer clúster aún reduce bastante la inercia.
+
+# ¿Qué hacer en tu informe?
+  #Explica ambas decisiones y muestra ambos gráficos.
+
+#Argumenta que, según el contexto económico y con apoyo visual (dendrograma, dispersión, silueta), tu interpretación es que 3 clústeres es "más informativo", pero reconoces que la separación más "segura" según silueta es 2.
+
 
 
 #===============================================================================
