@@ -131,6 +131,13 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
+
+#===============================================================================
+
+
+
+
+#/////////////////////////Tabla varianza componentes////////////////////////////
 library(kableExtra)
 varianza_tabla <- varianza_df %>%
   mutate(
@@ -158,6 +165,11 @@ varianza_tabla %>%
 
 
 #===============================================================================
+
+
+
+
+
 
 
 #////////////////////// Círculo de correlaciones ///////////////////////////////
