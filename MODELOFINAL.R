@@ -839,7 +839,7 @@ view(NuevaBase)
 
 
 #############mapa
-
+install.packages("rnaturalearthdata")
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 Base_2022_con_cluster <- Base_2022 %>%
