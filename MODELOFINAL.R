@@ -93,6 +93,36 @@ varianza_df <- data.frame(
   VarianzaAcum = varianza_acum
 )
 
+#///////////////////////// Gráfico de silhouette /////////////////////////////
+
+fviz_nbclust(
+  factores, 
+  FUN = kmeans, 
+  method = "silhouette"
+) +
+  labs(
+    title = "Número Óptimo de Clústeres según Silhouette",
+    subtitle = "Método de la silueta aplicado sobre k-means",
+    x = "Número de Clústeres (k)",
+    y = "Ancho promedio de la silueta"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+#===============================================================================
+
+
+
 
 
 
