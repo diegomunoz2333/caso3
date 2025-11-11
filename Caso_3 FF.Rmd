@@ -17,6 +17,7 @@ output:
     df_print: paged
 ---
 
+```{=html}
 <style type="text/css">
 /* ========== PALETA DE COLORES CYBER ========== */
 :root {
@@ -530,16 +531,29 @@ html {
   background: var(--bg-dark) !important;
 }
 </style>
+```
 
 <!-- Mini TOC Derecho -->
-<div id="right-toc">
-  <div id="right-toc-title">EN ESTA SECCIÓN</div>
-  <ul id="right-toc-list"></ul>
-</div>
+
+:::: {#right-toc}
+::: {#right-toc-title}
+EN ESTA SECCIÓN
+:::
+
+<ul id="right-toc-list">
+
+</ul>
+::::
 
 <!-- Botón Control de Código -->
-<button id="global-code-toggle"> Código</button>
 
+<button id="global-code-toggle">
+
+Código
+
+</button>
+
+```{=html}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // ========== CONTROL DE CÓDIGO ==========
@@ -896,6 +910,7 @@ function highlightActiveTocSection() {
   });
 });
 </script>
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -1019,12 +1034,12 @@ El análisis de países mediante técnicas de **aprendizaje no supervisado** per
 
 Los objetivos principales de este trabajo son:
 
-1. **Reducir la dimensionalidad** de los datos mediante ACP
-2. **Identificar grupos** de países con características similares
-3. **Interpretar** los patrones encontrados en el contexto del desarrollo internacional
-4. **Proporcionar insights** para políticas públicas y análisis económico
+1.  **Reducir la dimensionalidad** de los datos mediante ACP
+2.  **Identificar grupos** de países con características similares
+3.  **Interpretar** los patrones encontrados en el contexto del desarrollo internacional
+4.  **Proporcionar insights** para políticas públicas y análisis económico
 
----
+------------------------------------------------------------------------
 
 # Metodología
 
@@ -1091,13 +1106,14 @@ Base_2022 <- Base_2022 %>%
 # Tabla de variables
 ```
 
----
+------------------------------------------------------------------------
 
 # Análisis Descriptivo
 
 ## Explorador Interactivo de Indicadores
 
-###  Análisis por Variable
+### Análisis por Variable
+
 ```{r preparar-datos-unificados}
 
 variables_numericas <- names(Base_2022)[3:ncol(Base_2022)]
@@ -1140,6 +1156,7 @@ crear_tabla_unificada <- function(data, variable) {
 }
 ```
 
+```{=html}
 <style>
 /* OCULTAR NÚMEROS DE SECCIONES EN PESTAÑAS */
 .section-number {
@@ -1243,8 +1260,10 @@ h4 .header-section-number {
   border-bottom: 2px solid rgba(0, 229, 255, 0.3);
 }
 </style>
+```
 
-###  Selecciona una Variable {.tabset .tabset-pills .unnumbered}
+### Selecciona una Variable {.tabset .tabset-pills .unnumbered}
+
 ```{r tablas-layout, results='asis'}
 for (variable in variables_numericas) {
   cat(sprintf('\n\n#### %s {.unnumbered}\n\n', variable))
@@ -1317,10 +1336,709 @@ for (variable in variables_numericas) {
 }
 ```
 
----
-##  Análisis por Dimensiones
+## Análisis por Dimensiones
 
+### Dimensión Económica
 
+```{r economia-top15-interactivo, fig.height=7, fig.width=30, out.width="100%"}
+preparar_top15 <- function(data, variable, nombre_var) {
+  resultado <- data %>%
+    filter(!is.na(!!sym(variable)) & !!sym(variable) > 0) %>%  # Filtra NA y valores <= 0
+    arrange(desc(!!sym(variable))) %>%
+    slice_head(n = 15) %>%
+    arrange(!!sym(variable)) %>%  # Ordenar de menor a mayor para visualización
+    mutate(
+      Pais_label = Pais,
+      Valor = !!sym(variable),
+      tooltip = paste0(
+        "<b style='color:#00e5ff;'>", Pais, "</b><br>",
+        "<span style='color:#00e676;'><b>", nombre_var, ":</b></span><br>",
+        "<b style='color:#ffd600;'>", format(round(Valor, 2), big.mark = ",", scientific = FALSE), "</b>"
+      )
+    ) %>%
+    select(Pais_label, Valor, tooltip)
+  
+  return(resultado)
+}
+
+vars_config <- list(
+  list(var = "PIB_per", nombre = "PIB per cápita (US$)", color = "#00e676"),
+  list(var = "Crecimiento PIB", nombre = "Crecimiento PIB (% anual)", color = "#0084ff"),
+  list(var = "Inversion extranjera", nombre = "Inversión Extranjera Directa (% PIB)", color = "#ffd600"),
+  list(var = "Remesas", nombre = "Remesas recibidas (% PIB)", color = "#a259ff"),
+  list(var = "Industria", nombre = "Industria (% PIB)", color = "#ff6b00"),
+  list(var = "Exportaciones", nombre = "Exportaciones (% PIB)", color = "#00e5ff"),
+  list(var = "Importaciones", nombre = "Importaciones (% PIB)", color = "#ff1744")
+)
+
+datasets <- lapply(seq_along(vars_config), function(i) {
+  config <- vars_config[[i]]
+  preparar_top15(Base_2022, config$var, config$nombre)
+})
+
+p <- plot_ly()
+
+for (i in seq_along(vars_config)) {
+  config <- vars_config[[i]]
+  
+  if(nrow(datasets[[i]]) > 0) {
+    p <- p %>%
+      add_trace(
+        x = datasets[[i]]$Valor,
+        y = datasets[[i]]$Pais_label,
+        type = 'bar',
+        orientation = 'h',
+        marker = list(
+          color = config$color, 
+          line = list(color = '#ffffff', width = 1.5)
+        ),
+        text = format(round(datasets[[i]]$Valor, 2), big.mark = ",", scientific = FALSE),
+        textposition = 'outside',
+        textfont = list(color = '#00e5ff', size = 13, family = "Arial"),
+        customdata = datasets[[i]]$tooltip,
+        hovertemplate = "%{customdata}<extra></extra>",
+        name = config$nombre,
+        visible = (i == 1),
+        showlegend = FALSE
+      )
+  }
+}
+
+p %>%
+  layout(
+    title = list(
+      text = paste0(
+        "<b style='color:#00e5ff; font-size:24px;'>Top 15 Países - ", 
+        vars_config[[1]]$nombre, 
+        "</b><br>",
+        "<span style='color:#8b92a0; font-size:14px;'>Año 2022 | Selecciona una variable para cambiar</span>"
+      ),
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
+    ),
+    
+    xaxis = list(
+      title = paste0("<b style='font-size:16px;'>", vars_config[[1]]$nombre, "</b>"),
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      zeroline = TRUE,
+      zerolinewidth = 2,
+      zerolinecolor = "rgba(0, 229, 255, 0.5)",
+      tickfont = list(color = '#8b92a0', size = 13),
+      titlefont = list(color = '#e0e6ed', size = 16),
+      range = c(0, max(datasets[[1]]$Valor) * 1.15)  # Rango dinámico con margen
+    ),
+    
+    yaxis = list(
+      title = "<b style='font-size:16px;'>País</b>",
+      tickfont = list(color = '#e0e6ed', size = 13),
+      titlefont = list(color = '#e0e6ed', size = 16),
+      categoryorder = "array",
+      categoryarray = rev(datasets[[1]]$Pais_label),
+      automargin = TRUE  # Ajuste automático de márgenes
+    ),
+    
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 13),
+    
+    # MÁRGENES OPTIMIZADOS PARA ANCHO MÁXIMO
+    margin = list(l = 180, r = 50, b = 80, t = 120),  # Margen derecho muy reducido
+    
+    hovermode = 'closest',
+    
+    # ========== BOTONES INTERACTIVOS MEJOR POSICIONADOS ==========
+    updatemenus = list(
+      list(
+        buttons = lapply(seq_along(vars_config), function(i) {
+          config <- vars_config[[i]]
+          
+          # Crear array de visibilidad
+          visible <- rep(FALSE, length(vars_config))
+          visible[i] <- TRUE
+          
+          list(
+            label = strsplit(config$nombre, " \\(")[[1]][1],
+            method = "update",
+            args = list(
+              list(visible = visible),
+              list(
+                title = paste0(
+                  "<b style='color:#00e5ff; font-size:24px;'>Top 15 Países - ", 
+                  config$nombre, 
+                  "</b><br>",
+                  "<span style='color:#8b92a0; font-size:14px;'>Año 2022 | Selecciona una variable para cambiar</span>"
+                ),
+                "xaxis.title" = paste0("<b style='font-size:16px;'>", config$nombre, "</b>"),
+                "xaxis.range" = c(0, max(datasets[[i]]$Valor) * 1.15),
+                "yaxis.categoryarray" = rev(datasets[[i]]$Pais_label)
+              )
+            )
+          )
+        }),
+        
+        direction = "down",
+        pad = list(r = 10, t = 10),
+        showactive = TRUE,
+        x = 0.02,        # Más a la izquierda
+        xanchor = "left",
+        y = 1.02,        # Justo debajo del título
+        yanchor = "bottom",
+        bgcolor = "rgba(0, 229, 255, 0.15)",
+        bordercolor = "#00e5ff",
+        borderwidth = 2,
+        font = list(size = 12, color = "#00e5ff", family = "Arial")
+      )
+    ),
+    
+    # ANOTACIONES MEJORADAS
+    annotations = list(
+      list(
+        x = 1.02,  # Justo fuera del área del gráfico a la derecha
+        y = 0.5,
+        xref = "paper",
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>💡<br>Click en los<br>botones para<br>cambiar variable</span>",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle",
+        bgcolor = "rgba(10, 14, 26, 0.8)",
+        bordercolor = "#00e5ff",
+        borderwidth = 1,
+        borderpad = 8
+      )
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "top15_economia_2022",
+      width = 1600,
+      height = 900
+    )
+  )
+```
+
+### Dimensión Salud y Bienestar
+
+```{r ev-mi-animado, fig.height=8, fig.width=28, out.width="100%"}
+# Asignar continentes
+asignar_continentes <- function(data) {
+  continentes_map <- c(
+    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
+    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
+    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
+    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
+    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
+    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
+    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
+    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
+    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
+    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
+    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
+    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
+    
+    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
+    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
+    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
+    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
+    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
+    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
+    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
+    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
+    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
+    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
+    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
+    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
+    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
+    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
+    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
+    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
+    "San Marino" = "Europe",
+    
+    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
+    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
+    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
+    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
+    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
+    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
+    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
+    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
+    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
+    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
+    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
+    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
+    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
+    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
+    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
+    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
+    
+    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
+    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
+    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
+    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
+    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
+    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
+    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
+    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
+    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
+    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
+    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
+    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
+    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
+    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
+    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
+    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
+    "Zimbabwe" = "Africa",
+    
+    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
+    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
+    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
+    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
+  )
+  
+  data %>%
+    mutate(Continente = ifelse(Pais %in% names(continentes_map),
+                                continentes_map[Pais], NA))
+}
+
+# Preparar datos - SOLO VARIABLES DE SALUD
+datos_ev_mi <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(!is.na(`Esperanza vida`) & 
+         !is.na(`Mortalidad infantil`) & 
+         !is.na(`Gasto salud`) &
+         !is.na(Continente)) %>%
+  select(Pais, Continente, `Esperanza vida`, `Mortalidad infantil`, `Gasto salud`) %>%
+  mutate(
+    tooltip = paste0(
+      "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
+      "<span style='color:#a259ff; font-size:11px;'>", Continente, "</span><br><br>",
+      "<b style='color:#e0e6ed; font-size:11px;'>INDICADORES DE SALUD:</b><br>",
+      "├─ Esperanza de vida: <b style='color:#00e676;'>", 
+      round(`Esperanza vida`, 1), " años</b><br>",
+      "├─ Mortalidad infantil: <b style='color:#ff1744;'>", 
+      round(`Mortalidad infantil`, 1), "/1,000</b><br>",
+      "└─ Gasto en salud: <b style='color:#ffd600;'>", 
+      round(`Gasto salud`, 2), "% PIB</b>"
+    )
+  )
+
+# Crear gráfico scatter optimizado al máximo
+p <- plot_ly(
+  data = datos_ev_mi,
+  x = ~`Esperanza vida`,
+  y = ~`Mortalidad infantil`,
+  color = ~Continente,
+  colors = c(
+    "Americas" = "green",
+    "Europe" = "#0084ff",
+    "Asia" = "#ffd600",
+    "Africa" = "#ff1744",
+    "Oceania" = "#a259ff"
+  ),
+  type = 'scatter',
+  mode = 'markers',
+  customdata = ~tooltip,
+  hovertemplate = "%{customdata}<extra></extra>",
+  marker = list(
+    size = 14,  # Marcadores aún más grandes
+    opacity = 0.9,
+    line = list(color = '#ffffff', width = 2)
+  ),
+  showlegend = TRUE
+) %>%
+  layout(
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:24px;'>Salud Poblacional: Esperanza de Vida vs Mortalidad Infantil</b><br>
+               <span style='color:#8b92a0; font-size:14px;'>Año 2022 | Relación inversa: mejor salud = mayor EV y menor MI</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
+    ),
+    
+    xaxis = list(
+      title = "<b style='font-size:16px;'>Esperanza de vida al nacer (años)</b>",
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      zeroline = FALSE,
+      range = c(40, 90),  # Rango más amplio
+      tickfont = list(color = '#8b92a0', size = 13),
+      titlefont = list(color = '#e0e6ed', size = 16)
+    ),
+    
+    yaxis = list(
+      title = "<b style='font-size:16px;'>Mortalidad infantil (por 1,000 nacidos vivos)</b>",
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      zeroline = FALSE,
+      range = c(0, 110),
+      tickfont = list(color = '#8b92a0', size = 13),
+      titlefont = list(color = '#e0e6ed', size = 16)
+    ),
+    
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 13),
+    
+    legend = list(
+      title = list(text = "<b style='font-size:14px;'>Continente</b>", font = list(size = 14, color = "#00e5ff")),
+      bgcolor = 'rgba(10,14,26,0.95)',
+      bordercolor = '#00e5ff',
+      borderwidth = 2,
+      x = 0.99,  # Más pegado al borde derecho
+      y = 0.99,  # Más pegado al borde superior
+      xanchor = "right",
+      yanchor = "top",
+      font = list(size = 13, color = "#e0e6ed")
+    ),
+    
+    # MÁRGENES MUY COMPACTOS
+    margin = list(l = 80, r = 120, b = 60, t = 100),  # Margen derecho reducido
+    
+    hovermode = 'closest',
+    
+    # ZONAS DE INTERPRETACIÓN MÁS VISIBLES
+    shapes = list(
+      # Zona ÓPTIMA
+      list(
+        type = "rect",
+        x0 = 75, x1 = 90,
+        y0 = 0, y1 = 15,
+        xref = "x", yref = "y",
+        fillcolor = "rgba(0, 230, 118, 0.15)",
+        line = list(color = "rgba(0, 230, 118, 0.7)", width = 2.5, dash = "dot"),
+        layer = "below"
+      ),
+      
+      # Zona CRÍTICA
+      list(
+        type = "rect",
+        x0 = 40, x1 = 65,
+        y0 = 40, y1 = 110,
+        xref = "x", yref = "y",
+        fillcolor = "rgba(255, 23, 68, 0.15)",
+        line = list(color = "rgba(255, 23, 68, 0.7)", width = 2.5, dash = "dot"),
+        layer = "below"
+      )
+    ),
+    
+    annotations = list(
+      # Anotación ZONA ÓPTIMA
+      list(
+        x = 82.5, 
+        y = 25,  # Mover más arriba para evitar superposición
+        text = "<b style='color:#00e676; font-size:13px;'>✓ ZONA ÓPTIMA</b><br><span style='color:#00e676; font-size:11px;'>Alta EV + Baja MI</span>",
+        showarrow = FALSE,
+        bgcolor = "rgba(0, 230, 118, 0.25)",
+        bordercolor = "#00e676",
+        borderwidth = 2,
+        borderpad = 8,
+        font = list(size = 11),
+        xanchor = "center"
+      ),
+      
+      # Anotación ZONA CRÍTICA
+      list(
+        x = 52.5, 
+        y = 95,  # Mover más abajo para evitar superposición
+        text = "<b style='color:#ff1744; font-size:13px;'>⚠ ZONA CRÍTICA</b><br><span style='color:#ff1744; font-size:11px;'>Baja EV + Alta MI</span>",
+        showarrow = FALSE,
+        bgcolor = "rgba(255, 23, 68, 0.25)",
+        bordercolor = "#ff1744",
+        borderwidth = 2,
+        borderpad = 8,
+        font = list(size = 11),
+        xanchor = "center"
+      ),
+      
+      # Anotación explicativa
+      list(
+        x = 0.02,
+        y = -0.12,
+        text = "<span style='color:#8b92a0; font-size:11px;'>Cada punto representa un país | Arrastra para zoom | Doble click para resetear</span>",
+        showarrow = FALSE,
+        xref = "paper",
+        yref = "paper",
+        xanchor = "left"
+      ),
+      
+      # Anotación de correlación (valor añadido)
+      list(
+        x = 0.98,
+        y = -0.12,
+        text = "<span style='color:#8b92a0; font-size:11px;'>Correlación inversa fuerte: r = ~ -0.85</span>",
+        showarrow = FALSE,
+        xref = "paper",
+        yref = "paper",
+        xanchor = "right"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "salud_poblacional_2022",
+      width = 1800,  # Mayor resolución
+      height = 1000
+    )
+  )
+
+p
+```
+
+### Dimensión Tecnológica y de Conectividad
+
+```{r tecnologia-treemap, fig.height=9, fig.width=25, out.width="100%"}
+# Asignar continentes
+asignar_continentes <- function(data) {
+  continentes_map <- c(
+    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
+    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
+    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
+    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
+    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
+    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
+    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
+    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
+    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
+    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
+    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
+    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
+    
+    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
+    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
+    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
+    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
+    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
+    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
+    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
+    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
+    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
+    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
+    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
+    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
+    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
+    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
+    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
+    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
+    "San Marino" = "Europe",
+    
+    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
+    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
+    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
+    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
+    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
+    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
+    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
+    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
+    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
+    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
+    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
+    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
+    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
+    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
+    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
+    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
+    
+    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
+    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
+    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
+    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
+    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
+    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
+    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
+    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
+    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
+    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
+    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
+    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
+    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
+    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
+    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
+    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
+    "Zimbabwe" = "Africa",
+    
+    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
+    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
+    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
+    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
+  )
+  
+  data %>%
+    mutate(Continente = ifelse(Pais %in% names(continentes_map),
+                                continentes_map[Pais], NA))
+}
+
+# Preparar datos CON VERIFICACIÓN DE DATOS
+cat("Verificando datos disponibles...\n")
+cat("Total de países en Base_2022:", nrow(Base_2022), "\n")
+cat("Países con datos completos de tecnología:\n")
+
+datos_tree <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(
+    !is.na(`Acceso electricidad`) & 
+    !is.na(`Uso internet`) & 
+    !is.na(`Suscripciones movil`) &
+    !is.na(Poblacion) &
+    !is.na(Continente) &
+    Poblacion > 0  # Asegurar población positiva
+  ) %>%
+  select(
+    Pais, Continente, 
+    `Acceso electricidad`, 
+    `Uso internet`, 
+    `Suscripciones movil`, 
+    Poblacion
+  ) %>%
+  arrange(desc(Poblacion)) %>%
+  # Limitar a los 60 países más poblados para mejor visualización
+  slice_head(n = 60) %>%
+  mutate(
+    Poblacion_millones = Poblacion / 1e6,
+    tooltip = paste0(
+      "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
+      "<span style='color:#a259ff; font-size:12px;'>", Continente, "</span><br><br>",
+      "<b style='color:#e0e6ed; font-size:12px;'>INDICADORES TECNOLÓGICOS:</b><br>",
+      "├─ Acceso Electricidad: <b style='color:#ffd600;'>", 
+      round(`Acceso electricidad`, 1), "%</b><br>",
+      "├─ Uso de Internet: <b style='color:#00e676;'>", 
+      round(`Uso internet`, 1), "%</b><br>",
+      "├─ Suscripciones Móvil: <b style='color:#00e5ff;'>", 
+      round(`Suscripciones movil`, 1), "/100 hab.</b><br>",
+      "└─ Población: <b style='color:#ff1744;'>", 
+      format(round(Poblacion_millones, 1), big.mark = ",", decimal.mark = ".", trim = TRUE), " M</b>"
+    )
+  )
+
+# Verificar que tenemos datos
+cat("Países después del filtrado:", nrow(datos_tree), "\n")
+if (nrow(datos_tree) == 0) {
+  stop("No hay datos suficientes para crear el treemap. Verifica las columnas 'Acceso electricidad', 'Uso internet', 'Suscripciones movil', 'Poblacion'.")
+}
+
+# Crear treemap CORREGIDO
+fig <- plot_ly(
+  data = datos_tree,
+  type = "treemap",
+  labels = ~Pais,
+  parents = ~"",  # Todos los países son hijos del nodo raíz
+  values = ~Poblacion,
+  branchvalues = "total",
+  marker = list(
+    colors = ~`Uso internet`,
+    colorscale = list(
+      c(0, "#ff1744"),    # Rojo para bajo uso
+      c(0.3, "#ff6b00"),  # Naranja
+      c(0.6, "#ffd600"),  # Amarillo
+      c(0.8, "#00e676"),  # Verde
+      c(1, "#00e5ff")     # Cyan para alto uso
+    ),
+    cmin = 0,
+    cmax = 100,
+    showscale = TRUE,
+    colorbar = list(
+      title = list(
+        text = "<b>Uso de<br>Internet (%)</b>",
+        font = list(size = 12, color = "#e0e6ed")
+      ),
+      tickvals = c(0, 25, 50, 75, 100),
+      ticktext = c("0%", "25%", "50%", "75%", "100%"),
+      thickness = 20,
+      len = 0.8,
+      x = 1.05,
+      y = 0.5,
+      tickfont = list(size = 11, color = "#8b92a0")
+    ),
+    line = list(color = "#0a0e1a", width = 2)
+  ),
+  textinfo = "label+value",
+  texttemplate = "<b>%{label}</b><br>%{value:.0f} hab.",
+  textposition = "middle center",
+  textfont = list(
+    size = 14,
+    color = "white",
+    family = "Arial"
+  ),
+  customdata = ~tooltip,
+  hovertemplate = "%{customdata}<extra></extra>",
+  showlegend = FALSE
+)
+
+# Layout MEJORADO
+fig <- fig %>%
+  layout(
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:24px;'>Conectividad Digital Global</b><br>
+               <span style='color:#8b92a0; font-size:14px;'>Año 2022 | Tamaño = Población | Color = Uso de Internet</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
+    ),
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    
+    # Márgenes optimizados
+    margin = list(l = 10, r = 200, b = 100, t = 120),
+    
+    # Anotaciones explicativas
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.08,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:12px;'><b>📊 INTERPRETACIÓN:</b> Rectángulos grandes = poblaciones numerosas. Colores verde/cyan = alta conectividad digital. Rojo/naranja = brecha digital.</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      ),
+      list(
+        x = 1.15,
+        y = 0.9,
+        xref = "paper",
+        yref = "paper",
+        text = "<span style='color:#00e5ff; font-size:13px;'><b>💡 INFORMACIÓN</b></span><br><span style='color:#8b92a0; font-size:11px;'>• Tamaño = Población<br>• Color = % Uso Internet<br>• Click para detalles<br>• Top 60 países</span>",
+        showarrow = FALSE,
+        xanchor = "left",
+        align = "left",
+        bgcolor = "rgba(10, 14, 26, 0.8)",
+        bordercolor = "#00e5ff",
+        borderwidth = 1,
+        borderpad = 10
+      )
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "conectividad_digital_global",
+      width = 1600,
+      height = 1000
+    )
+  )
+
+# Mostrar el gráfico
+fig
+```
 
 ## Visualización Geoespacial
 
@@ -1637,205 +2355,10 @@ mapa <- mapa %>%
 
 mapa
 ```
----
+
+------------------------------------------------------------------------
 
 ## Visualizaciones Exploratorias
-
-### Gráfico de Burbujas: Economía Global
-
-Análisis multidimensional de la economía mundial 2022. Este gráfico permite 
-visualizar simultáneamente cuatro dimensiones: PIB per cápita (eje X), crecimiento 
-económico (eje Y), tamaño poblacional (tamaño de burbuja) y ubicación geográfica 
-(color por continente).
-
-```{r grafico-burbujas-COMPLETO, fig.height=7, fig.width=11}
-
-asignar_continentes <- function(data) {
-  continentes_map <- c(
-    # AMÉRICA - COMPLETO
-    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
-    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
-    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
-    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
-    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
-    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
-    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
-    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
-    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
-    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
-    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
-    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
-    
-    # EUROPA - COMPLETO
-    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
-    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
-    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
-    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
-    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
-    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
-    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
-    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
-    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
-    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
-    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
-    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
-    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
-    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
-    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
-    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
-    "San Marino" = "Europe",
-    
-    # ASIA - COMPLETO
-    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
-    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
-    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
-    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
-    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
-    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
-    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
-    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
-    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
-    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
-    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
-    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
-    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
-    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
-    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
-    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
-    
-    # ÁFRICA - COMPLETO
-    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
-    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
-    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
-    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
-    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
-    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
-    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
-    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
-    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
-    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
-    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
-    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
-    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
-    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
-    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
-    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
-    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
-    "Zimbabwe" = "Africa",
-    
-    # OCEANÍA - COMPLETO
-    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
-    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
-    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
-    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
-  )
-  
-  data %>%
-    mutate(Continente = ifelse(Pais %in% names(continentes_map),
-                                continentes_map[Pais], NA))
-}
-
-# Preparar datos con burbujas PEQUEÑAS y proporcionales
-datos_burbujas <- Base_2022 %>%
-  asignar_continentes() %>%
-  filter(!is.na(PIB_per) & !is.na(`Crecimiento PIB`) & !is.na(Continente)) %>%
-  select(Pais, Continente, PIB_per, `Crecimiento PIB`, Poblacion) %>%
-  mutate(
-    # Tamaño: logaritmo para evitar burbujas enormes
-    Tamaño = log10(Poblacion),
-    
-    tooltip_text = paste0(
-      "<b>", Pais, "</b><br>",
-      Continente, "<br>",
-      "PIB: $", round(PIB_per), "<br>",
-      "Crec: ", round(`Crecimiento PIB`, 2), "%<br>",
-      "Población: ", round(Poblacion/1e6, 1), "M"
-    )
-  )
-
-# Colores por continente
-colores <- c(
-  "Americas" = "#00e676",
-  "Europe" = "#0084ff",
-  "Asia" = "#ffd600",
-  "Africa" = "#ff1744",
-  "Oceania" = "#a259ff"
-)
-
-# Gráfico
-plot_ly(
-  data = datos_burbujas,
-  x = ~PIB_per,
-  y = ~`Crecimiento PIB`,
-  size = ~Tamaño,
-  color = ~Continente,
-  colors = colores,
-  type = 'scatter',
-  mode = 'markers',
-  text = ~tooltip_text,
-  hovertemplate = "%{text}<extra></extra>",
-  marker = list(
-    sizeref = 2 * max(datos_burbujas$Tamaño) / 15^2,
-    sizemin = 3,
-    opacity = 0.65,
-    line = list(color = '#00e5ff', width = 0.8)
-  ),
-  showlegend = TRUE
-) %>%
-  layout(
-    plot_bgcolor = '#000000',
-    paper_bgcolor = '#0a0e1a',
-    font = list(family = "Arial", color = '#e0e6ed', size = 11),
-    title = list(
-      text = "<b style='color:#00e5ff; font-size:18px;'>Economía Global: PIB per Cápita vs Crecimiento</b><br>
-               <span style='color:#8b92a0; font-size:12px;'>Tamaño burbuja = Población | Año 2022</span>",
-      x = 0.5, xanchor = 'center'
-    ),
-    xaxis = list(
-      title = "<b>PIB per cápita (USD)</b>",
-      type = 'linear',
-      gridcolor = '#12161f',
-      showgrid = TRUE,
-      tickcolor = '#8b92a0'
-    ),
-    yaxis = list(
-      title = "<b>Crecimiento PIB Anual (%)</b>",
-      gridcolor = '#12161f',
-      showgrid = TRUE,
-      tickcolor = '#8b92a0'
-    ),
-    legend = list(
-      bgcolor = 'rgba(10,14,26,0.85)',
-      bordercolor = '#00e5ff',
-      borderwidth = 1,
-      x = 0.01, y = 0.99
-    ),
-    margin = list(l = 60, r = 40, b = 60, t = 70),
-    hovermode = 'closest'
-  ) %>%
-  config(responsive = TRUE)
-
-```
-
-✅ Verificación
-
-```{r validar-grafico-completo}
-
-datos_check <- Base_2022 %>% asignar_continentes() %>% 
-  filter(!is.na(Continente) & !is.na(PIB_per) & !is.na(`Crecimiento PIB`))
-
-cat("✅ Total países:", nrow(datos_check), "\n")
-cat("📊 PIB rango: $", round(min(datos_check$PIB_per)), " - $", round(max(datos_check$PIB_per)), "\n")
-cat("📈 Crec rango: ", round(min(datos_check$`Crecimiento PIB`), 2), "% - ", round(max(datos_check$`Crecimiento PIB`), 2), "%\n")
-
-# Por continente
-stats <- datos_check %>% group_by(Continente) %>% summarise(Paises = n(), .groups = 'drop')
-cat("\nPor continente:\n")
-for(i in 1:nrow(stats)) {
-  cat("- ", stats$Continente[i], ": ", stats$Paises[i], " países\n")
-}
-
-```
 
 # Análisis de Componentes Principales
 
@@ -1857,7 +2380,7 @@ for(i in 1:nrow(stats)) {
 # Varianza explicada
 ```
 
----
+------------------------------------------------------------------------
 
 # Clusterización
 
@@ -1879,7 +2402,7 @@ for(i in 1:nrow(stats)) {
 # Visualización
 ```
 
----
+------------------------------------------------------------------------
 
 # Resultados e Interpretación
 
@@ -1891,35 +2414,34 @@ Los resultados revelan patrones importantes en el desarrollo de los países anal
 
 Se identifican tendencias claras según las características de desarrollo económico y social.
 
----
+------------------------------------------------------------------------
 
 # Conclusiones
 
 ## Conclusiones del Estudio
 
-1. **Reducción de Dimensionalidad:** El ACP logró simplificar efectivamente los datos
-2. **Segmentación:** Los clusters identificados muestran agrupaciones coherentes
-3. **Implicaciones:** Los resultados tienen aplicaciones prácticas para políticas públicas
+1.  **Reducción de Dimensionalidad:** El ACP logró simplificar efectivamente los datos
+2.  **Segmentación:** Los clusters identificados muestran agrupaciones coherentes
+3.  **Implicaciones:** Los resultados tienen aplicaciones prácticas para políticas públicas
 
 ## Limitaciones y Trabajo Futuro
 
-- Análisis transversal limitado a un período específico
-- Recomendación de análisis longitudinal futuro
-- Incorporación de variables adicionales
+-   Análisis transversal limitado a un período específico
+-   Recomendación de análisis longitudinal futuro
+-   Incorporación de variables adicionales
 
----
+------------------------------------------------------------------------
 
 # Bibliografía
 
-1. **World Bank.** (2024). *World Development Indicators*
-2. **Jolliffe, I. T., & Cadima, J.** (2016). Principal component analysis: A review
-3. **Hastie, T., et al.** (2009). *The Elements of Statistical Learning*
-4. **James, G., et al.** (2013). *An Introduction to Statistical Learning with R*
-5. **Ward, J. H.** (1963). Hierarchical grouping to optimize an objective function
+1.  **World Bank.** (2024). *World Development Indicators*
+2.  **Jolliffe, I. T., & Cadima, J.** (2016). Principal component analysis: A review
+3.  **Hastie, T., et al.** (2009). *The Elements of Statistical Learning*
+4.  **James, G., et al.** (2013). *An Introduction to Statistical Learning with R*
+5.  **Ward, J. H.** (1963). Hierarchical grouping to optimize an objective function
 
----
+------------------------------------------------------------------------
 
-<div class="footer">
-  <strong>Universidad del Valle</strong> | <em>Facultad de Ingeniería</em> | Gestión de Datos<br>
-  Profesor: Orlando Joaqui Barandica | `r format(Sys.Date(), '%Y')`
-</div>
+::: footer
+<strong>Universidad del Valle</strong> \| <em>Facultad de Ingeniería</em> \| Gestión de Datos<br> Profesor: Orlando Joaqui Barandica \| `r format(Sys.Date(), '%Y')`
+:::
