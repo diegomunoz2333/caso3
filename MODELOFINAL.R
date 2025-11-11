@@ -549,10 +549,30 @@ paises_clusters <- data.frame(
   Comp2 = factores[, 2],
   Cluster = as.factor(clusters)
 )
-library(plotly)
+#=================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+library(ggplot2)
+library(gganimate)
 library(ellipse)
 
-# Calcular centroides para cada cluster
+# Calcular centroides
 centroides <- paises_clusters %>%
   group_by(Cluster) %>%
   summarise(
@@ -560,130 +580,141 @@ centroides <- paises_clusters %>%
     Centroid2 = mean(Comp2)
   )
 
-# Calcular elipses para cada cluster
-elipses_list <- list()
+# Crear frames con elipses rotando
+frames_data <- list()
 
-for (cluster_id in unique(paises_clusters$Cluster)) {
-  cluster_data <- paises_clusters[paises_clusters$Cluster == cluster_id, ]
+for (angle in seq(0, 360, by = 18)) {
   
-  # Calcular matriz de covarianza
-  cov_matrix <- cov(cluster_data[, c("Comp1", "Comp2")])
+  angle_rad <- angle * pi / 180
+  cos_a <- cos(angle_rad)
+  sin_a <- sin(angle_rad)
+  rot_matrix <- matrix(c(cos_a, -sin_a, sin_a, cos_a), 2, 2)
   
-  # Calcular centro del cluster
-  center <- c(mean(cluster_data$Comp1), mean(cluster_data$Comp2))
+  elipses_list <- list()
   
-  # Generar elipse (68% confianza)
-  elipse_points <- ellipse(cov_matrix, centre = center, level = 0.68, npoints = 100)
+  for (cluster_id in unique(paises_clusters$Cluster)) {
+    cluster_data <- paises_clusters[paises_clusters$Cluster == cluster_id, ]
+    
+    if (nrow(cluster_data) > 2) {
+      cov_matrix <- cov(cluster_data[, c("Comp1", "Comp2")])
+      center <- c(mean(cluster_data$Comp1), mean(cluster_data$Comp2))
+      
+      rotated_cov <- rot_matrix %*% cov_matrix %*% t(rot_matrix)
+      elipse_points <- ellipse(rotated_cov, centre = center, level = 0.68, npoints = 100)
+      
+      elipses_list[[as.character(cluster_id)]] <- data.frame(
+        x = elipse_points[, 1],
+        y = elipse_points[, 2],
+        Cluster = cluster_id,
+        angle_frame = angle
+      )
+    }
+  }
   
-  elipses_list[[as.character(cluster_id)]] <- data.frame(
-    x = elipse_points[, 1],
-    y = elipse_points[, 2],
-    Cluster = cluster_id
-  )
+  elipses_df <- do.call(rbind, elipses_list)
+  rownames(elipses_df) <- NULL
+  frames_data[[length(frames_data) + 1]] <- elipses_df
 }
 
-# Combinar todas las elipses
-elipses_df <- do.call(rbind, elipses_list)
-rownames(elipses_df) <- NULL
+elipses_animated <- do.call(rbind, frames_data)
+rownames(elipses_animated) <- NULL
 
-# Definir colores y nombres
-colores_clusters <- c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD")
-nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+# Agregar columna de ángulo a los países
+paises_clusters_anim <- paises_clusters %>%
+  crossing(angle_frame = seq(0, 360, by = 18))
 
-# Crear gráfico interactivo
-p <- plot_ly() %>%
-  # Agregar elipses para cada cluster
-  add_trace(
-    data = elipses_df[elipses_df$Cluster == "1", ],
-    x = ~x, y = ~y,
-    type = "scatter", mode = "lines",
-    line = list(color = "#2C5F8D", width = 2, dash = "dash"),
-    fill = "toself", fillcolor = "rgba(44, 95, 141, 0.1)",
-    name = "Elipse Cluster 1",
-    hoverinfo = "skip",
-    showlegend = FALSE
-  ) %>%
-  add_trace(
-    data = elipses_df[elipses_df$Cluster == "2", ],
-    x = ~x, y = ~y,
-    type = "scatter", mode = "lines",
-    line = list(color = "#27AE60", width = 2, dash = "dash"),
-    fill = "toself", fillcolor = "rgba(39, 174, 96, 0.1)",
-    name = "Elipse Cluster 2",
-    hoverinfo = "skip",
-    showlegend = FALSE
-  ) %>%
-  add_trace(
-    data = elipses_df[elipses_df$Cluster == "3", ],
-    x = ~x, y = ~y,
-    type = "scatter", mode = "lines",
-    line = list(color = "#8E44AD", width = 2, dash = "dash"),
-    fill = "toself", fillcolor = "rgba(142, 68, 173, 0.1)",
-    name = "Elipse Cluster 3",
-    hoverinfo = "skip",
-    showlegend = FALSE
-  ) %>%
-  # Agregar puntos de países
-  add_trace(
+centroides_anim <- centroides %>%
+  crossing(angle_frame = seq(0, 360, by = 18))
+
+# Crear gráfico animado
+anim <- ggplot() +
+  
+  # Elipses animadas
+  geom_polygon(
+    data = elipses_animated,
+    aes(x = x, y = y, fill = Cluster, color = Cluster),
+    alpha = 0.15,
+    size = 1.2,
+    linetype = "dashed"
+  ) +
+  
+  # Puntos de países (sin animar)
+  geom_point(
     data = paises_clusters,
-    x = ~Comp1, 
-    y = ~Comp2,
-    color = ~Cluster,
-    colors = colores_clusters,
-    text = ~paste("<b>", Pais, "</b><br>",
-                  "Clúster:", nombres_clusters[as.character(Cluster)], "<br>",
-                  "PC1:", round(Comp1, 2), "<br>",
-                  "PC2:", round(Comp2, 2)),
-    type = "scatter",
-    mode = "markers",
-    marker = list(size = 10, opacity = 0.8),
-    hovertemplate = '%{text}<extra></extra>',
-    name = ~nombres_clusters[as.character(Cluster)]
-  ) %>%
-  # Agregar centroides (triángulos)
-  add_trace(
+    aes(x = Comp1, y = Comp2, color = Cluster),
+    size = 3.5,
+    alpha = 0.8
+  ) +
+  
+  # Centroides (sin animar)
+  geom_point(
     data = centroides,
-    x = ~Centroid1,
-    y = ~Centroid2,
-    color = ~Cluster,
-    colors = colores_clusters,
-    type = "scatter",
-    mode = "markers",
-    marker = list(size = 15, symbol = "triangle-up", line = list(width = 2, color = "white")),
-    text = ~paste("<b>Centroide Clúster", Cluster, "</b><br>",
-                  nombres_clusters[as.character(Cluster)]),
-    hovertemplate = '%{text}<extra></extra>',
-    showlegend = FALSE
-  ) %>%
-  layout(
-    title = list(
-      text = "Distribución de Clústeres en el Espacio Factorial<br><sub>Agrupamiento de países según los dos primeros componentes principales</sub>",
-      font = list(size = 16, color = "#2C5F8D")
-    ),
-    xaxis = list(
-      title = "Componente Principal 1",
-      zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
-    ),
-    yaxis = list(
-      title = "Componente Principal 2",
-      zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
-    ),
-    legend = list(
-      title = list(text = "<b>Clúster</b>", font = list(color = "#2C5F8D")),
-      bgcolor = "rgba(255,255,255,0.9)",
-      bordercolor = "gray",
-      borderwidth = 1
-    ),
-    hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white"
-  )
+    aes(x = Centroid1, y = Centroid2),
+    size = 6,
+    shape = 17,
+    color = "black",
+    stroke = 1.5
+  ) +
+  
+  # Etiquetas de países
+  geom_text_repel(
+    data = paises_clusters,
+    aes(x = Comp1, y = Comp2, label = Pais),
+    size = 3.2,
+    color = "gray20",
+    fontface = "bold"
+  ) +
+  
+  # Grid y ejes
+  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", size = 0.5) +
+  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", size = 0.5) +
+  
+  scale_color_manual(
+    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+    name = "Clúster",
+    labels = c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+  ) +
+  scale_fill_manual(
+    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+    guide = "none"
+  ) +
+  
+  labs(
+    title = "Distribución de Clústeres - Elipses Girando",
+    subtitle = "Rotación: {frame} grados",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "right"
+  ) +
+  
+  # ANIMACIÓN
+  transition_states(
+    angle_frame,
+    transition_length = 1,
+    state_length = 1
+  ) +
+  ease_aes("linear") +
+  view_follow(fixed_y = TRUE, fixed_x = TRUE)
 
-p
+# Renderizar animación
+animate(anim, 
+        nframes = 20, 
+        fps = 2, 
+        width = 800, 
+        height = 600,
+        renderer = gifski_renderer())
 #===============================================================================
 
 
