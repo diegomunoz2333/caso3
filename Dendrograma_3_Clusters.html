@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dendrograma - 3 Clústeres</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; background: #f9f9fb; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
+    p { text-align: center; color: #7f8c8d; margin-bottom: 30px; }
+    .dendrogram { width: 100%; max-width: 1200px; margin: 0 auto; }
+    .cluster-label {
+      font-size: 24px; font-weight: bold; text-anchor: middle; cursor: pointer;
+      fill: #2c3e50; transition: fill 0.3s;
+    }
+    .cluster-label:hover { fill: #3498db; }
+    .tooltip {
+      position: absolute; padding: 12px; background: rgba(0,0,0,0.85);
+      color: white; border-radius: 8px; font-size: 14px; pointer-events: none;
+      opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 300px; line-height: 1.5;
+    }
+    .details {
+      margin-top: 40px; padding: 25px; background: white; border-radius: 15px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.12); display: none; text-align: center;
+    }
+    .details.active { display: block; animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+    .details h3 { margin: 0 0 20px 0; color: #2c3e50; font-size: 28px; }
+    .country-list { columns: 3; column-gap: 30px; font-size: 16px; list-style: none; padding: 0; }
+    .country-list li { margin-bottom: 8px; background: #eef5ff; padding: 6px 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Dendrograma Jerárquico - 3 Clústeres</h1>
+  <p>Haz clic en cualquier clúster para ver la lista completa de países</p>
+  
+  <div class="dendrogram" id="dendrogram"></div>
+  
+  <div id="details" class="details">
+    <h3 id="cluster-title"></h3>
+    <ul id="country-list" class="country-list"></ul>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    // === TUS PAÍSES REALES (insertados desde R) ===
+    const clusterData = {
+      1: ["Albania","Argentina","Australia","Austria","Belarus","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Djibouti","El Salvador","Estonia","Finland","France","Germany","Greece","Hungary","Iceland","Ireland","Israel","Italy","Japan","Korea, Rep.","Latvia","Lithuania","Malta","Moldova","Montenegro","Netherlands","New Zealand","North Macedonia","Norway","Poland","Portugal","Romania","San Marino","Serbia","Slovak Republic","Slovenia","Spain","Sweden","Switzerland","Thailand","United Kingdom","United States","Uruguay"],
+      2: ["Algeria","Antigua and Barbuda","Armenia","Azerbaijan","Bahamas, The","Belize","Bhutan","Bolivia","Botswana","Brazil","Cabo Verde","Cambodia","Chile","China","Colombia","Costa Rica","Dominican Republic","Ecuador","Egypt, Arab Rep.","Fiji","Georgia","Guatemala","Honduras","India","Indonesia","Iraq","Jordan","Kazakhstan","Kuwait","Kyrgyz Republic","Lebanon","Malaysia","Maldives","Marshall Islands","Mauritius","Mexico","Mongolia","Morocco","Nepal","Nicaragua","Oman","Panama","Paraguay","Peru","Philippines","Qatar","Russian Federation","Samoa","Saudi Arabia","South Africa","Sri Lanka","Tajikistan","Tonga","Tunisia","Turkiye","Uzbekistan","Vanuatu","Viet Nam"],
+      3: ["Angola","Bangladesh","Benin","Burkina Faso","Burundi","Cameroon","Comoros","Congo, Dem. Rep.","Congo, Rep.","Cote d'Ivoire","Eswatini","Gambia, The","Ghana","Guinea","Guinea-Bissau","Lesotho","Madagascar","Mali","Mauritania","Mozambique","Namibia","Niger","Pakistan","Rwanda","Senegal","Sierra Leone","Solomon Islands","Tanzania","Timor-Leste","Togo","Uganda","Zambia","Zimbabwe"]
+    };
+
+    const width = 1100, height = 500;
+    const svg = d3.select("#dendrogram").append("svg")
+      .attr("width", width).attr("height", height);
+
+    const root = {
+      name: "root",
+      children: [
+        { name: "Clúster 1", size: 49 },
+        { name: "Clúster 2", size: 58 },
+        { name: "Clúster 3", size: 33 }
+      ]
+    };
+
+    const cluster = d3.cluster().size([width - 200, height - 200]);
+    const hierarchy = d3.hierarchy(root);
+    cluster(hierarchy);
+
+    // Líneas del dendrograma
+    svg.selectAll(".link")
+      .data(hierarchy.links())
+      .enter().append("path")
+      .attr("class", "link")
+      .attr("d", d3.linkHorizontal()
+        .x(d => d.y + 100)
+        .y(d => d.x + 100))
+      .attr("fill", "none")
+      .attr("stroke", "#2c3e50")
+      .attr("stroke-width", 4);
+
+    // Nodos y etiquetas
+    const nodes = svg.selectAll(".node")
+      .data(hierarchy.descendants())
+      .enter().append("g")
+      .attr("transform", d => `translate(${d.y + 100},${d.x + 100})`);
+
+    nodes.append("text")
+      .attr("dy", 5)
+      .attr("x", d => d.children ? -20 : 20)
+      .style("text-anchor", d => d.children ? "end" : "start")
+      .text(d => d.children ? "" : `${d.data.name} (${d.data.size})`)
+      .attr("class", "cluster-label")
+      .style("font-size", "24px")
+      .on("click", function(event, d) {
+        const num = d.data.name.split(" ")[1];
+        document.getElementById("cluster-title").innerText = `${d.data.name} (${d.data.size} países)`;
+        const list = document.getElementById("country-list");
+        list.innerHTML = "";
+        clusterData[num].forEach(pais => {
+          const li = document.createElement("li");
+          li.textContent = pais;
+          list.appendChild(li);
+        });
+        document.getElementById("details").classList.add("active");
+      });
+
+    // Tooltip
+    const tooltip = d3.select("#tooltip");
+    nodes.on("mouseover", (event, d) => {
+      if (!d.children) {
+        tooltip.style("opacity", 1)
+          .html(`<strong>${d.data.name}</strong><br>${d.data.size} países`)
+          .style("left", (event.pageX + 15) + "px")
+          .style("top", (event.pageY - 10) + "px");
+      }
+    })
+    .on("mouseout", () => tooltip.style("opacity", 0));
+  </script>
+</body>
+</html>
+

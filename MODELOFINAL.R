@@ -12,6 +12,7 @@ library(sf)
 library(leaflet)       
 library(rnaturalearth)
 library(RColorBrewer)  
+##
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
@@ -61,8 +62,10 @@ Base_2022 <- Base_2022 %>%
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
-
-
+write_csv(Base_2022, "Base_2022_limpia.csv")
+write_csv(datos_analisis %>% 
+            rownames_to_column(var = "Pais"), 
+          "Base_2022_analisis.csv")
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
@@ -70,9 +73,10 @@ cat("Variables:", ncol(datos_analisis), "\n\n")
 acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
 varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
 n_componentes <- which(varianza_acum >= 80)[1]
+n_componentes <- which(varianza_acum >= 70)[1]
 
 cat("=== SELECCIÓN DE COMPONENTES ===\n")
-cat("Componentes necesarios para ≥80% varianza:", n_componentes, "\n")
+cat("Componentes necesarios para ≥70% varianza:", n_componentes, "\n")
 cat("Varianza explicada:", round(varianza_acum[n_componentes], 2), "%\n\n")
 
 acp_resultado <- dudi.pca(
@@ -93,6 +97,43 @@ varianza_df <- data.frame(
   VarianzaAcum = varianza_acum
 )
 view(varianza_df)
+##############################grafica varianza acumulada
+#=================== GRÁFICO DE VARIANZA (70% y 6 DIMENSIONES) ===================#
+
+ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
+  geom_col(fill = "#2C5F8D", alpha = 0.9) +
+  geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
+  geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
+  geom_hline(yintercept = 70, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
+  annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
+           label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0,
+           fontface = "bold", size = 3.8) +
+  annotate("text", x = 1.8, y = 73,
+           label = "70% varianza acumulada", color = "#27AE60", hjust = 0,
+           fontface = "bold", size = 3.8) +
+  scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
+  labs(
+    title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
+    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥70%",
+    x = "Componentes Principales",
+    y = "% de Varianza Explicada"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    axis.text.x = element_text(angle = 45, vjust = 0.8),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+
 #///////////////////////// Gráfico de silhouette /////////////////////////////
 
 fviz_nbclust(
@@ -121,13 +162,13 @@ fviz_nbclust(
 #LEER
 
 #Si el codo te da 3, y Silhouette te da 2, NO es un error. Significa que:
-  
-  #Hay dos grupos fuertemente compactados, y el tercero quizás está más disperso o cerca de uno de los anteriores.
+
+#Hay dos grupos fuertemente compactados, y el tercero quizás está más disperso o cerca de uno de los anteriores.
 
 #Silhouette se va a lo más "conservador" para la separación óptima; el codo enfatiza que añadir un tercer clúster aún reduce bastante la inercia.
 
 # ¿Qué hacer en tu informe?
-  #Explica ambas decisiones y muestra ambos gráficos.
+#Explica ambas decisiones y muestra ambos gráficos.
 
 #Argumenta que, según el contexto económico y con apoyo visual (dendrograma, dispersión, silueta), tu interpretación es que 3 clústeres es "más informativo", pero reconoces que la separación más "segura" según silueta es 2.
 
@@ -148,9 +189,9 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
   geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
   geom_hline(yintercept = 80, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
-  geom_vline(xintercept = 8, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
-  annotate("text", x = 8.3, y = max(varianza_df$Varianza) * 0.9,
-           label = "8 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
+  geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
+  annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
+           label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
            fontface = "bold", size = 3.8) +
   annotate("text", x = 1.8, y = 83,
            label = "80% varianza acumulada", color = "#27AE60", hjust = 0,
@@ -285,43 +326,31 @@ paises_df$Pais <- rownames(paises_df)
 # Calcular distancia al origen (para resaltar países más "extremos")
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
 
-ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
-  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
-  geom_text_repel(
-    aes(label = Pais),
-    size = 3.4,
-    color = "gray20",
-    fontface = "bold",
-    max.overlaps = 20,
-    segment.color = "gray70",
-    segment.size = 0.3
-  ) +
-  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
-  labs(
-    title = "Países en el Espacio Factorial del ACP",
-    subtitle = "Distribución de países según los dos primeros componentes principales",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.position = "right",
-    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
-    legend.text = element_text(size = 10),
-    legend.background = element_rect(fill = "white", color = "gray80")
+library(plotly)
+
+# Crear gráfico directamente con plot_ly (más estable)
+plot_ly(paises_df, 
+        x = ~Axis1, 
+        y = ~Axis2, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'CP1: %{x:.2f}<br>',
+                              'CP2: %{y:.2f}<br>',
+                              'Distancia: %{marker.color:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Países en el Espacio Factorial del ACP",
+                 font = list(size = 16)),
+    xaxis = list(title = "Componente Principal 1",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 2",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
   )
-
-
 
 
 #===============================================================================
@@ -384,7 +413,7 @@ res.var <- get_pca_var(res.pca)
 res.var$coord          # Coordinates
 res.var$contrib        # Contributions to the PCs
 res.var$cos2           # Quality of representation 
-View(res.var$contrib[,1:8]) # Miro los dos primeros factores
+View(res.var$contrib[,1:6]) # Miro los dos primeros factores
 colSums( res.var$contrib[,1:2] )
 
 
@@ -393,7 +422,7 @@ res.ind <- get_pca_ind(res.pca)
 res.ind$coord          # Coordinates
 res.ind$contrib        # Contributions to the PCs
 res.ind$cos2           # Quality of representation 
-View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
+View(res.ind$contrib[,1:6]) # Miro los dos primeros factores
 res.ind$contrib[,1:2]
 
 #////////////////////// Tabla nuevas dimensiones ///////////////////////////////
@@ -424,13 +453,6 @@ dimensiones_tabla <- tribble(
   "Gasto.salud, PIB_per, Inversión.Extranjera", 
   "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
   
-  "Dimensión 7", "Crecimiento económico intensivo", 
-  "Área.boscosa, Población, Crecimiento.PIB", 
-  "Malta (Poca, Poca, Media); India (Poca, Mucha, Mucha); China (Poca, Mucha, Media)",
-  
-  "Dimensión 8", "Conectividad y dinamismo económico", 
-  "Suscripciones.móvil, Inversión.extranjera, Crecimiento.PIB", 
-  "Malta (Mucha, Mucha, Media); Ireland (Mucha, Poca, Mucha); Sri Lanka (Mucha, Poca, Poca)"
 )
 
 # Crear la tabla con kableExtra
@@ -527,8 +549,29 @@ paises_clusters <- data.frame(
   Comp2 = factores[, 2],
   Cluster = as.factor(clusters)
 )
+#=================================================================================
 
-# Calcular centroides para cada cluster
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+library(plotly)
+library(ellipse)
+
+# Calcular centroides
 centroides <- paises_clusters %>%
   group_by(Cluster) %>%
   summarise(
@@ -536,59 +579,138 @@ centroides <- paises_clusters %>%
     Centroid2 = mean(Comp2)
   )
 
-# Gráfico
-ggplot(paises_clusters, aes(x = Comp1, y = Comp2, color = Cluster)) +
-  geom_point(size = 3.5, alpha = 0.8) +
-  stat_ellipse(aes(fill = Cluster), 
-               type = "norm", 
-               level = 0.68,
-               geom = "polygon", 
-               alpha = 0.15,
-               size = 1.2) +
-  geom_point(data = centroides, 
-             aes(x = Centroid1, y = Centroid2, color = Cluster),
-             size = 6, shape = 17, stroke = 1.5) +
-  geom_text_repel(
-    aes(label = Pais),
-    size = 3.2,
-    max.overlaps = 15,
-    segment.alpha = 0.4,
-    fontface = "bold",
-    show.legend = FALSE
-  ) +
-  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_manual(
-    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
-    name = "Clúster",
-    labels = c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
-  ) +
-  scale_fill_manual(
-    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
-    guide = "none"
-  ) +
-  labs(
-    title = "Distribución de Clústeres en el Espacio Factorial",
-    subtitle = "Agrupamiento de países según los dos primeros componentes principales",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.position = "right",
-    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
-    legend.text = element_text(size = 10),
-    legend.background = element_rect(fill = "white", color = "gray80")
+# Calcular elipses estáticas
+elipses_list <- list()
+
+for (cluster_id in unique(paises_clusters$Cluster)) {
+  cluster_data <- paises_clusters[paises_clusters$Cluster == cluster_id, ]
+  
+  if (nrow(cluster_data) > 2) {
+    cov_matrix <- cov(cluster_data[, c("Comp1", "Comp2")])
+    center <- c(mean(cluster_data$Comp1), mean(cluster_data$Comp2))
+    
+    elipse_points <- ellipse(cov_matrix, centre = center, level = 0.68, npoints = 100)
+    
+    elipses_list[[as.character(cluster_id)]] <- data.frame(
+      x = elipse_points[, 1],
+      y = elipse_points[, 2],
+      Cluster = cluster_id
+    )
+  }
+}
+
+elipses_df <- do.call(rbind, elipses_list)
+rownames(elipses_df) <- NULL
+
+# Definir colores
+colores_clusters <- c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD")
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+
+# Crear gráfico PLOTLY (SIN ANIMACIÓN)
+p <- plot_ly() %>%
+  
+  # ELIPSE CLUSTER 1
+  add_trace(
+    data = elipses_df[elipses_df$Cluster == "1", ],
+    x = ~x, 
+    y = ~y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#2C5F8D", width = 2, dash = "dash"),
+    fill = "toself",
+    fillcolor = "rgba(44, 95, 141, 0.1)",
+    showlegend = FALSE,
+    hoverinfo = "skip"
+  ) %>%
+  
+  # ELIPSE CLUSTER 2
+  add_trace(
+    data = elipses_df[elipses_df$Cluster == "2", ],
+    x = ~x,
+    y = ~y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#27AE60", width = 2, dash = "dash"),
+    fill = "toself",
+    fillcolor = "rgba(39, 174, 96, 0.1)",
+    showlegend = FALSE,
+    hoverinfo = "skip"
+  ) %>%
+  
+  # ELIPSE CLUSTER 3
+  add_trace(
+    data = elipses_df[elipses_df$Cluster == "3", ],
+    x = ~x,
+    y = ~y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#8E44AD", width = 2, dash = "dash"),
+    fill = "toself",
+    fillcolor = "rgba(142, 68, 173, 0.1)",
+    showlegend = FALSE,
+    hoverinfo = "skip"
+  ) %>%
+  
+  # PUNTOS DE PAÍSES
+  add_trace(
+    data = paises_clusters,
+    x = ~Comp1,
+    y = ~Comp2,
+    color = ~Cluster,
+    colors = colores_clusters,
+    text = ~paste("<b>", Pais, "</b><br>",
+                  "Clúster:", nombres_clusters[as.character(Cluster)], "<br>",
+                  "PC1:", round(Comp1, 2), "<br>",
+                  "PC2:", round(Comp2, 2)),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, opacity = 0.8),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  # CENTROIDES (triángulos)
+  add_trace(
+    data = centroides,
+    x = ~Centroid1,
+    y = ~Centroid2,
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 15, symbol = "triangle-up",
+                  line = list(width = 2, color = "white")),
+    hoverinfo = "skip",
+    showlegend = FALSE
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Distribución de Clústeres en el Espacio Factorial<br><sub>Agrupamiento de países según los dos primeros componentes principales</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(
+      title = "Componente Principal 1",
+      zeroline = TRUE,
+      zerolinecolor = "gray",
+      gridcolor = "lightgray"
+    ),
+    yaxis = list(
+      title = "Componente Principal 2",
+      zeroline = TRUE,
+      zerolinecolor = "gray",
+      gridcolor = "lightgray"
+    ),
+    legend = list(
+      title = list(text = "<b>Clúster</b>", font = list(color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray",
+      borderwidth = 1
+    ),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
+p
 #===============================================================================
 
 
@@ -648,7 +770,11 @@ fviz_dend(arbol,
 
 library(factoextra)
 paleta_personalizada <- c("#2E86AB", "#047857", "#8B5CF6")
-
+res_hc <- hcut(datos_analisis, 
+               k = k_optimo, 
+               hc_method = "ward.D2", 
+               stand = TRUE, 
+               graph = FALSE)
 fviz_cluster(res_hc, 
              ellipse.type = "convex",
              show.clust.cent = TRUE,
@@ -839,7 +965,7 @@ view(NuevaBase)
 
 
 #############mapa
-install.packages("rnaturalearthdata")
+
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 Base_2022_con_cluster <- Base_2022 %>%
@@ -974,9 +1100,8 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 
 
 
-###########################
-#########################
-# Matriz de correlaciones - cálculo
+#===============================================================================
+#///////////////// Matriz de correlaciones - cálculo ///////////////////////////
 matriz_correlacion <- cor(datos_analisis, use = "pairwise.complete.obs", method = "pearson")
 round(matriz_correlacion, 2)  # Opcional: redondear a 2 decimales para imprimir
 
@@ -990,3 +1115,279 @@ corrplot(matriz_correlacion, method = "color", type = "upper",
          col = colorRampPalette(c("#2C5F8D", "white", "#27AE60"))(200),
          mar = c(0,0,1,0), addCoef.col = "black") 
 title("Matriz de correlaciones entre variables numéricas", line = 2.5)
+
+#=================================================================================
+
+
+# GRÁFICO 1: PC1 vs PC2
+plot_ly(paises_df, 
+        x = ~Axis1, 
+        y = ~Axis2, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC1: %{x:.2f}<br>',
+                              'PC2: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 1 vs 2",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 1",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 2",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 2: PC3 vs PC4
+plot_ly(paises_df, 
+        x = ~Axis3, 
+        y = ~Axis4, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC3: %{x:.2f}<br>',
+                              'PC4: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 3 vs 4",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 3",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 4",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 3: PC5 vs PC6
+plot_ly(paises_df, 
+        x = ~Axis5, 
+        y = ~Axis6, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC5: %{x:.2f}<br>',
+                              'PC6: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 5 vs 6",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 5",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 6",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+
+#================RRRROOOOOOOOJJJJJJJJJJJJOOOOOOOOOOOOOOOOOOOOOO==================
+# GRÁFICO 1: PC1 vs PC2
+plot_ly(paises_df, 
+        x = ~Axis1, 
+        y = ~Axis2, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC1: %{x:.2f}<br>',
+                              'PC2: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 1 vs 2",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 1",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 2",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 2: PC3 vs PC4
+plot_ly(paises_df, 
+        x = ~Axis3, 
+        y = ~Axis4, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC3: %{x:.2f}<br>',
+                              'PC4: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 3 vs 4",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 3",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 4",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 3: PC5 vs PC6
+plot_ly(paises_df, 
+        x = ~Axis5, 
+        y = ~Axis6, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC5: %{x:.2f}<br>',
+                              'PC6: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 5 vs 6",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 5",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 6",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+
+
+
+# ============================================================================
+# CÍRCULOS DE CORRELACIONES DE VARIABLES
+# PC1 vs PC2, PC3 vs PC4, PC5 vs PC6
+# ============================================================================
+
+# Crear estructura base para círculos
+theta <- seq(0, 2*pi, length.out = 200)
+circle_df <- data.frame(x = cos(theta), y = sin(theta))
+
+# GRÁFICO 1: Variables PC1 vs PC2
+vars_12 <- as.data.frame(acp_resultado$co[, c("Comp1", "Comp2")])
+vars_12$Variable <- rownames(vars_12)
+colnames(vars_12) <- c("x", "y", "Variable")
+
+max_coord_12 <- max(1, max(abs(vars_12$x), abs(vars_12$y)))
+lims_12 <- c(-max_coord_12 * 1.05, max_coord_12 * 1.05)
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = vars_12,
+               aes(x = 0, y = 0, xend = x, yend = y),
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = vars_12, aes(x = x, y = y), 
+             color = "#1A3A52", size = 3) +
+  geom_text_repel(data = vars_12, aes(x = x, y = y, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims_12, ylim = lims_12) +
+  labs(
+    title = "Círculo de Correlaciones: PC1 vs PC2",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# GRÁFICO 2: Variables PC3 vs PC4
+vars_34 <- as.data.frame(acp_resultado$co[, c("Comp3", "Comp4")])
+vars_34$Variable <- rownames(vars_34)
+colnames(vars_34) <- c("x", "y", "Variable")
+
+max_coord_34 <- max(1, max(abs(vars_34$x), abs(vars_34$y)))
+lims_34 <- c(-max_coord_34 * 1.05, max_coord_34 * 1.05)
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = vars_34,
+               aes(x = 0, y = 0, xend = x, yend = y),
+               color = "#5DADE2", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = vars_34, aes(x = x, y = y), 
+             color = "#2C5F8D", size = 3) +
+  geom_text_repel(data = vars_34, aes(x = x, y = y, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims_34, ylim = lims_34) +
+  labs(
+    title = "Círculo de Correlaciones: PC3 vs PC4",
+    x = "Componente Principal 3",
+    y = "Componente Principal 4"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# GRÁFICO 3: Variables PC5 vs PC6
+vars_56 <- as.data.frame(acp_resultado$co[, c("Comp5", "Comp6")])
+vars_56$Variable <- rownames(vars_56)
+colnames(vars_56) <- c("x", "y", "Variable")
+
+max_coord_56 <- max(1, max(abs(vars_56$x), abs(vars_56$y)))
+lims_56 <- c(-max_coord_56 * 1.05, max_coord_56 * 1.05)
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = vars_56,
+               aes(x = 0, y = 0, xend = x, yend = y),
+               color = "#A8D8FF", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = vars_56, aes(x = x, y = y), 
+             color = "#5DADE2", size = 3) +
+  geom_text_repel(data = vars_56, aes(x = x, y = y, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims_56, ylim = lims_56) +
+  labs(
+    title = "Círculo de Correlaciones: PC5 vs PC6",
+    x = "Componente Principal 5",
+    y = "Componente Principal 6"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
