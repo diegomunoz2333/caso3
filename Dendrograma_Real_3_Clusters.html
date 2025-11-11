@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dendrograma Real - 3 Clústeres</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    body { font-family: "Arial", sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #2c3e50; }
+    .info { text-align: center; color: #555; margin-bottom: 30px; }
+    .dendrogram { width: 100%; max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+    .cluster-btn { 
+      padding: 12px 24px; margin: 0 10px; border: none; border-radius: 50px; 
+      font-weight: bold; cursor: pointer; font-size: 16px; transition: all 0.3s;
+    }
+    .btn1 { background: #E74C3C; color: white; }
+    .btn2 { background: #3498DB; color: white; }
+    .btn3 { background: #27AE60; color: white; }
+    .cluster-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .table-container { 
+      margin-top: 40px; padding: 25px; background: white; border-radius: 15px; 
+      box-shadow: 0 6px 25px rgba(0,0,0,0.1); display: none; text-align: center;
+    }
+    .table-container.active { display: block; animation: fade 0.6s; }
+    @keyframes fade { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #2c3e50; color: white; padding: 15px; font-size: 18px; }
+    td { padding: 12px; border-bottom: 1px solid #eee; background: #f8f9fa; }
+    tr:hover td { background: #e3f2fd; }
+  </style>
+</head>
+<body>
+  <h1>Dendrograma Jerárquico - 3 Clústeres</h1>
+  <p class="info">Haz clic en los botones para ver la tabla completa de países por clúster</p>
+  
+  <div class="dendrogram" id="dendrogram"></div>
+  
+  <div style="text-align: center; margin: 30px 0;">
+    <button class="cluster-btn btn1" onclick="showCluster(1)">Clúster 1 (49 países)</button>
+    <button class="cluster-btn btn2" onclick="showCluster(2)">Clúster 2 (58 países)</button>
+    <button class="cluster-btn btn3" onclick="showCluster(3)">Clúster 3 (33 países)</button>
+  </div>
+
+  <div id="table-container" class="table-container">
+    <h2 id="table-title"></h2>
+    <table id="country-table">
+      <thead><tr><th>País</th></tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    // Datos reales desde R
+    const clusterData = {
+      1: ["Albania","Argentina","Australia","Austria","Belarus","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Djibouti","El Salvador","Estonia","Finland","France","Germany","Greece","Hungary","Iceland","Ireland","Israel","Italy","Japan","Korea, Rep.","Latvia","Lithuania","Malta","Moldova","Montenegro","Netherlands","New Zealand","North Macedonia","Norway","Poland","Portugal","Romania","San Marino","Serbia","Slovak Republic","Slovenia","Spain","Sweden","Switzerland","Thailand","United Kingdom","United States","Uruguay"],
+      2: ["Algeria","Antigua and Barbuda","Armenia","Azerbaijan","Bahamas, The","Belize","Bhutan","Bolivia","Botswana","Brazil","Cabo Verde","Cambodia","Chile","China","Colombia","Costa Rica","Dominican Republic","Ecuador","Egypt, Arab Rep.","Fiji","Georgia","Guatemala","Honduras","India","Indonesia","Iraq","Jordan","Kazakhstan","Kuwait","Kyrgyz Republic","Lebanon","Malaysia","Maldives","Marshall Islands","Mauritius","Mexico","Mongolia","Morocco","Nepal","Nicaragua","Oman","Panama","Paraguay","Peru","Philippines","Qatar","Russian Federation","Samoa","Saudi Arabia","South Africa","Sri Lanka","Tajikistan","Tonga","Tunisia","Turkiye","Uzbekistan","Vanuatu","Viet Nam"],
+      3: ["Angola","Bangladesh","Benin","Burkina Faso","Burundi","Cameroon","Comoros","Congo, Dem. Rep.","Congo, Rep.","Cote d'Ivoire","Eswatini","Gambia, The","Ghana","Guinea","Guinea-Bissau","Lesotho","Madagascar","Mali","Mauritania","Mozambique","Namibia","Niger","Pakistan","Rwanda","Senegal","Sierra Leone","Solomon Islands","Tanzania","Timor-Leste","Togo","Uganda","Zambia","Zimbabwe"]
+    };
+
+    // Dendrograma real
+    const width = 1200, height = 600;
+    const svg = d3.select("#dendrogram").append("svg")
+      .attr("width", width).attr("height", height);
+
+    const root = d3.hierarchy(d3.cluster().size([height-100, width-200])(dend));
+    
+    // Dibujar ramas coloreadas
+    svg.selectAll(".link")
+      .data(root.links())
+      .enter().append("path")
+      .attr("class", "link")
+      .attr("d", d3.linkHorizontal()
+        .x(d => d.y + 100)
+        .y(d => d.x + 50))
+      .attr("fill", "none")
+      .attr("stroke", d => {
+        const cluster = d.target.data.cluster || d.source.data.cluster;
+        return cluster === 1 ? "#E74C3C" : cluster === 2 ? "#3498DB" : "#27AE60";
+      })
+      .attr("stroke-width", 3);
+
+    function showCluster(num) {
+      document.getElementById("table-title").innerText = `Clúster ${num} - ${clusterData[num].length} países`;
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+      clusterData[num].sort().forEach(pais => {
+        const row = tbody.insertRow();
+        row.insertCell(0).textContent = pais;
+      });
+      document.getElementById("table-container").classList.add("active");
+    }
+  </script>
+</body>
+</html>
+

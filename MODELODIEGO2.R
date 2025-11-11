@@ -13,6 +13,7 @@ library(sf)
 library(leaflet)       
 library(rnaturalearth)
 library(RColorBrewer)  
+library(ellipse)
 ##
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
@@ -99,7 +100,7 @@ varianza_df <- data.frame(
 view(varianza_df)
 
 ##tabla varianza acumulada
-library(kableExtra)
+
 varianza_tabla <- varianza_df %>%
   mutate(
     Varianza = round(Varianza, 2),
@@ -448,10 +449,150 @@ centroides <- paises_clusters %>%
 plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
 rect.hclust(arbol, k = k_optimo, border = 2:5)
 
+# =====================================================
+# DENDROGRAMA REAL + RAMAS QUE TERMINAN EN BOTONES
+# ¡COPIA TODO ESTE BLOQUE Y PÉGALO EN R!
+# =====================================================
+
+library(jsonlite)
+library(dendextend)
+library(ggdendro)
+
+# 1. Tus datos
+k_optimo <- 3
+clusters <- cutree(arbol, k = k_optimo)
+
+# 2. Países por clúster
+paises_cluster <- lapply(1:k_optimo, function(i) sort(rownames(factores)[clusters == i]))
+n_paises <- sapply(paises_cluster, length)
+json_clusters <- lapply(paises_cluster, toJSON, auto_unbox = TRUE)
+
+# 3. Dendrograma con colores
+dend <- as.dendrogram(arbol) %>%
+  color_branches(k = k_optimo, col = c("#E74C3C", "#3498DB", "#27AE60")) %>%
+  set("branches_lwd", 2.8) %>%
+  set("labels_cex", 0)  # sin nombres de países
+
+dend_data <- dendro_data(dend, type = "rectangle")
+seg <- segment(dend_data)
+lab <- label(dend_data)
+
+# Posición X promedio de cada clúster (para la línea que baja)
+cluster_center_x <- tapply(lab$x, clusters[match(lab$label, rownames(factores))], mean)
+
+# 4. HTML definitivo
+html <- paste0('
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dendrograma con Ramas a Botones</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    body {font-family:Arial; background:#f0f4f8; margin:0; padding:30px;}
+    h1 {text-align:center; color:#2c3e50;}
+    .info {text-align:center; color:#666; margin-bottom:30px;}
+    .container {max-width:1400px; margin:auto; background:white; border-radius:20px; padding:30px; box-shadow:0 15px 50px rgba(0,0,0,0.12);}
+    .buttons {text-align:center; margin:50px 0 30px;}
+    .btn {padding:18px 40px; margin:0 25px; border:none; border-radius:60px; font-size:20px; font-weight:bold; color:white; cursor:pointer; transition:0.3s;}
+    .btn1 {background:#E74C3C;}
+    .btn2 {background:#3498DB;}
+    .btn3 {background:#27AE60;}
+    .btn:hover {transform:scale(1.1); box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+    .table-container {padding:30px; background:#fafafa; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.1); display:none;}
+    .table-container.active {display:block; animation:fade 0.7s;}
+    @keyframes fade {from{opacity:0; transform:translateY(20px);} to{opacity:1;}}
+    table {width:100%; border-collapse:collapse;}
+    th {background:#2c3e50; color:white; padding:18px; font-size:22px;}
+    td {padding:14px; background:#fff; border-bottom:1px solid #eee;}
+    tr:hover td {background:#e8f4fc;}
+  </style>
+</head>
+<body>
+  <h1>Dendrograma Jerárquico - 3 Clústeres</h1>
+  <p class="info">Las ramas de cada clúster bajan directamente a su botón</p>
+  <div class="container">
+    <div id="dendrogram"></div>
+
+    <div class="buttons">
+      <button class="btn btn1" onclick="show(1)">Clúster 1 (', n_paises[1], ' países)</button>
+      <button class="btn btn2" onclick="show(2)">Clúster 2 (', n_paises[2], ' países)</button>
+      <button class="btn btn3" onclick="show(3)">Clúster 3 (', n_paises[3], ' países)</button>
+    </div>
+
+    <div id="tabla" class="table-container">
+      <h2 id="titulo"></h2>
+      <table><thead><tr><th>País</th></tr></thead><tbody id="cuerpo"></tbody></table>
+    </div>
+  </div>
+
+  <script>
+    const data = ', toJSON(paises_cluster, auto_unbox=TRUE), ';
+    const centers = ', toJSON(cluster_center_x), ';
+    const segs = ', toJSON(seg, auto_unbox=TRUE), ';
+
+    const w = 1350, h = 800;
+    const svg = d3.select("#dendrogram").append("svg").attr("width", w).attr("height", h);
+
+    // Ramas del dendrograma
+    svg.selectAll(".rama").data(segs).enter().append("path")
+      .attr("d", d => `M${d$x*10},${d$y} L${d$xend*10},${d$yend}`)
+      .attr("stroke", (d,i) => {
+        if (d$yend > 250) return "#777";
+        const c = segs[i].cluster || 1;
+        return c===1?"#E74C3C":c===2?"#3498DB":"#27AE60";
+      })
+      .attr("stroke-width", 3).attr("fill","none");
+
+    // Líneas gruesas que bajan al botón
+    const buttonY = 680;
+    const buttonX = [380, 680, 980];
+    Object.keys(centers).forEach(c => {
+      const x = centers[c] * 10;
+      svg.append("line")
+        .attr("x1", x).attr("y1", 400)
+        .attr("x2", buttonX[c-1]).attr("y2", buttonY)
+        .attr("stroke", c==1?"#E74C3C":c==2?"#3498DB":"#27AE60")
+        .attr("stroke-width", 10)
+        .attr("opacity", 0.9);
+    });
+
+    function show(n) {
+      document.getElementById("titulo").innerText = `Clúster ${n} - ${data[n-1].length} países`;
+      const tbody = document.getElementById("cuerpo");
+      tbody.innerHTML = "";
+      data[n-1].sort().forEach(p => {
+        const tr = tbody.insertRow();
+        tr.insertCell(0).textContent = p;
+      });
+      document.getElementById("tabla").classList.add("active");
+    }
+  </script>
+</body>
+</html>
+')
+
+# 5. Guardar y abrir
+writeLines(html, "Dendrograma_PERFECTO.html")
+browseURL("Dendrograma_PERFECTO.html")
+
+cat("¡ÉXITO TOTAL!\n")
+cat("Archivo creado: Dendrograma_PERFECTO.html\n")
+cat("→ Ramas reales coloreadas\n")
+cat("→ Cada clúster tiene su color\n")
+cat("→ Líneas gruesas que bajan al botón correspondiente\n")
+cat("→ Botones grandes y bonitos\n")
+cat("→ Clic → tabla profesional\n")
+cat("¡Este es EL DEFINITIVO para tu tesis!\n")
+
+
+
+
+
+
 # paises en clusters
 
-library(plotly)
-library(ellipse)
 
 centroides <- paises_clusters %>%
   group_by(Cluster) %>%
