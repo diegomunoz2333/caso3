@@ -97,7 +97,7 @@ varianza_df <- data.frame(
   Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
   VarianzaAcum = varianza_acum
 )
-view(varianza_df)
+
 
 ##tabla varianza acumulada
 
@@ -188,6 +188,8 @@ fviz_eig(res.pca,
   ) +
   scale_fill_manual(values = "#2C5F8D") +
   scale_color_manual(values = "#2C5F8D")
+
+#base de datos dimension vs variable
 eig.val <- get_eigenvalue(res.pca)
 eig.val
 res.var <- get_pca_var(res.pca)
@@ -785,6 +787,7 @@ p3 <- plot_ly() %>%
 
 p3
 
+##circulo de correlaciones
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
 
