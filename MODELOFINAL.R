@@ -83,6 +83,7 @@ cat("Variables:", ncol(datos_analisis), "\n\n")
 # -----------------------------------------------------------
 
 acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
+factores <- acp_prcomp$x[, 1:n_componentes]
 
 # Varianza explicada
 varianza <- acp_prcomp$sdev^2
@@ -141,9 +142,9 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
 
 #/////////////Gráfico de varianza explicada////////////////////////////////////
 
-fviz_eig(res.pca,
+fviz_eig(acp_prcomp,
          addlabels = TRUE,
-         ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
+         ylim = c(0, max(get_eigenvalue(acp_prcomp)[, 2]) + 5),
          choice = "variance") +
   labs(
     title = "Varianza Explicada por Componente Principal",
@@ -164,13 +165,13 @@ fviz_eig(res.pca,
   ) +
   scale_fill_manual(values = "#2C5F8D") +
   scale_color_manual(values = "#2C5F8D")
-eig.val <- get_eigenvalue(res.pca)
-eig.val # AGREGAR TABLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-res.var <- get_pca_var(res.pca)
+eig.val <- get_eigenvalue(acp_prcomp)
+eig.val 
+res.var <- get_pca_var(acp_prcomp)
 res.var$coord
 res.var$contrib        
 res.var$cos2           
-View(res.var$contrib[,1:6]) ## clustrer ??
+View(res.var$contrib[,1:6])
 
 
 ########################### hasta aqui van las dimensiones
@@ -204,14 +205,20 @@ fviz_nbclust(
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
 
-wss <- sapply(2:10, function(k) {
-  grupos <- cutree(arbol, k = k)
-  sum(tapply(1:nrow(factores), grupos, function(idx) {
-    if (length(idx) > 1) {
-      sum(dist(factores[idx, ])^2) / (2 * length(idx))
-    } else 0
-  }))
-}) ## verificar 
+# Método del codo más simple y confiable
+wss <- sapply(2:10, function(k){
+  kmeans(factores, centers = k, nstart = 25)$tot.withinss
+})
+
+df_wss <- data.frame(k = 2:10, WSS = wss)
+
+# Detectar número óptimo (simplificado)
+k_optimo <- which.min(diff(wss)) + 1  # Donde la diferencia de WSS se minimiza
+if (k_optimo > 6) k_optimo <- 5
+if (k_optimo < 2) k_optimo <- 2
+
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n") ## verificar 
 
 # Gráfico del método del codo con estilo profesional
 df_wss <- data.frame(
@@ -268,7 +275,7 @@ write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 ##FVIZ-PCA-INDIVIUS
 
 # Obtener datos de individuos
-ind_data <- get_pca_ind(res.pca)
+ind_data <- get_pca_ind(acp_prcomp)
 
 # Crear dataframe con todos los datos
 ind_df <- data.frame(
@@ -405,7 +412,7 @@ p3
 
 
 # Obtener datos de variables
-var_data <- get_pca_var(res.pca)
+var_data <- get_pca_var(acp_prcomp)
 
 # Crear dataframe con todos los datos
 var_df <- data.frame(
@@ -550,8 +557,8 @@ p3
 ##FVIZ-PCA-BIPLOTS
 
 # Obtener datos
-ind_data <- get_pca_ind(res.pca)
-var_data <- get_pca_var(res.pca)
+ind_data <- get_pca_ind(acp_prcomp)
+var_data <- get_pca_var(acp_prcomp)
 
 # Crear dataframes para individuos
 ind_df <- data.frame(
@@ -766,34 +773,35 @@ p3 <- plot_ly() %>%
 
 p3
 
-vars_df <- as.data.frame(acp_resultado$co)
-vars_df$Variable <- rownames(vars_df)
+# Obtener las coordenadas de las VARIABLES (no de los individuos)
+var_coords <- as.data.frame(acp_prcomp$rotation[, 1:2])
+var_coords$Variable <- rownames(var_coords)
 
-vars_df <- as.data.frame(acp_resultado$co)
-vars_df$Variable <- rownames(vars_df)
-
+# Crear el círculo
 theta <- seq(0, 2*pi, length.out = 200)
 circle_df <- data.frame(
   x = cos(theta),
   y = sin(theta)
 )
-max_coord <- max(1, max(abs(vars_df$Comp1), abs(vars_df$Comp2)))
+
+# Calcular los límites del gráfico
+max_coord <- max(1, max(abs(var_coords[,1:2])))
 lims <- c(-max_coord * 1.05, max_coord * 1.05) 
 
-
+# Gráfico del círculo de correlaciones CORREGIDO
 ggplot() +
   geom_path(data = circle_df, aes(x = x, y = y), 
             color = "gray60", linetype = "dashed", size = 0.6) +
   geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
   geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
-  geom_segment(data = vars_df,
-               aes(x = 0, y = 0, xend = Comp1, yend = Comp2),
+  geom_segment(data = var_coords,
+               aes(x = 0, y = 0, xend = PC1, yend = PC2),
                color = "#2C5F8D", alpha = 0.85,
                arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
                size = 0.9) +
-  geom_point(data = vars_df, aes(x = Comp1, y = Comp2), 
+  geom_point(data = var_coords, aes(x = PC1, y = PC2), 
              color = "#8E44AD", size = 3) +
-  geom_text_repel(data = vars_df, aes(x = Comp1, y = Comp2, label = Variable),
+  geom_text_repel(data = var_coords, aes(x = PC1, y = PC2, label = Variable),
                   size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
                   fontface = "bold", color = "gray20") +
   coord_equal(xlim = lims, ylim = lims) +
@@ -818,7 +826,11 @@ ggplot() +
 
 ## por pares de componenete 
 #////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
-paises_df <- as.data.frame(acp_resultado$li)
+## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
+
+# Usar las coordenadas del ACP hecho con prcomp()
+paises_df <- as.data.frame(acp_prcomp$x[, 1:2])  # Solo las dos primeras componentes
+colnames(paises_df) <- c("Axis1", "Axis2")
 paises_df$Pais <- rownames(paises_df)
 
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
@@ -859,52 +871,64 @@ ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
     legend.background = element_rect(fill = "white", color = "gray80")
   )
 ## interactivo mejorar 
-####base de datos dimensiones x pais
- 
-
 
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
-
-tamaños <- as.data.frame(table(res_hc$cluster))
+# Crear tabla de tamaños de 
+tamaños <- as.data.frame(table(clusters))
 colnames(tamaños) <- c("Cluster", "N")
-tamaños <- tamaños %>% arrange(as.integer(as.character(Cluster)))
+tamaños <- tamaños %>% arrange(as.numeric(as.character(Cluster)))
 
+# Mostrar tabla con kableExtra
 tamaños %>%
-  knitr::kable(
-    caption = "Tamaño de cada clúster",
+  kbl(
+    caption = "Distribución de Países por Clúster",
     digits = 0,
     align = "c",
     col.names = c("Clúster", "Número de Países")
   ) %>%
-  kableExtra::kable_styling(
+  kable_styling(
     bootstrap_options = c("striped", "hover", "condensed", "responsive"),
     full_width = FALSE,
     position = "center",
     font_size = 14
   ) %>%
   row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "10em", color = "#1B4965") %>%
-  column_spec(2, width = "12em")
+  column_spec(1, bold = TRUE, width = "8em", color = "#1B4965") %>%
+  column_spec(2, width = "10em", background = "#F8F9FA")
 
 #///////////////////////////Tabla de medias por clúster////////////////////////
-
-#    Usamos el data frame original de análisis con la columna Cluster
 datos_con_cluster <- datos_analisis %>%
-  mutate(Cluster = factor(res_hc$cluster))  # convertimos a factor para claridad
-
+  mutate(Cluster = factor(clusters))
+variables_principales <- c("PIB_per", "Esperanza vida", "Mortalidad infantil", 
+                           "Uso internet", "Gasto salud", "Industria")
 carac_cluster <- datos_con_cluster %>%
   group_by(Cluster) %>%
-  summarise(across(everything(), mean, na.rm = TRUE))
+  summarise(across(all_of(variables_principales), 
+                   list(Media = ~round(mean(., na.rm = TRUE), 2)),
+                   .names = "{.col}")) %>%
+  rename_with(~paste0(., "_Media"), -Cluster)
+carac_cluster %>%
+  kbl(
+    caption = "Medias de Variables Principales por Clúster",
+    digits = 2,
+    align = "c"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE, background = "#2C5F8D", color = "white")
+paises_clusters <- data.frame(
+  Pais = rownames(factores),
+  Comp1 = factores[, 1],
+  Comp2 = factores[, 2],
+  Cluster = as.factor(clusters)
+)
 
-kable(carac_cluster, 
-      caption = "Medias de variables por clúster",
-      digits = 2, align = "c") %>%
-  kable_styling(bootstrap_options = c("striped","hover","condensed"),
-                full_width = FALSE, position = "center") %>%
-  row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
 
+#///////////////////////////GRÁFICO CON CENTROIDES DE CLÚSTERES CORREGIDO////////////////////////
 
-# Preparar datos
+# Preparar datos para gráfico con clusters
 paises_clusters <- data.frame(
   Pais = rownames(factores),
   Comp1 = factores[, 1],
@@ -920,149 +944,15 @@ centroides <- paises_clusters %>%
     Centroid2 = mean(Comp2)
   )
 
-###dendograma
+
+
+### DENDROGRAMA CORREGIDO
+# Gráfico del dendrograma con clusters marcados
 plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
-rect.hclust(arbol, k = k_optimo, border = 2:5)
-
-# =====================================================
-# DENDROGRAMA REAL + RAMAS QUE TERMINAN EN BOTONES
-# =====================================================
-
-library(jsonlite)
-library(dendextend)
-library(ggdendro)
-
-# 1. Tus datos
-k_optimo <- 3
-clusters <- cutree(arbol, k = k_optimo)
-
-# 2. Países por clúster
-paises_cluster <- lapply(1:k_optimo, function(i) sort(rownames(factores)[clusters == i]))
-n_paises <- sapply(paises_cluster, length)
-json_clusters <- lapply(paises_cluster, toJSON, auto_unbox = TRUE)
-
-# 3. Dendrograma con colores
-dend <- as.dendrogram(arbol) %>%
-  color_branches(k = k_optimo, col = c("#E74C3C", "#3498DB", "#27AE60")) %>%
-  set("branches_lwd", 2.8) %>%
-  set("labels_cex", 0)  # sin nombres de países
-
-dend_data <- dendro_data(dend, type = "rectangle")
-seg <- segment(dend_data)
-lab <- label(dend_data)
-
-# Posición X promedio de cada clúster (para la línea que baja)
-cluster_center_x <- tapply(lab$x, clusters[match(lab$label, rownames(factores))], mean)
-
-# 4. HTML definitivo
-html <- paste0('
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dendrograma con Ramas a Botones</title>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <style>
-    body {font-family:Arial; background:#f0f4f8; margin:0; padding:30px;}
-    h1 {text-align:center; color:#2c3e50;}
-    .info {text-align:center; color:#666; margin-bottom:30px;}
-    .container {max-width:1400px; margin:auto; background:white; border-radius:20px; padding:30px; box-shadow:0 15px 50px rgba(0,0,0,0.12);}
-    .buttons {text-align:center; margin:50px 0 30px;}
-    .btn {padding:18px 40px; margin:0 25px; border:none; border-radius:60px; font-size:20px; font-weight:bold; color:white; cursor:pointer; transition:0.3s;}
-    .btn1 {background:#E74C3C;}
-    .btn2 {background:#3498DB;}
-    .btn3 {background:#27AE60;}
-    .btn:hover {transform:scale(1.1); box-shadow:0 10px 30px rgba(0,0,0,0.3);}
-    .table-container {padding:30px; background:#fafafa; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.1); display:none;}
-    .table-container.active {display:block; animation:fade 0.7s;}
-    @keyframes fade {from{opacity:0; transform:translateY(20px);} to{opacity:1;}}
-    table {width:100%; border-collapse:collapse;}
-    th {background:#2c3e50; color:white; padding:18px; font-size:22px;}
-    td {padding:14px; background:#fff; border-bottom:1px solid #eee;}
-    tr:hover td {background:#e8f4fc;}
-  </style>
-</head>
-<body>
-  <h1>Dendrograma Jerárquico - 3 Clústeres</h1>
-  <p class="info">Las ramas de cada clúster bajan directamente a su botón</p>
-  <div class="container">
-    <div id="dendrogram"></div>
-
-    <div class="buttons">
-      <button class="btn btn1" onclick="show(1)">Clúster 1 (', n_paises[1], ' países)</button>
-      <button class="btn btn2" onclick="show(2)">Clúster 2 (', n_paises[2], ' países)</button>
-      <button class="btn btn3" onclick="show(3)">Clúster 3 (', n_paises[3], ' países)</button>
-    </div>
-
-    <div id="tabla" class="table-container">
-      <h2 id="titulo"></h2>
-      <table><thead><tr><th>País</th></tr></thead><tbody id="cuerpo"></tbody></table>
-    </div>
-  </div>
-
-  <script>
-    const data = ', toJSON(paises_cluster, auto_unbox=TRUE), ';
-    const centers = ', toJSON(cluster_center_x), ';
-    const segs = ', toJSON(seg, auto_unbox=TRUE), ';
-
-    const w = 1350, h = 800;
-    const svg = d3.select("#dendrogram").append("svg").attr("width", w).attr("height", h);
-
-    // Ramas del dendrograma
-    svg.selectAll(".rama").data(segs).enter().append("path")
-      .attr("d", d => `M${d$x*10},${d$y} L${d$xend*10},${d$yend}`)
-      .attr("stroke", (d,i) => {
-        if (d$yend > 250) return "#777";
-        const c = segs[i].cluster || 1;
-        return c===1?"#E74C3C":c===2?"#3498DB":"#27AE60";
-      })
-      .attr("stroke-width", 3).attr("fill","none");
-
-    // Líneas gruesas que bajan al botón
-    const buttonY = 680;
-    const buttonX = [380, 680, 980];
-    Object.keys(centers).forEach(c => {
-      const x = centers[c] * 10;
-      svg.append("line")
-        .attr("x1", x).attr("y1", 400)
-        .attr("x2", buttonX[c-1]).attr("y2", buttonY)
-        .attr("stroke", c==1?"#E74C3C":c==2?"#3498DB":"#27AE60")
-        .attr("stroke-width", 10)
-        .attr("opacity", 0.9);
-    });
-
-    function show(n) {
-      document.getElementById("titulo").innerText = `Clúster ${n} - ${data[n-1].length} países`;
-      const tbody = document.getElementById("cuerpo");
-      tbody.innerHTML = "";
-      data[n-1].sort().forEach(p => {
-        const tr = tbody.insertRow();
-        tr.insertCell(0).textContent = p;
-      });
-      document.getElementById("tabla").classList.add("active");
-    }
-  </script>
-</body>
-</html>
-')
-
-# 5. Guardar y abrir
-writeLines(html, "Dendrograma_PERFECTO.html")
-browseURL("Dendrograma_PERFECTO.html")
-
-cat("¡ÉXITO TOTAL!\n")
-cat("Archivo creado: Dendrograma_PERFECTO.html\n")
-cat("→ Ramas reales coloreadas\n")
-cat("→ Cada clúster tiene su color\n")
-cat("→ Líneas gruesas que bajan al botón correspondiente\n")
-cat("→ Botones grandes y bonitos\n")
-cat("→ Clic → tabla profesional\n")
-cat("¡Este es EL DEFINITIVO para tu tesis!\n")
+rect.hclust(arbol, k = k_optimo, border = 2:(k_optimo+1))
 
 
-
-
+###sebastian no pude hacer el dendograma perdon :c
 
 
 # paises en clusters
@@ -1297,62 +1187,42 @@ clusters_tabla %>%
 
 
 #///////////////////Base de datos con cluster con nombre////////////////////////
-NuevaBase <- read_csv("NuevaBase_clusters.csv")
-nombres_clusters <- c(
-  "1" = "Desarrollado",
-  "2" = "Emergente",
-  "3" = "Subdesarrollado"
-)
-NuevaBase <- NuevaBase %>%
-  mutate(Cluster = recode(as.character(Cluster), !!!nombres_clusters))
 
-
-NuevaBase <- readr::read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
-possible_names <- c("Pais", "pais", "PAIS", "Country", "country", "COUNTRY", "Row.names", "Rowname", "X1", "...1")
-country_col <- intersect(possible_names, names(NuevaBase)) %>% first()
-if (is.null(country_col)) {
-  if (!is.numeric(NuevaBase[[1]])) {
-    country_col <- names(NuevaBase)[1]
-  } else stop("No se pudo detectar la columna 'Pais'.")
+NuevaBase <- read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
+if ("...1" %in% names(NuevaBase)) {
+  NuevaBase <- NuevaBase %>% rename(Pais = ...1) ##correcion de un error
+  print("Columna '...1' renombrada a 'Pais'")
 }
-if (country_col != "Pais") NuevaBase <- NuevaBase %>% rename(Pais = all_of(country_col))
-if (!"Cluster" %in% names(NuevaBase)) stop("La tabla no tiene columna 'Cluster'.")
 nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
-NuevaBase <- NuevaBase %>%
-  mutate(Cluster = as.character(Cluster),
-         Cluster_nombre = recode(Cluster, !!!nombres_clusters, .default = Cluster)) %>%
-  relocate(Cluster_nombre, .after = Cluster)
-vars_num <- NuevaBase %>%
+Base_Clusters <- NuevaBase %>%
+  mutate(Cluster_nombre = recode(as.character(Cluster), !!!nombres_clusters))
+vars_num <- Base_Clusters %>%
   select(-Pais, -Cluster, -Cluster_nombre) %>%
   select(where(is.numeric)) %>%
   names()
-if (length(vars_num) < 2) stop("No hay suficientes variables numéricas para hacer PCA (mínimo 2).")
-mat <- NuevaBase %>%
+mat <- Base_Clusters %>%
   select(Pais, all_of(vars_num)) %>%
   column_to_rownames("Pais")
-n_comp_requested <- 8
-n_comp_available <- min(n_comp_requested, ncol(mat))
-res.pca <- prcomp(mat, center = TRUE, scale. = TRUE, rank. = n_comp_available)
-scores <- as.data.frame(res.pca$x[, 1:n_comp_available, drop = FALSE]) %>%
+
+res.pca <- prcomp(mat, center = TRUE, scale. = TRUE)
+scores <- as.data.frame(res.pca$x[, 1:6]) %>%
   rownames_to_column("Pais")
-nombre_dimensiones <- c(
+nombres_dimensiones <- c(
   "DesarrolloHumano",
-  "Industrializacion",
+  "Industrializacion", 
   "ComercioApertura",
   "PresionDemografica",
   "Agricultura_Remesas",
-  "Salud_Inversion",
-  "CrecimientoIntensivo",
-  "Conectividad_Dinamismo"
+  "Salud_Inversion"
 )
-nombre_dimensiones <- nombre_dimensiones[1:n_comp_available]
-colnames(scores)[-1] <- nombre_dimensiones
-Base_Final <- NuevaBase %>%
+
+colnames(scores)[-1] <- nombres_dimensiones
+Base_Final <- Base_Clusters %>%
   select(Pais, Cluster_nombre) %>%
   left_join(scores, by = "Pais")
 View(Base_Final)
 
-#===============================================================================
+
 
 #############mapa
 world <- ne_countries(scale = "medium", returnclass = "sf")
@@ -1391,44 +1261,6 @@ leaflet(Base_con_mapa) %>%
 
 
 
-
-#//////////////////////////////////Predicción////////////////////////////////////
-##cuatro paises
-nuevo_pais <- data.frame(
-  PIB_per = 18000,
-  Poblacion = 12000000,
-  Esperanza.vida = 76,
-  Acceso.electricidad = 98,
-  Area.boscosa = 35,
-  Suscripciones.movil = 120,
-  Crecimiento.PIB = 3.2,
-  Mortalidad.infantil = 15,
-  Inversion.extranjera = 4,
-  Gasto.salud = 7,
-  Uso.internet = 85,
-  Importaciones = 25,
-  Exportaciones = 22,
-  Tierra.cultivable = 12,
-  Crecimiento.poblacion = 1.1,
-  Industria = 28,
-  Remesas = 2
-)
-
-nuevo_pais_pca <- predict(res.pca, newdata = nuevo_pais)
-
-centroides <- aggregate(res.pca$x[, 1:8], 
-                        by = list(Cluster = res_hc$cluster), 
-                        FUN = mean)
-
-distancias <- apply(centroides[, -1], 1, function(c) dist(rbind(c, nuevo_pais_pca[1, 1:8])))
-cluster_predicho <- centroides$Cluster[which.min(distancias)]
-
-cat("El nuevo país se clasifica en el Cluster:", cluster_predicho, "\n")
-nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
-cat("Nombre del cluster:", nombres_clusters[as.character(cluster_predicho)], "\n")
-
-# Obtener mapa mundial de rnaturalearth
-world <- ne_countries(scale = "medium", returnclass = "sf")
 
 
 
