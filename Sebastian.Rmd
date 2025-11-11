@@ -1674,5 +1674,135 @@ tabla_pc5
 tabla_pc6
 ```
 
+### Análisis Multivariado: Interpretación de Componentes y Países
+
+Una vez identificados los componentes principales y cuantificadas las contribuciones de cada variable, es fundamental realizar un análisis multivariado que permita interpretar simultáneamente las relaciones entre países y variables en el espacio reducido de componentes principales. Este análisis se fundamenta en visualizaciones bidimensionales que proyectan tanto países (individuos) como variables sobre los planos definidos por pares de componentes principales, revelando patrones de similitud, agrupamientos naturales y características diferenciadoras entre grupos de países (Jolliffe, 2002; Hastie et al., 2009).
+
+```{r individuos DIM 1 Y DIM 2} 
+ind_data <- get_pca_ind(res.pca)
+
+
+ind_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Dim1 = ind_data$coord[, 1],
+  Dim2 = ind_data$coord[, 2],
+  Dim3 = ind_data$coord[, 3],
+  Dim4 = ind_data$coord[, 4],
+  Dim5 = ind_data$coord[, 5],
+  Dim6 = ind_data$coord[, 6],
+  Contrib1 = ind_data$contrib[, 1],
+  Contrib2 = ind_data$contrib[, 2],
+  Contrib3 = ind_data$contrib[, 3],
+  Contrib4 = ind_data$contrib[, 4],
+  Contrib5 = ind_data$contrib[, 5],
+  Contrib6 = ind_data$contrib[, 6],
+  Cos2_1 = ind_data$cos2[, 1],
+  Cos2_2 = ind_data$cos2[, 2],
+  Cos2_3 = ind_data$cos2[, 3],
+  Cos2_4 = ind_data$cos2[, 4],
+  Cos2_5 = ind_data$cos2[, 5],
+  Cos2_6 = ind_data$cos2[, 6]
+)
+
+p1 <- plot_ly(ind_df,
+              x = ~Dim1, 
+              y = ~Dim2,
+              color = ~Contrib1,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 1:", round(Dim1, 3), "<br>",
+                            "Dim 2:", round(Dim2, 3), "<br>",
+                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
+                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
+                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p1
+```
+
+
+```{r individuos DIM 3 Y DIM 4} 
+
+p2 <- plot_ly(ind_df,
+              x = ~Dim3, 
+              y = ~Dim4,
+              color = ~Contrib3,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 3:", round(Dim3, 3), "<br>",
+                            "Dim 4:", round(Dim4, 3), "<br>",
+                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
+                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
+                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p2
+```
+
+```{r individuos DIM 5 Y DIM 6} 
+p3 <- plot_ly(ind_df,
+              x = ~Dim5, 
+              y = ~Dim6,
+              color = ~Contrib6,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 5:", round(Dim5, 3), "<br>",
+                            "Dim 6:", round(Dim6, 3), "<br>",
+                            "<b>Contribución Dim 3:</b> ", round(Contrib5, 2), "%<br>",
+                            "<b>Contribución Dim 4:</b> ", round(Contrib6, 2), "%<br>",
+                            "Cos2 Dim 5:", round(Cos2_5, 3), "<br>",
+                            "Cos2 Dim 6:", round(Cos2_6, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 5 vs Dimensión 6<br><sub>Coloreado por Contribución Dim 6</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p3
+```
+### Representación de Variables en el Plano de Componentes Principales
+
 
 # Bibliografia
