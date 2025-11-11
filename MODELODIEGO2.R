@@ -14,7 +14,7 @@ library(leaflet)
 library(rnaturalearth)
 library(RColorBrewer)  
 library(ellipse)
-##
+
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
@@ -161,6 +161,10 @@ res.pca <- prcomp(NuevaBase, scale = TRUE)
 res.pca
 eig.val <- get_eigenvalue(res.pca)
 eig.val
+
+
+#/////////////Gráfico de varianza explicada////////////////////////////////////
+
 fviz_eig(res.pca,
          addlabels = TRUE,
          ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
@@ -284,8 +288,191 @@ write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
 ##FVIZ-PCA-INDIVIUS
 
+# Dim 1 vs 2
+fviz_pca_ind(res.pca,
+             axes = c(1, 2),
+             col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) +
+  labs(
+    title = "Individuos: Dimensión 1 vs Dimensión 2",
+    subtitle = "Coloreado por calidad de representación (cos2)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# Dim 3 vs 4
+fviz_pca_ind(res.pca,
+             axes = c(3, 4),
+             col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) +
+  labs(
+    title = "Individuos: Dimensión 3 vs Dimensión 4",
+    subtitle = "Coloreado por calidad de representación (cos2)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# Dim 5 vs 6
+fviz_pca_ind(res.pca,
+             axes = c(5, 6),
+             col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) +
+  labs(
+    title = "Individuos: Dimensión 5 vs Dimensión 6",
+    subtitle = "Coloreado por calidad de representación (cos2)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
 
 ##FVIZ-PCA-VARIBALES VECTOR
+
+# Dim 1 vs 2
+fviz_pca_var(res.pca,
+             axes = c(1, 2),
+             col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) +
+  labs(
+    title = "Variables: Dimensión 1 vs Dimensión 2",
+    subtitle = "Coloreado por contribución a las componentes"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# Dim 3 vs 4
+fviz_pca_var(res.pca,
+             axes = c(3, 4),
+             col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) +
+  labs(
+    title = "Variables: Dimensión 3 vs Dimensión 4",
+    subtitle = "Coloreado por contribución a las componentes"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# Dim 5 vs 6
+fviz_pca_var(res.pca,
+             axes = c(5, 6),
+             col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) +
+  labs(
+    title = "Variables: Dimensión 5 vs Dimensión 6",
+    subtitle = "Coloreado por contribución a las componentes"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+##FVIZ-PCA-BIPLOTS
+
+# Dim 1 vs 2
+fviz_pca_biplot(res.pca,
+                axes = c(1, 2),
+                repel = TRUE,
+                col.var = "#2E9FDF",
+                col.ind = "#696969") +
+  labs(
+    title = "Biplot: Dimensión 1 vs Dimensión 2",
+    subtitle = "Variables (azul) e Individuos (gris)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# Dim 3 vs 4
+fviz_pca_biplot(res.pca,
+                axes = c(3, 4),
+                repel = TRUE,
+                col.var = "#2E9FDF",
+                col.ind = "#696969") +
+  labs(
+    title = "Biplot: Dimensión 3 vs Dimensión 4",
+    subtitle = "Variables (azul) e Individuos (gris)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# Dim 5 vs 6
+fviz_pca_biplot(res.pca,
+                axes = c(5, 6),
+                repel = TRUE,
+                col.var = "#2E9FDF",
+                col.ind = "#696969") +
+  labs(
+    title = "Biplot: Dimensión 5 vs Dimensión 6",
+    subtitle = "Variables (azul) e Individuos (gris)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
 
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
@@ -451,7 +638,6 @@ rect.hclust(arbol, k = k_optimo, border = 2:5)
 
 # =====================================================
 # DENDROGRAMA REAL + RAMAS QUE TERMINAN EN BOTONES
-# ¡COPIA TODO ESTE BLOQUE Y PÉGALO EN R!
 # =====================================================
 
 library(jsonlite)
