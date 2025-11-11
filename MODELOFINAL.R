@@ -92,7 +92,7 @@ varianza_df <- data.frame(
   Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
   VarianzaAcum = varianza_acum
 )
-
+view(varianza_df)
 #///////////////////////// Gráfico de silhouette /////////////////////////////
 
 fviz_nbclust(
