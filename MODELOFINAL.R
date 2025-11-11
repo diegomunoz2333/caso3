@@ -426,7 +426,7 @@ res.var <- get_pca_var(res.pca)
 res.var$coord          # Coordinates
 res.var$contrib        # Contributions to the PCs
 res.var$cos2           # Quality of representation 
-View(res.var$contrib[,1:8]) # Miro los dos primeros factores
+View(res.var$contrib[,1:6]) # Miro los dos primeros factores
 colSums( res.var$contrib[,1:2] )
 
 
@@ -435,7 +435,7 @@ res.ind <- get_pca_ind(res.pca)
 res.ind$coord          # Coordinates
 res.ind$contrib        # Contributions to the PCs
 res.ind$cos2           # Quality of representation 
-View(res.ind$contrib[,1:8]) # Miro los dos primeros factores
+View(res.ind$contrib[,1:6]) # Miro los dos primeros factores
 res.ind$contrib[,1:2]
 
 #////////////////////// Tabla nuevas dimensiones ///////////////////////////////
@@ -466,13 +466,6 @@ dimensiones_tabla <- tribble(
   "Gasto.salud, PIB_per, Inversión.Extranjera", 
   "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
   
-  "Dimensión 7", "Crecimiento económico intensivo", 
-  "Área.boscosa, Población, Crecimiento.PIB", 
-  "Malta (Poca, Poca, Media); India (Poca, Mucha, Mucha); China (Poca, Mucha, Media)",
-  
-  "Dimensión 8", "Conectividad y dinamismo económico", 
-  "Suscripciones.móvil, Inversión.extranjera, Crecimiento.PIB", 
-  "Malta (Mucha, Mucha, Media); Ireland (Mucha, Poca, Mucha); Sri Lanka (Mucha, Poca, Poca)"
 )
 
 # Crear la tabla con kableExtra
