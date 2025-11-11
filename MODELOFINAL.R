@@ -976,4 +976,17 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 
 ###########################
 #########################
+# Matriz de correlaciones - cálculo
+matriz_correlacion <- cor(datos_analisis, use = "pairwise.complete.obs", method = "pearson")
+round(matriz_correlacion, 2)  # Opcional: redondear a 2 decimales para imprimir
 
+# Visualización sencilla base R
+View(matriz_correlacion)  # Permite inspeccionar fácilmente
+
+# Visualización avanzada con ggplot2/corrplot (opcional)
+library(corrplot)
+corrplot(matriz_correlacion, method = "color", type = "upper", 
+         tl.cex = 0.9, tl.col = "gray20", 
+         col = colorRampPalette(c("#2C5F8D", "white", "#27AE60"))(200),
+         mar = c(0,0,1,0), addCoef.col = "black") 
+title("Matriz de correlaciones entre variables numéricas", line = 2.5)
