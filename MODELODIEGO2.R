@@ -450,57 +450,144 @@ rect.hclust(arbol, k = k_optimo, border = 2:5)
 
 # paises en clusters
 
-ggplot(paises_clusters, aes(x = Comp1, y = Comp2, color = Cluster)) +
-  geom_point(size = 3.5, alpha = 0.8) +
-  stat_ellipse(aes(fill = Cluster), 
-               type = "norm", 
-               level = 0.68,
-               geom = "polygon", 
-               alpha = 0.15,
-               size = 1.2) +
-  geom_point(data = centroides, 
-             aes(x = Centroid1, y = Centroid2, color = Cluster),
-             size = 6, shape = 17, stroke = 1.5) +
-  geom_text_repel(
-    aes(label = Pais),
-    size = 3.2,
-    max.overlaps = 15,
-    segment.alpha = 0.4,
-    fontface = "bold",
-    show.legend = FALSE
-  ) +
-  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_manual(
-    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
-    name = "Clúster",
-    labels = c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
-  ) +
-  scale_fill_manual(
-    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
-    guide = "none"
-  ) +
-  labs(
-    title = "Distribución de Clústeres en el Espacio Factorial",
-    subtitle = "Agrupamiento de países según los dos primeros componentes principales",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.position = "right",
-    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
-    legend.text = element_text(size = 10),
-    legend.background = element_rect(fill = "white", color = "gray80")
+library(plotly)
+library(ellipse)
+
+centroides <- paises_clusters %>%
+  group_by(Cluster) %>%
+  summarise(
+    Centroid1 = mean(Comp1),
+    Centroid2 = mean(Comp2)
   )
+
+elipses_list <- list()
+
+for (cluster_id in unique(paises_clusters$Cluster)) {
+  cluster_data <- paises_clusters[paises_clusters$Cluster == cluster_id, ]
+  
+  if (nrow(cluster_data) > 2) {
+    cov_matrix <- cov(cluster_data[, c("Comp1", "Comp2")])
+    center <- c(mean(cluster_data$Comp1), mean(cluster_data$Comp2))
+    
+    elipse_points <- ellipse(cov_matrix, centre = center, level = 0.68, npoints = 100)
+    
+    elipses_list[[as.character(cluster_id)]] <- data.frame(
+      x = elipse_points[, 1],
+      y = elipse_points[, 2],
+      Cluster = cluster_id
+    )
+  }
+}
+
+elipses_df <- do.call(rbind, elipses_list)
+rownames(elipses_df) <- NULL
+
+colores_clusters <- c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD")
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+
+
+p <- plot_ly() %>%
+  
+  add_trace(
+    data = elipses_df[elipses_df$Cluster == "1", ],
+    x = ~x, 
+    y = ~y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#2C5F8D", width = 2, dash = "dash"),
+    fill = "toself",
+    fillcolor = "rgba(44, 95, 141, 0.1)",
+    showlegend = FALSE,
+    hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = elipses_df[elipses_df$Cluster == "2", ],
+    x = ~x,
+    y = ~y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#27AE60", width = 2, dash = "dash"),
+    fill = "toself",
+    fillcolor = "rgba(39, 174, 96, 0.1)",
+    showlegend = FALSE,
+    hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = elipses_df[elipses_df$Cluster == "3", ],
+    x = ~x,
+    y = ~y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#8E44AD", width = 2, dash = "dash"),
+    fill = "toself",
+    fillcolor = "rgba(142, 68, 173, 0.1)",
+    showlegend = FALSE,
+    hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = paises_clusters,
+    x = ~Comp1,
+    y = ~Comp2,
+    color = ~Cluster,
+    colors = colores_clusters,
+    text = ~paste("<b>", Pais, "</b><br>",
+                  "Clúster:", nombres_clusters[as.character(Cluster)], "<br>",
+                  "PC1:", round(Comp1, 2), "<br>",
+                  "PC2:", round(Comp2, 2)),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, opacity = 0.8),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  add_trace(
+    data = centroides,
+    x = ~Centroid1,
+    y = ~Centroid2,
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 15, symbol = "triangle-up",
+                  line = list(width = 2, color = "white")),
+    hoverinfo = "skip",
+    showlegend = FALSE
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Distribución de Clústeres en el Espacio Factorial<br><sub>Agrupamiento de países según los dos primeros componentes principales</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(
+      title = "Componente Principal 1",
+      zeroline = TRUE,
+      zerolinecolor = "gray",
+      gridcolor = "lightgray"
+    ),
+    yaxis = list(
+      title = "Componente Principal 2",
+      zeroline = TRUE,
+      zerolinecolor = "gray",
+      gridcolor = "lightgray"
+    ),
+    legend = list(
+      title = list(text = "<b>Clúster</b>", font = list(color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray",
+      borderwidth = 1
+    ),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p
+#===============================================================================
+
+
 
 
 # Crear la tabla manualmente con las dimensiones y variables
