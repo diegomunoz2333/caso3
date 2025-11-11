@@ -48,12 +48,14 @@ Base_2022 <- Base_2022 %>%
                       "Caribbean small states", "Other small states", 
                       "IDA & IBRD total", "IDA only", "IBRD only",
                       "Pre-demographic dividend", "Post-demographic dividend", 
-                      "Early-demographic dividend", "Late-demographic dividend"))
+                      "Early-demographic dividend", "Late-demographic dividend")) %>% 
+  filter(Pais != "Luxembourg")
 
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
 
+View(Base_2022)
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
@@ -180,3 +182,47 @@ paises_clusters <- data.frame(
   Cluster = clusters
 ) %>% arrange(Cluster, Pais)
 write_csv(paises_clusters, "Paises_por_Cluster.csv")
+
+
+remove.packages("xfun")
+install.packages("xfun")
+
+
+
+## tema 
+
+theme_cyber <- function() {
+  theme_minimal(base_size = 12) +
+    theme(
+      plot.background = element_rect(fill = "#000000", color = NA),
+      panel.background = element_rect(fill = "#0a0e1a", color = NA),
+      panel.grid.major = element_line(color = "#12161f", size = 0.5),
+      panel.grid.minor = element_line(color = "#12161f", size = 0.25),
+      text = element_text(color = "#e0e6ed", family = "sans", size = 12),
+      axis.text = element_text(color = "#8b92a0", size = 10),
+      axis.title = element_text(color = "#e0e6ed", face = "bold", size = 13),
+      axis.line = element_line(color = "#00e5ff", size = 0.5),
+      plot.title = element_text(
+        color = "#00e5ff", 
+        face = "bold", 
+        size = 18, 
+        hjust = 0.5,
+        margin = margin(b = 10)
+      ),
+      plot.subtitle = element_text(
+        color = "#8b92a0", 
+        size = 13, 
+        hjust = 0.5,
+        margin = margin(b = 15)
+      ),
+      legend.background = element_rect(fill = "#12161f", color = "#00e5ff", size = 0.5),
+      legend.key = element_rect(fill = "#12161f", color = NA),
+      legend.text = element_text(color = "#e0e6ed", size = 10),
+      legend.title = element_text(color = "#00e5ff", face = "bold", size = 11),
+      legend.position = "right",
+      strip.background = element_rect(fill = "#12161f", color = "#00e5ff"),
+      strip.text = element_text(color = "#00e5ff", face = "bold", size = 11),
+      panel.border = element_rect(color = "#00e5ff", fill = NA, size = 0.5),
+      plot.margin = margin(20, 20, 20, 20)
+    )
+}
