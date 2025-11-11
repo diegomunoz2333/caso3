@@ -14,10 +14,18 @@ library(leaflet)
 library(rnaturalearth)
 library(RColorBrewer)  
 library(ellipse)
+library(tidyverse)
+library(factoextra)
+library(kableExtra)
+library(ggrepel)
+library(ggforce)
+library(plotly)
 
+# Cargar base
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
+# Selección y limpieza
 Base_2022 <- Base %>%
   select(
     Pais = `Country Name`,
@@ -61,68 +69,46 @@ Base_2022 <- Base_2022 %>%
                       "Pre-demographic dividend", "Post-demographic dividend", 
                       "Early-demographic dividend", "Late-demographic dividend")) %>% 
   filter(Pais != "Luxembourg")
+
+# Preparar datos
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
+
+# Guardar bases limpias
 write_csv(Base_2022, "Base_2022_limpia.csv")
-write_csv(datos_analisis %>% 
-            rownames_to_column(var = "Pais"), 
-          "Base_2022_analisis.csv")
+write_csv(datos_analisis %>% rownames_to_column(var = "Pais"), "Base_2022_analisis.csv")
+
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
-# ACP
-acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
-varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
+# -----------------------------------------------------------
+# Análisis de Componentes Principales (ACP) con prcomp()
+# -----------------------------------------------------------
+
+acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
+
+# Varianza explicada
+varianza <- acp_prcomp$sdev^2
+varianza_prop <- varianza / sum(varianza)
+varianza_acum <- cumsum(varianza_prop) * 100
+
+# Número de componentes que explican al menos el 70 %
 n_componentes <- which(varianza_acum >= 70)[1]
+cat("Número de componentes necesarios para explicar el 70% de la varianza:", n_componentes, "\n")
 
-cat("=== SELECCIÓN DE COMPONENTES ===\n")
-cat("Componentes necesarios para ≥70% varianza:", n_componentes, "\n")
-cat("Varianza explicada:", round(varianza_acum[n_componentes], 2), "%\n\n")
-
-acp_resultado <- dudi.pca(
-  df = datos_analisis,
-  center = TRUE,
-  scale = TRUE,
-  scannf = FALSE,
-  nf = n_componentes
-)
-
-# Extraer los factores 
-factores <- acp_resultado$li  # cada país con sus coordenadas 
-
-# Gráficos ACP
+# Tabla resumen
 varianza_df <- data.frame(
-  Componente = factor(1:length(acp_resultado$eig)),
-  Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
-  VarianzaAcum = varianza_acum
+  Componente = 1:length(varianza_prop),
+  Varianza = round(varianza_prop * 100, 2),
+  VarianzaAcum = round(varianza_acum, 2)
 )
-view(varianza_df)
 
-##tabla varianza acumulada
+# Visualizar tabla con kableExtra
+varianza_df %>%
+  kbl(caption = "Porcentaje de varianza explicada por componente") %>%
+  kable_styling(full_width = FALSE)
 
-varianza_tabla <- varianza_df %>%
-  mutate(
-    Varianza = round(Varianza, 2),
-    VarianzaAcum = round(VarianzaAcum, 2)
-  )
-
-varianza_tabla %>%
-  knitr::kable(
-    caption = "Varianza explicada por componente principal",
-    col.names = c("Componente", "% Varianza", "% Varianza Acumulada"),
-    align = c("c", "c", "c"),
-    format = "html"
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE,
-    position = "center",
-    font_size = 14
-  ) %>%
-  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "7em") %>%
-  column_spec(2:3, width = "10em")
 ##############################grafica varianza acumulada
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_col(fill = "#2C5F8D", alpha = 0.9) +
@@ -228,15 +214,6 @@ fviz_nbclust(
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
 
-# Método del codo (WSS)
-wss <- sapply(2:10, function(k) {
-  grupos <- cutree(arbol, k = k)
-  sum(tapply(1:nrow(factores), grupos, function(idx) {
-    if (length(idx) > 1) {
-      sum(dist(factores[idx, ])^2) / (2 * length(idx))
-    } else 0
-  }))
-})
 
 # Gráfico del método del codo con estilo profesional
 df_wss <- data.frame(
