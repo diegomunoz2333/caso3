@@ -288,191 +288,502 @@ write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
 ##FVIZ-PCA-INDIVIUS
 
-# Dim 1 vs 2
-fviz_pca_ind(res.pca,
-             axes = c(1, 2),
-             col.ind = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) +
-  labs(
-    title = "Individuos: Dimensión 1 vs Dimensión 2",
-    subtitle = "Coloreado por calidad de representación (cos2)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+# Obtener datos de individuos
+ind_data <- get_pca_ind(res.pca)
+
+# Crear dataframe con todos los datos
+ind_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Dim1 = ind_data$coord[, 1],
+  Dim2 = ind_data$coord[, 2],
+  Dim3 = ind_data$coord[, 3],
+  Dim4 = ind_data$coord[, 4],
+  Dim5 = ind_data$coord[, 5],
+  Dim6 = ind_data$coord[, 6],
+  Contrib1 = ind_data$contrib[, 1],
+  Contrib2 = ind_data$contrib[, 2],
+  Contrib3 = ind_data$contrib[, 3],
+  Contrib4 = ind_data$contrib[, 4],
+  Contrib5 = ind_data$contrib[, 5],
+  Contrib6 = ind_data$contrib[, 6],
+  Cos2_1 = ind_data$cos2[, 1],
+  Cos2_2 = ind_data$cos2[, 2],
+  Cos2_3 = ind_data$cos2[, 3],
+  Cos2_4 = ind_data$cos2[, 4],
+  Cos2_5 = ind_data$cos2[, 5],
+  Cos2_6 = ind_data$cos2[, 6]
+)
+
+# ============================================================================
+# GRÁFICO 1: Individuos Dim 1 vs 2 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p1 <- plot_ly(ind_df,
+              x = ~Dim1, 
+              y = ~Dim2,
+              color = ~Contrib1,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 1:", round(Dim1, 3), "<br>",
+                            "Dim 2:", round(Dim2, 3), "<br>",
+                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
+                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
+                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
-# Dim 3 vs 4
-fviz_pca_ind(res.pca,
-             axes = c(3, 4),
-             col.ind = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) +
-  labs(
-    title = "Individuos: Dimensión 3 vs Dimensión 4",
-    subtitle = "Coloreado por calidad de representación (cos2)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+p1
+
+# ============================================================================
+# GRÁFICO 2: Individuos Dim 3 vs 4 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p2 <- plot_ly(ind_df,
+              x = ~Dim3, 
+              y = ~Dim4,
+              color = ~Contrib3,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 3:", round(Dim3, 3), "<br>",
+                            "Dim 4:", round(Dim4, 3), "<br>",
+                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
+                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
+                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
-# Dim 5 vs 6
-fviz_pca_ind(res.pca,
-             axes = c(5, 6),
-             col.ind = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) +
-  labs(
-    title = "Individuos: Dimensión 5 vs Dimensión 6",
-    subtitle = "Coloreado por calidad de representación (cos2)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+p2
+
+# ============================================================================
+# GRÁFICO 3: Individuos Dim 5 vs 6 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p3 <- plot_ly(ind_df,
+              x = ~Dim5, 
+              y = ~Dim6,
+              color = ~Contrib5,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 5:", round(Dim5, 3), "<br>",
+                            "Dim 6:", round(Dim6, 3), "<br>",
+                            "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                            "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%<br>",
+                            "Cos2 Dim 5:", round(Cos2_5, 3), "<br>",
+                            "Cos2 Dim 6:", round(Cos2_6, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 5 vs Dimensión 6<br><sub>Coloreado por Contribución Dim 5</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
-##FVIZ-PCA-VARIBALES VECTOR
+p3
 
-# Dim 1 vs 2
-fviz_pca_var(res.pca,
-             axes = c(1, 2),
-             col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) +
-  labs(
-    title = "Variables: Dimensión 1 vs Dimensión 2",
-    subtitle = "Coloreado por contribución a las componentes"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+
+
+
+
+
+
+# Obtener datos de variables
+var_data <- get_pca_var(res.pca)
+
+# Crear dataframe con todos los datos
+var_df <- data.frame(
+  Variable = rownames(var_data$coord),
+  Dim1 = var_data$coord[, 1],
+  Dim2 = var_data$coord[, 2],
+  Dim3 = var_data$coord[, 3],
+  Dim4 = var_data$coord[, 4],
+  Dim5 = var_data$coord[, 5],
+  Dim6 = var_data$coord[, 6],
+  Contrib1 = var_data$contrib[, 1],
+  Contrib2 = var_data$contrib[, 2],
+  Contrib3 = var_data$contrib[, 3],
+  Contrib4 = var_data$contrib[, 4],
+  Contrib5 = var_data$contrib[, 5],
+  Contrib6 = var_data$contrib[, 6],
+  Cos2_1 = var_data$cos2[, 1],
+  Cos2_2 = var_data$cos2[, 2],
+  Cos2_3 = var_data$cos2[, 3],
+  Cos2_4 = var_data$cos2[, 4],
+  Cos2_5 = var_data$cos2[, 5],
+  Cos2_6 = var_data$cos2[, 6]
+)
+
+# ============================================================================
+# GRÁFICO 1: Variables Dim 1 vs 2 
+# ============================================================================
+
+p1 <- plot_ly(var_df,
+              x = ~Dim1, 
+              y = ~Dim2,
+              color = ~Contrib1,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Variable, "</b><br>",
+                            "Dim 1:", round(Dim1, 3), "<br>",
+                            "Dim 2:", round(Dim2, 3), "<br>",
+                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
+                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
+                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  add_segments(x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
+               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               showlegend = FALSE, hoverinfo = "skip") %>%
+  
+  layout(
+    title = list(
+      text = "Variables: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
-# Dim 3 vs 4
-fviz_pca_var(res.pca,
-             axes = c(3, 4),
-             col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) +
-  labs(
-    title = "Variables: Dimensión 3 vs Dimensión 4",
-    subtitle = "Coloreado por contribución a las componentes"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+p1
+
+# ============================================================================
+# GRÁFICO 2: Variables Dim 3 vs 4 
+# ============================================================================
+
+p2 <- plot_ly(var_df,
+              x = ~Dim3, 
+              y = ~Dim4,
+              color = ~Contrib3,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Variable, "</b><br>",
+                            "Dim 3:", round(Dim3, 3), "<br>",
+                            "Dim 4:", round(Dim4, 3), "<br>",
+                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
+                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
+                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  add_segments(x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
+               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               showlegend = FALSE, hoverinfo = "skip") %>%
+  
+  layout(
+    title = list(
+      text = "Variables: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
-# Dim 5 vs 6
-fviz_pca_var(res.pca,
-             axes = c(5, 6),
-             col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE) +
-  labs(
-    title = "Variables: Dimensión 5 vs Dimensión 6",
-    subtitle = "Coloreado por contribución a las componentes"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+p2
+
+# ============================================================================
+# GRÁFICO 3: Variables Dim 5 vs 6 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p3 <- plot_ly(var_df,
+              x = ~Dim5, 
+              y = ~Dim6,
+              color = ~Contrib5,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Variable, "</b><br>",
+                            "Dim 5:", round(Dim5, 3), "<br>",
+                            "Dim 6:", round(Dim6, 3), "<br>",
+                            "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                            "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%<br>",
+                            "Cos2 Dim 5:", round(Cos2_5, 3), "<br>",
+                            "Cos2 Dim 6:", round(Cos2_6, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  add_segments(x = 0, xend = ~Dim5, y = 0, yend = ~Dim6,
+               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               showlegend = FALSE, hoverinfo = "skip") %>%
+  
+  layout(
+    title = list(
+      text = "Variables: Dimensión 5 vs Dimensión 6<br><sub>Coloreado por Contribución Dim 5</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
+p3
 
 ##FVIZ-PCA-BIPLOTS
 
-# Dim 1 vs 2
-fviz_pca_biplot(res.pca,
-                axes = c(1, 2),
-                repel = TRUE,
-                col.var = "#2E9FDF",
-                col.ind = "#696969") +
-  labs(
-    title = "Biplot: Dimensión 1 vs Dimensión 2",
-    subtitle = "Variables (azul) e Individuos (gris)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+# Obtener datos
+ind_data <- get_pca_ind(res.pca)
+var_data <- get_pca_var(res.pca)
+
+# Crear dataframes para individuos
+ind_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Dim1 = ind_data$coord[, 1],
+  Dim2 = ind_data$coord[, 2],
+  Dim3 = ind_data$coord[, 3],
+  Dim4 = ind_data$coord[, 4],
+  Dim5 = ind_data$coord[, 5],
+  Dim6 = ind_data$coord[, 6],
+  Contrib1 = ind_data$contrib[, 1],
+  Contrib2 = ind_data$contrib[, 2],
+  Contrib3 = ind_data$contrib[, 3],
+  Contrib4 = ind_data$contrib[, 4],
+  Contrib5 = ind_data$contrib[, 5],
+  Contrib6 = ind_data$contrib[, 6]
+)
+
+# Crear dataframes para variables (amplificadas para visibilidad)
+var_df <- data.frame(
+  Variable = rownames(var_data$coord),
+  Dim1 = var_data$coord[, 1] * 3,
+  Dim2 = var_data$coord[, 2] * 3,
+  Dim3 = var_data$coord[, 3] * 3,
+  Dim4 = var_data$coord[, 4] * 3,
+  Dim5 = var_data$coord[, 5] * 3,
+  Dim6 = var_data$coord[, 6] * 3,
+  Contrib1 = var_data$contrib[, 1],
+  Contrib2 = var_data$contrib[, 2],
+  Contrib3 = var_data$contrib[, 3],
+  Contrib4 = var_data$contrib[, 4],
+  Contrib5 = var_data$contrib[, 5],
+  Contrib6 = var_data$contrib[, 6]
+)
+
+# ============================================================================
+# BIPLOT 1: Dim 1 vs 2
+# ============================================================================
+
+p1 <- plot_ly() %>%
+  
+  # Líneas de variables (desde origen)
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  # Puntos de variables (azul)
+  add_trace(
+    data = var_df,
+    x = ~Dim1, y = ~Dim2,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 1:", round(Dim1/3, 3), "<br>",
+                  "Dim 2:", round(Dim2/3, 3), "<br>",
+                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  # Puntos de individuos (gris)
+  add_trace(
+    data = ind_df,
+    x = ~Dim1, y = ~Dim2,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 1:", round(Dim1, 3), "<br>",
+                  "Dim 2:", round(Dim2, 3), "<br>",
+                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 1 vs Dimensión 2<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
   )
 
-# Dim 3 vs 4
-fviz_pca_biplot(res.pca,
-                axes = c(3, 4),
-                repel = TRUE,
-                col.var = "#2E9FDF",
-                col.ind = "#696969") +
-  labs(
-    title = "Biplot: Dimensión 3 vs Dimensión 4",
-    subtitle = "Variables (azul) e Individuos (gris)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+p1
+
+# ============================================================================
+# BIPLOT 2: Dim 3 vs 4
+# ============================================================================
+
+p2 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim3, y = ~Dim4,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 3:", round(Dim3/3, 3), "<br>",
+                  "Dim 4:", round(Dim4/3, 3), "<br>",
+                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim3, y = ~Dim4,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 3:", round(Dim3, 3), "<br>",
+                  "Dim 4:", round(Dim4, 3), "<br>",
+                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 3 vs Dimensión 4<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
   )
 
-# Dim 5 vs 6
-fviz_pca_biplot(res.pca,
-                axes = c(5, 6),
-                repel = TRUE,
-                col.var = "#2E9FDF",
-                col.ind = "#696969") +
-  labs(
-    title = "Biplot: Dimensión 5 vs Dimensión 6",
-    subtitle = "Variables (azul) e Individuos (gris)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+p2
+
+# ============================================================================
+# BIPLOT 3: Dim 5 vs 6
+# ============================================================================
+
+p3 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim5, y = 0, yend = ~Dim6,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim5, y = ~Dim6,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 5:", round(Dim5/3, 3), "<br>",
+                  "Dim 6:", round(Dim6/3, 3), "<br>",
+                  "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                  "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim5, y = ~Dim6,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 5:", round(Dim5, 3), "<br>",
+                  "Dim 6:", round(Dim6, 3), "<br>",
+                  "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                  "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 5 vs Dimensión 6<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
   )
 
+p3
 
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
