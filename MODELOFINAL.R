@@ -72,10 +72,10 @@ cat("Variables:", ncol(datos_analisis), "\n\n")
 # ACP
 acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
 varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
-n_componentes <- which(varianza_acum >= 80)[1]
+n_componentes <- which(varianza_acum >= 70)[1]
 
 cat("=== SELECCIÓN DE COMPONENTES ===\n")
-cat("Componentes necesarios para ≥80% varianza:", n_componentes, "\n")
+cat("Componentes necesarios para ≥70% varianza:", n_componentes, "\n")
 cat("Varianza explicada:", round(varianza_acum[n_componentes], 2), "%\n\n")
 
 acp_resultado <- dudi.pca(
@@ -96,6 +96,43 @@ varianza_df <- data.frame(
   VarianzaAcum = varianza_acum
 )
 view(varianza_df)
+##############################grafica varianza acumulada
+#=================== GRÁFICO DE VARIANZA (70% y 6 DIMENSIONES) ===================#
+
+ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
+  geom_col(fill = "#2C5F8D", alpha = 0.9) +
+  geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
+  geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
+  geom_hline(yintercept = 70, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
+  annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
+           label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0,
+           fontface = "bold", size = 3.8) +
+  annotate("text", x = 1.8, y = 73,
+           label = "70% varianza acumulada", color = "#27AE60", hjust = 0,
+           fontface = "bold", size = 3.8) +
+  scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
+  labs(
+    title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
+    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥70%",
+    x = "Componentes Principales",
+    y = "% de Varianza Explicada"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    axis.text.x = element_text(angle = 45, vjust = 0.8),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+
 #///////////////////////// Gráfico de silhouette /////////////////////////////
 
 fviz_nbclust(
@@ -145,38 +182,6 @@ fviz_nbclust(
 
 #///////////////////////Gráfico de Codo/////////////////////////////////////////
 
-
-ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
-  geom_col(fill = "#2C5F8D", alpha = 0.9) +
-  geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
-  geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
-  geom_hline(yintercept = 80, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
-  geom_vline(xintercept = 8, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
-  annotate("text", x = 8.3, y = max(varianza_df$Varianza) * 0.9,
-           label = "8 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
-           fontface = "bold", size = 3.8) +
-  annotate("text", x = 1.8, y = 83,
-           label = "80% varianza acumulada", color = "#27AE60", hjust = 0,
-           fontface = "bold", size = 3.8) +
-  scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
-  labs(
-    title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
-    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥80%",
-    x = "Componentes Principales",
-    y = "% de Varianza Explicada"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    axis.text.x = element_text(angle = 45, vjust = 0.8),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray90", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  )
 
 
 #===============================================================================
