@@ -384,7 +384,7 @@ res.var <- get_pca_var(res.pca)
 res.var$coord          # Coordinates
 res.var$contrib        # Contributions to the PCs
 res.var$cos2           # Quality of representation 
-
+View(res.var$contrib[,1:8]) # Miro los dos primeros factores
 colSums( res.var$contrib[,1:2] )
 
 
