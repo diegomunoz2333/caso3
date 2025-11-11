@@ -1,0 +1,1925 @@
+---
+title: "Análisis de Componentes Principales y Clusterización de Países"
+subtitle: "Aplicación de Técnicas de Aprendizaje No Supervisado con Datos del Banco Mundial"
+author: "Barros Rayo Alejandro (2415837), Muñoz Portela Diego Fernando (2415620), Portilla Aguirre Johan Camilo (2422468), Aguirre Aldana Joan Sebastian (2419550)"
+date: "`r format(Sys.Date(), '%d de %B de %Y')`"
+output: 
+  html_document:
+    theme: darkly
+    highlight: kate
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+    df_print: paged
+---
+
+<style type="text/css">
+/* ========== PALETA DE COLORES CYBER ========== */
+:root {
+  --bg-black: #000000;
+  --bg-dark: #0a0e1a;
+  --bg-card: #12161f;
+  --bg-sidebar: #0d1117;
+  --accent-cyan: #00e5ff;
+  --accent-blue: #0084ff;
+  --accent-purple: #a259ff;
+  --text-white: #ffffff;
+  --text-light: #e0e6ed;
+  --text-gray: #8b92a0;
+  --border-glow: rgba(0, 229, 255, 0.4);
+  --sidebar-width: 280px;
+  --right-toc-width: 240px;
+}
+
+/* ========== RESET ========== */
+* {
+  box-sizing: border-box !important;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg-black) !important;
+  color: var(--text-light) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  line-height: 1.7 !important;
+  overflow-x: hidden !important;
+  height: 100% !important;
+}
+
+/* ========== ESTRUCTURA PRINCIPAL - SIN HUECOS ========== */
+.main-container {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  padding-left: var(--sidebar-width) !important;
+  padding-right: var(--right-toc-width) !important;
+  background: var(--bg-black) !important;
+  min-height: 100vh !important;
+}
+
+/* ========== TOC IZQUIERDO - SIN FONDO GRIS ========== */
+#TOC {
+  background: transparent !important;
+  border-right: 1px solid rgba(0, 229, 255, 0.15) !important;
+  padding: 30px 20px 100px 20px !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: var(--sidebar-width) !important;
+  height: 100vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 1000 !important;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+#TOC::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+#TOC::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+#TOC::-webkit-scrollbar-thumb {
+  background: var(--accent-cyan) !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5) !important;
+}
+
+#TOC::before {
+  content: " CONTENIDO" !important;
+  display: block !important;
+  font-size: 1.1em !important;
+  font-weight: 700 !important;
+  color: var(--accent-cyan) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  padding-bottom: 15px !important;
+  margin-bottom: 25px !important;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.3) !important;
+  text-align: center !important;
+  text-shadow: 0 0 15px rgba(0, 229, 255, 0.5) !important;
+}
+
+/* ========== ENLACES TOC IZQUIERDO - SIN CUADROS GRISES ========== */
+#TOC ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#TOC li {
+  margin: 4px 0 !important;
+  background: transparent !important;
+}
+
+#TOC a {
+  color: var(--text-gray) !important;
+  text-decoration: none !important;
+  font-size: 0.9em !important;
+  display: block !important;
+  padding: 10px 15px !important;
+  border-left: 3px solid transparent !important;
+  transition: all 0.3s ease !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+#TOC a:hover {
+  color: var(--accent-cyan) !important;
+  border-left: 3px solid var(--accent-cyan) !important;
+  transform: translateX(5px) !important;
+  background: transparent !important;
+}
+
+#TOC a.active {
+  color: var(--accent-cyan) !important;
+  background: transparent !important;
+  border-left: 3px solid var(--accent-cyan) !important;
+  font-weight: 700 !important;
+}
+
+#TOC .toc-section-number {
+  color: var(--accent-cyan) !important;
+  font-weight: 700 !important;
+  margin-right: 8px !important;
+  display: inline-block !important;
+  min-width: 25px !important;
+}
+
+#TOC ul ul {
+  padding-left: 20px !important;
+  margin-top: 6px !important;
+  border-left: 1px solid rgba(0, 229, 255, 0.1) !important;
+  margin-left: 15px !important;
+}
+
+#TOC ul ul a {
+  font-size: 0.85em !important;
+  padding: 8px 12px !important;
+}
+
+/* ========== BOTÓN CONTROL DE CÓDIGO - LADO DERECHO ========== */
+#global-code-toggle {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: calc(var(--right-toc-width) + 30px) !important;
+  z-index: 10000 !important;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)) !important;
+  color: var(--bg-black) !important;
+  border: none !important;
+  padding: 14px 28px !important;
+  border-radius: 50px !important;
+  font-weight: 700 !important;
+  font-size: 0.9em !important;
+  cursor: pointer !important;
+  box-shadow: 0 6px 25px rgba(0, 229, 255, 0.5) !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+#global-code-toggle:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 35px rgba(0, 229, 255, 0.7) !important;
+}
+
+/* ========== MINI-TOC DERECHO ========== */
+#right-toc {
+  position: fixed !important;
+  right: 0 !important;
+  top: 0 !important;
+  width: var(--right-toc-width) !important;
+  height: 100vh !important;
+  background: transparent !important;
+  border-left: 1px solid rgba(162, 89, 255, 0.15) !important;
+  padding: 30px 20px !important;
+  overflow-y: auto !important;
+  z-index: 999 !important;
+  box-shadow: -2px 0 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+#right-toc::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+#right-toc::-webkit-scrollbar-thumb {
+  background: var(--accent-purple) !important;
+  border-radius: 2px !important;
+}
+
+#right-toc-title {
+  font-size: 0.8em !important;
+  font-weight: 700 !important;
+  color: var(--accent-purple) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  margin-bottom: 15px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid rgba(162, 89, 255, 0.3) !important;
+  text-shadow: 0 0 10px rgba(162, 89, 255, 0.5) !important;
+}
+
+#right-toc-list {
+  list-style: none !important;
+  padding: 0 !important;
+}
+
+#right-toc-list li {
+  margin: 6px 0 !important;
+}
+
+#right-toc-list a {
+  color: var(--text-gray) !important;
+  text-decoration: none !important;
+  font-size: 0.8em !important;
+  display: block !important;
+  padding: 6px 10px !important;
+  border-left: 2px solid transparent !important;
+  transition: all 0.2s ease !important;
+  border-radius: 0 4px 4px 0 !important;
+}
+
+#right-toc-list a:hover {
+  color: var(--accent-purple) !important;
+  border-left: 2px solid var(--accent-purple) !important;
+  padding-left: 15px !important;
+  background: rgba(162, 89, 255, 0.08) !important;
+}
+
+#right-toc-list a.active-section {
+  color: var(--accent-purple) !important;
+  border-left: 2px solid var(--accent-purple) !important;
+  padding-left: 15px !important;
+  background: rgba(162, 89, 255, 0.15) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 15px rgba(162, 89, 255, 0.2) !important;
+}
+
+/* ========== CONTENIDO CENTRAL - SIN HUECOS ========== */
+.toc-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 40px 60px !important;
+  background: var(--bg-black) !important;
+  min-height: 100vh !important;
+}
+
+/* ========== SECCIONES ========== */
+.section.level1 {
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(0, 229, 255, 0.15) !important;
+  border-radius: 12px !important;
+  padding: 35px !important;
+  margin-bottom: 25px !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ========== TÍTULOS ========== */
+h1 {
+  color: var(--text-white) !important;
+  font-size: 2.3em !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  padding: 20px 0 !important;
+  margin-bottom: 30px !important;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  position: relative !important;
+}
+
+h1::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 150px !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent) !important;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.8) !important;
+}
+
+h2 {
+  color: var(--accent-cyan) !important;
+  font-size: 1.8em !important;
+  font-weight: 700 !important;
+  padding: 15px 20px !important;
+  margin-top: 35px !important;
+  margin-bottom: 20px !important;
+  border-left: 5px solid var(--accent-cyan) !important;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.1) 0%, transparent 100%) !important;
+  border-radius: 0 8px 8px 0 !important;
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.3) !important;
+}
+
+h3 {
+  color: var(--text-white) !important;
+  font-size: 1.5em !important;
+  font-weight: 600 !important;
+  padding-left: 15px !important;
+  margin-top: 25px !important;
+  margin-bottom: 15px !important;
+  border-left: 4px solid var(--accent-purple) !important;
+}
+
+h4 {
+  color: var(--text-light) !important;
+  font-size: 1.2em !important;
+  font-weight: 600 !important;
+  margin-top: 20px !important;
+  margin-bottom: 12px !important;
+  padding-left: 12px !important;
+  border-left: 3px solid var(--text-gray) !important;
+}
+
+/* ========== CHUNKS DE CÓDIGO ========== */
+.code-chunk {
+  margin: 30px 0 !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.code-header {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.15), rgba(0, 132, 255, 0.15)) !important;
+  color: var(--accent-cyan) !important;
+  padding: 12px 20px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2) !important;
+}
+
+.code-header:hover {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.25), rgba(0, 132, 255, 0.25)) !important;
+}
+
+.chunk-title {
+  font-weight: 600 !important;
+  font-size: 0.95em !important;
+}
+
+.toggle-icon {
+  font-size: 1.1em !important;
+  transition: transform 0.3s ease !important;
+}
+
+.toggle-icon.rotated {
+  transform: rotate(180deg) !important;
+}
+
+.code-content {
+  background: var(--bg-dark) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden !important;
+}
+
+.code-content.collapsed {
+  max-height: 0 !important;
+  opacity: 0 !important;
+}
+
+.code-content.expanded {
+  max-height: 5000px !important;
+  opacity: 1 !important;
+}
+
+.code-content pre {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* ========== TABLAS ========== */
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 25px 0 !important;
+  background: var(--bg-dark) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+thead {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%) !important;
+}
+
+th {
+  color: var(--bg-black) !important;
+  padding: 16px 20px !important;
+  text-align: left !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-size: 0.9em !important;
+}
+
+td {
+  padding: 14px 20px !important;
+  color: var(--text-light) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+tr:hover td {
+  background: rgba(0, 229, 255, 0.05) !important;
+}
+
+/* ========== CÓDIGO ========== */
+pre {
+  background: var(--bg-dark) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-left: 4px solid var(--accent-cyan) !important;
+  border-radius: 8px !important;
+  padding: 20px !important;
+  margin: 25px 0 !important;
+  overflow-x: auto !important;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+code {
+  color: var(--accent-cyan) !important;
+  background: rgba(0, 229, 255, 0.08) !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  font-family: 'Fira Code', 'Consolas', monospace !important;
+  font-size: 0.88em !important;
+}
+
+pre code {
+  background: transparent !important;
+  padding: 0 !important;
+  color: var(--text-light) !important;
+}
+
+/* ========== GRÁFICOS ========== */
+.figure {
+  text-align: center !important;
+  margin: 30px 0 !important;
+  padding: 25px !important;
+  background: var(--bg-card) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1400px) {
+  .main-container {
+    padding-right: 0 !important;
+  }
+  
+  #right-toc {
+    display: none !important;
+  }
+  
+  #global-code-toggle {
+    right: 30px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .main-container {
+    padding-left: 0 !important;
+  }
+  
+  #TOC {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 30px 20px !important;
+  }
+  
+  .toc-content {
+    padding: 20px !important;
+  }
+  
+  #global-code-toggle {
+    position: relative !important;
+    right: 0 !important;
+    margin: 20px auto !important;
+    display: block !important;
+    width: 80% !important;
+  }
+}
+
+/* ========== SCROLL SUAVE ========== */
+html {
+  scroll-behavior: smooth !important;
+}
+
+/* ========== FOOTER ========== */
+.footer {
+  text-align: center !important;
+  padding: 40px !important;
+  margin-top: 60px !important;
+  border-top: 2px solid rgba(0, 229, 255, 0.3) !important;
+  color: var(--text-gray) !important;
+  background: var(--bg-dark) !important;
+}
+</style>
+
+<!-- Mini TOC Derecho -->
+<div id="right-toc">
+  <div id="right-toc-title">EN ESTA SECCIÓN</div>
+  <ul id="right-toc-list"></ul>
+</div>
+
+<!-- Botón Control de Código -->
+<button id="global-code-toggle"> Código</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ========== CONTROL DE CÓDIGO ==========
+  let allCodeVisible = true;
+  const toggleButton = document.getElementById('global-code-toggle');
+  
+  function initializeCodeToggles() {
+    const codeChunks = document.querySelectorAll('pre.r, pre.python, div.sourceCode');
+    
+    codeChunks.forEach((chunk, index) => {
+      if (chunk.closest('.code-chunk')) return;
+      
+      const container = document.createElement('div');
+      container.className = 'code-chunk';
+      
+      const header = document.createElement('div');
+      header.className = 'code-header';
+      header.innerHTML = `
+        <div class="chunk-title">💻 Código - Chunk ${index + 1}</div>
+        <div class="toggle-icon">▼</div>
+      `;
+      
+      const content = document.createElement('div');
+      content.className = 'code-content expanded';
+      content.appendChild(chunk.cloneNode(true));
+      
+      chunk.parentNode.replaceChild(container, chunk);
+      container.appendChild(header);
+      container.appendChild(content);
+      
+      header.addEventListener('click', function() {
+        const isExpanded = content.classList.contains('expanded');
+        const icon = this.querySelector('.toggle-icon');
+        
+        if (isExpanded) {
+          content.classList.remove('expanded');
+          content.classList.add('collapsed');
+          icon.classList.add('rotated');
+        } else {
+          content.classList.remove('collapsed');
+          content.classList.add('expanded');
+          icon.classList.remove('rotated');
+        }
+      });
+    });
+  }
+  
+  function toggleAllCode() {
+    const codeContents = document.querySelectorAll('.code-content');
+    const icons = document.querySelectorAll('.toggle-icon');
+    
+    if (allCodeVisible) {
+      codeContents.forEach(content => {
+        content.classList.remove('expanded');
+        content.classList.add('collapsed');
+      });
+      icons.forEach(icon => icon.classList.add('rotated'));
+      toggleButton.innerHTML = '⚡ Mostrar';
+      allCodeVisible = false;
+    } else {
+      codeContents.forEach(content => {
+        content.classList.remove('collapsed');
+        content.classList.add('expanded');
+      });
+      icons.forEach(icon => icon.classList.remove('rotated'));
+      toggleButton.innerHTML = '⚡ Ocultar';
+      allCodeVisible = true;
+    }
+  }
+  
+  setTimeout(initializeCodeToggles, 100);
+  if (toggleButton) {
+    toggleButton.addEventListener('click', toggleAllCode);
+  }
+  
+  // ========== FUNCIONES MEJORADAS PARA TOC ==========
+  
+  // Obtener sección actual con mejor detección
+  function getCurrentSection() {
+    const sections = document.querySelectorAll('.section.level1');
+    const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    
+    let currentSection = null;
+    let minDistance = Infinity;
+    
+    // Primero intentar encontrar la sección visible en viewport
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      
+      // Si la sección está en el tercio superior de la pantalla
+      if (rect.top <= windowHeight / 3 && rect.bottom > 0) {
+        const distance = Math.abs(rect.top);
+        if (distance < minDistance) {
+          minDistance = distance;
+          currentSection = section;
+        }
+      }
+    });
+    
+    // Si no hay sección en viewport, tomar la más cercana por arriba
+    if (!currentSection) {
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top < 0 && rect.bottom > -100) {
+          currentSection = section;
+        }
+      });
+    }
+    
+    // Si aún no hay, tomar la primera sección visible
+    if (!currentSection && sections.length > 0) {
+      for (let section of sections) {
+        const rect = section.getBoundingClientRect();
+        if (rect.bottom > 0) {
+          currentSection = section;
+          break;
+        }
+      }
+    }
+    
+    return currentSection;
+  }
+  
+  // Actualizar TOC derecho con la sección actual
+  function updateRightToc() {
+    const rightTocList = document.getElementById('right-toc-list');
+    if (!rightTocList) return;
+    
+    const activeSection = getCurrentSection();
+    
+    if (!activeSection) {
+      rightTocList.innerHTML = '<li style="color: var(--text-gray); font-style: italic; padding: 10px;">Desplázate para ver contenido</li>';
+      return;
+    }
+    
+    // Buscar todos los encabezados h2, h3, h4 dentro de la sección activa
+    const headings = activeSection.querySelectorAll('h2, h3, h4');
+    rightTocList.innerHTML = '';
+    
+    if (headings.length === 0) {
+      rightTocList.innerHTML = '<li style="color: var(--text-gray); font-style: italic; padding: 10px;">Sin subtítulos en esta sección</li>';
+      return;
+    }
+    
+    headings.forEach((heading, index) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      
+      // Asignar ID si no existe
+      if (!heading.id) {
+        heading.id = 'sub-heading-' + index + '-' + Date.now();
+      }
+      
+      a.href = '#' + heading.id;
+      
+      // Limpiar texto (remover numeración)
+      let textContent = heading.textContent || heading.innerText;
+      textContent = textContent.replace(/^\d+(\.\d+)*\s*/, '').trim();
+      
+      a.textContent = textContent;
+      
+      // Aplicar indentación según nivel
+      if (heading.tagName === 'H3') {
+        a.style.paddingLeft = '20px';
+        a.style.fontSize = '0.75em';
+      } else if (heading.tagName === 'H4') {
+        a.style.paddingLeft = '30px';
+        a.style.fontSize = '0.7em';
+      }
+      
+      li.appendChild(a);
+      rightTocList.appendChild(li);
+      
+      // Evento click para scroll suave
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetTop = heading.getBoundingClientRect().top + window.pageYOffset - 120;
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        
+        setTimeout(() => {
+          highlightActiveRightToc();
+        }, 400);
+      });
+    });
+    
+    // Resaltar el subtítulo activo
+    highlightActiveRightToc();
+  }
+  
+  // Resaltar subtítulo activo en TOC derecho
+  function highlightActiveRightToc() {
+    const activeSection = getCurrentSection();
+    if (!activeSection) return;
+    
+    const headings = Array.from(activeSection.querySelectorAll('h2, h3, h4'));
+    const rightTocLinks = document.querySelectorAll('#right-toc-list a');
+    
+    let activeIndex = -1;
+    let minDistance = Infinity;
+    const threshold = 200;
+    
+    headings.forEach((heading, index) => {
+      const rect = heading.getBoundingClientRect();
+      const distance = Math.abs(rect.top);
+      
+      if (rect.top <= threshold && distance < minDistance) {
+        minDistance = distance;
+        activeIndex = index;
+      }
+    });
+    
+    rightTocLinks.forEach((link, index) => {
+      if (index === activeIndex) {
+        link.classList.add('active-section');
+      } else {
+        link.classList.remove('active-section');
+      }
+    });
+  }
+  
+// Resaltar sección activa en TOC izquierdo CON AUTO-SCROLL
+function highlightActiveTocSection() {
+  const sections = document.querySelectorAll('.section.level1');
+  const tocContainer = document.getElementById('TOC');
+  
+  if (!tocContainer) return;
+  
+  // Obtener todos los enlaces del TOC (incluyendo subsecciones)
+  const tocLinks = tocContainer.querySelectorAll('a[href^="#"]');
+  
+  const activeSection = getCurrentSection();
+  
+  if (!activeSection) return;
+  
+  const activeId = activeSection.id;
+  
+  let activeLinkElement = null;
+  
+  // Remover clase active de todos los links
+  tocLinks.forEach(link => {
+    link.classList.remove('active');
+    
+    // Verificar si el href coincide con la sección activa
+    const href = link.getAttribute('href');
+    if (href) {
+      const linkId = href.replace('#', '');
+      if (linkId === activeId) {
+        link.classList.add('active');
+        activeLinkElement = link;
+      }
+    }
+  });
+  
+  // AUTO-SCROLL DEL TOC - MEJORADO
+  if (activeLinkElement && tocContainer) {
+    // Usar requestAnimationFrame para asegurar que el DOM está listo
+    requestAnimationFrame(() => {
+      const linkTop = activeLinkElement.offsetTop;
+      const tocScrollTop = tocContainer.scrollTop;
+      const tocHeight = tocContainer.clientHeight;
+      
+      // Obtener la posición del header "CONTENIDO"
+      const headerHeight = 100; // Altura aproximada del header + padding
+      
+      // Calcular la posición relativa del link en el TOC
+      const linkRelativeTop = linkTop - tocScrollTop;
+      
+      // Definir zona visible (con margen)
+      const visibleTop = headerHeight;
+      const visibleBottom = tocHeight - 50;
+      
+      // Si el link está fuera de la zona visible, hacer scroll
+      if (linkRelativeTop < visibleTop) {
+        // El link está por encima, scroll hacia arriba
+        tocContainer.scrollTo({
+          top: linkTop - headerHeight - 20,
+          behavior: 'smooth'
+        });
+      } else if (linkRelativeTop > visibleBottom) {
+        // El link está por debajo, scroll hacia abajo
+        tocContainer.scrollTo({
+          top: linkTop - tocHeight + 100,
+          behavior: 'smooth'
+        });
+      }
+    });
+  }
+}
+  // ========== EVENT LISTENERS ==========
+  
+  // Throttled scroll handler para mejor rendimiento
+  let scrollTimeout;
+  let lastScrollTop = 0;
+  
+  window.addEventListener('scroll', function() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Solo actualizar si el scroll cambió significativamente
+    if (Math.abs(scrollTop - lastScrollTop) > 10) {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(function() {
+        updateRightToc();
+        highlightActiveTocSection();
+        lastScrollTop = scrollTop;
+      }, 100);
+    }
+  }, { passive: true });
+  
+  // Inicialización después de que el documento esté completamente cargado
+  setTimeout(function() {
+    updateRightToc();
+    highlightActiveTocSection();
+  }, 600);
+  
+  // Manejar clicks en enlaces del TOC izquierdo
+  document.querySelectorAll('#TOC a').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+      if (!targetId || targetId === '#') return;
+      
+      e.preventDefault();
+      const target = document.querySelector(targetId);
+      
+      if (target) {
+        const offsetTop = target.getBoundingClientRect().top + window.pageYOffset - 100;
+        window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+        
+        setTimeout(function() {
+          updateRightToc();
+          highlightActiveTocSection();
+        }, 500);
+      }
+    });
+  });
+  
+  // Observer para detectar cambios en el DOM
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.addedNodes.length) {
+        setTimeout(function() {
+          updateRightToc();
+          highlightActiveTocSection();
+        }, 300);
+      }
+    });
+  });
+  
+  // Observar cambios en el contenido principal
+  const mainContent = document.querySelector('.toc-content') || document.body;
+  observer.observe(mainContent, {
+    childList: true,
+    subtree: true
+  });
+});
+</script>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6
+)
+
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(knitr)
+library(kableExtra)
+library(FactoMineR)
+library(cluster)
+library(corrplot)
+library(FactoClass)
+library(ade4)
+library(factoextra)
+library(dendextend)
+library(ggrepel)
+library(readr)
+library(dplyr)
+library(ggforce)
+library(htmlwidgets)
+library(DT)
+library(leaflet)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(dplyr)
+library(htmltools)
+
+cyber_palette <- c(
+  primary = "#00e5ff",
+  secondary = "#0084ff",
+  accent = "#a259ff",
+  warning = "#ff1744",
+  success = "#00e676",
+  gold = "#ffd600"
+)
+
+theme_cyber <- function() {
+  theme_minimal(base_size = 12) +
+    theme(
+      plot.background = element_rect(fill = "#000000", color = NA),
+      panel.background = element_rect(fill = "#0a0e1a", color = NA),
+      panel.grid.major = element_line(color = "#12161f", size = 0.5),
+      panel.grid.minor = element_line(color = "#12161f", size = 0.25),
+      text = element_text(color = "#e0e6ed", family = "sans", size = 12),
+      axis.text = element_text(color = "#8b92a0", size = 10),
+      axis.title = element_text(color = "#e0e6ed", face = "bold", size = 13),
+      axis.line = element_line(color = "#00e5ff", size = 0.5),
+      plot.title = element_text(
+        color = "#00e5ff", 
+        face = "bold", 
+        size = 18, 
+        hjust = 0.5,
+        margin = margin(b = 10)
+      ),
+      plot.subtitle = element_text(
+        color = "#8b92a0", 
+        size = 13, 
+        hjust = 0.5,
+        margin = margin(b = 15)
+      ),
+      legend.background = element_rect(fill = "#12161f", color = "#00e5ff", size = 0.5),
+      legend.key = element_rect(fill = "#12161f", color = NA),
+      legend.text = element_text(color = "#e0e6ed", size = 10),
+      legend.title = element_text(color = "#00e5ff", face = "bold", size = 11),
+      legend.position = "right",
+      strip.background = element_rect(fill = "#12161f", color = "#00e5ff"),
+      strip.text = element_text(color = "#00e5ff", face = "bold", size = 11),
+      panel.border = element_rect(color = "#00e5ff", fill = NA, size = 0.5),
+      plot.margin = margin(20, 20, 20, 20)
+    )
+}
+
+theme_set(theme_cyber())
+
+tabla_cyber <- function(data, caption = "", col_names = NULL) {
+  if (is.null(col_names)) {
+    col_names <- names(data)
+  }
+  
+  data %>%
+    kbl(
+      caption = caption,
+      col.names = col_names,
+      align = "c"
+    ) %>%
+    kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed"),
+      full_width = FALSE,
+      font_size = 14,
+      position = "center"
+    ) %>%
+    row_spec(0, background = "#0084ff", color = "black", bold = TRUE) %>%
+    row_spec(1:nrow(data), background = "#0a0e1a", color = "#e0e6ed")
+}
+
+scale_fill_cyber <- function(...) {
+  scale_fill_manual(values = cyber_palette, ...)
+}
+
+scale_color_cyber <- function(...) {
+  scale_color_manual(values = cyber_palette, ...)
+}
+```
+
+# Introducción
+
+## Contexto del Estudio
+
+El análisis de países mediante técnicas de **aprendizaje no supervisado** permite identificar patrones y similitudes que no son evidentes mediante métodos tradicionales. En este estudio, aplicamos **Análisis de Componentes Principales (ACP)** y **métodos de clusterización** utilizando datos del Banco Mundial.
+
+## Objetivos del Análisis
+
+Los objetivos principales de este trabajo son:
+
+1. **Reducir la dimensionalidad** de los datos mediante ACP
+2. **Identificar grupos** de países con características similares
+3. **Interpretar** los patrones encontrados en el contexto del desarrollo internacional
+4. **Proporcionar insights** para políticas públicas y análisis económico
+
+---
+
+# Metodología
+
+## Selección de Datos
+
+### Fuente de Datos
+
+Los datos utilizados provienen del **World Development Indicators** del Banco Mundial.
+
+```{r cargar-datos}
+
+Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
+                 show_col_types = FALSE)
+
+Base_2022 <- Base %>%
+  select(
+    Pais = `Country Name`,
+    Codigo = `Country Code`,
+    PIB_per = `GDP per capita (current US$) [NY.GDP.PCAP.CD]`,
+    Poblacion = `Population, total [SP.POP.TOTL]`,
+    `Esperanza vida` = `Life expectancy at birth, total (years) [SP.DYN.LE00.IN]`,
+    `Acceso electricidad` = `Access to electricity (% of population) [EG.ELC.ACCS.ZS]`,
+    `Area boscosa` = `Forest area (% of land area) [AG.LND.FRST.ZS]`,
+    `Suscripciones movil` = `Mobile cellular subscriptions (per 100 people) [IT.CEL.SETS.P2]`,
+    `Crecimiento PIB` = `GDP growth (annual %) [NY.GDP.MKTP.KD.ZG]`,
+    `Mortalidad infantil` = `Mortality rate, infant (per 1,000 live births) [SP.DYN.IMRT.IN]`,
+    `Inversion extranjera` = `Foreign direct investment, net inflows (% of GDP) [BX.KLT.DINV.WD.GD.ZS]`,
+    `Gasto salud` = `Current health expenditure (% of GDP) [SH.XPD.CHEX.GD.ZS]`,
+    `Uso internet` = `Individuals using the Internet (% of population) [IT.NET.USER.ZS]`,
+    Importaciones = `Imports of goods and services (% of GDP) [NE.IMP.GNFS.ZS]`,
+    Exportaciones = `Exports of goods and services (% of GDP) [NE.EXP.GNFS.ZS]`,
+    `Tierra cultivable` = `Arable land (% of land area) [AG.LND.ARBL.ZS]`,
+    `Crecimiento poblacion` = `Population growth (annual %) [SP.POP.GROW]`,
+    Industria = `Industry (including construction), value added (% of GDP) [NV.IND.TOTL.ZS]`,
+    Remesas = `Personal remittances, received (% of GDP) [BX.TRF.PWKR.DT.GD.ZS]`
+  )
+
+Base_2022[Base_2022 == ".."] <- NA
+
+Base_2022 <- Base_2022 %>%
+  mutate(across(-c(Pais, Codigo), as.numeric)) %>%
+  drop_na() %>%
+  filter(!Pais %in% c("World", "High income", "Low income", "European Union",
+                      "Latin America & Caribbean", "Middle income", "OECD members",
+                      "East Asia & Pacific", "Sub-Saharan Africa", "South Asia",
+                      "North America", "Euro area", "Arab World", "West Bank and Gaza",
+                      "Lower middle income", "Upper middle income", 
+                      "Least developed countries: UN classification",
+                      "Fragile and conflict affected situations", 
+                      "Heavily indebted poor countries (HIPC)",
+                      "IDA total", "Low & middle income", "Middle East & North Africa",
+                      "Pacific island small states", "Small states", 
+                      "Caribbean small states", "Other small states", 
+                      "IDA & IBRD total", "IDA only", "IBRD only",
+                      "Pre-demographic dividend", "Post-demographic dividend", 
+                      "Early-demographic dividend", "Late-demographic dividend")) %>% 
+  filter(Pais != "Luxembourg")
+
+```
+
+## Descripción de Variables
+
+```{r tabla-variables}
+# Tabla de variables
+```
+
+---
+
+# Análisis Descriptivo
+
+## Explorador Interactivo de Indicadores
+
+###  Análisis por Variable
+```{r preparar-datos-unificados}
+
+variables_numericas <- names(Base_2022)[3:ncol(Base_2022)]
+
+crear_tabla_unificada <- function(data, variable) {
+  valores <- data[[variable]]
+  
+  total_paises <- sum(!is.na(valores))
+  media <- round(mean(valores, na.rm = TRUE), 2)
+  mediana <- round(median(valores, na.rm = TRUE), 2)
+  desv_est <- round(sd(valores, na.rm = TRUE), 2)
+  q1 <- round(quantile(valores, 0.25, na.rm = TRUE), 2)
+  q3 <- round(quantile(valores, 0.75, na.rm = TRUE), 2)
+  minimo <- round(min(valores, na.rm = TRUE), 2)
+  maximo <- round(max(valores, na.rm = TRUE), 2)
+  
+  top10 <- data %>%
+    select(Pais, Valor = all_of(variable)) %>%
+    arrange(desc(Valor)) %>%
+    head(10) %>%
+    mutate(
+      Ranking = row_number(),
+      Pct_vs_Media = round((Valor / media - 1) * 100, 1)
+    )
+  
+  estadisticas <- data.frame(
+    Métrica = c("Total Países", "Media", "Mediana", "Desv. Est.", 
+                "Q1", "Q3", "Mínimo", "Máximo"),
+    Valor = c(total_paises, media, mediana, desv_est, q1, q3, minimo, maximo)
+  )
+  
+  top10_tabla <- top10 %>%
+    mutate(
+      Pct_Display = paste0(ifelse(Pct_vs_Media >= 0, "+", ""), Pct_vs_Media, "%"),
+      Pct_Color = ifelse(Pct_vs_Media >= 0, "#00e676", "#ff1744")
+    ) %>%
+    select(Ranking, País = Pais, Valor, Pct_Display, Pct_Color)
+  
+  list(estadisticas = estadisticas, top10 = top10_tabla)
+}
+```
+
+<style>
+/* OCULTAR NÚMEROS DE SECCIONES EN PESTAÑAS */
+.section-number {
+  display: none !important;
+}
+
+#TOC .toc-section-number {
+  display: none !important;
+}
+
+h4 .header-section-number {
+  display: none !important;
+}
+
+/* Contenedor de pestañas mejorado */
+.nav-pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  padding: 25px !important;
+  background: linear-gradient(135deg, #0a0e1a 0%, #12161f 100%) !important;
+  border-radius: 15px !important;
+  border: 2px solid rgba(0, 229, 255, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  margin-bottom: 30px !important;
+}
+
+.nav-pills > li {
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+.nav-pills > li > a {
+  background: linear-gradient(135deg, #12161f 0%, #0d1117 100%) !important;
+  color: #e0e6ed !important;
+  border: 2px solid #00e5ff !important;
+  border-radius: 10px !important;
+  padding: 14px 22px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  min-width: 160px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  text-decoration: none !important;
+  display: block !important;
+}
+
+.nav-pills > li > a:hover {
+  background: linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important;
+  color: #000 !important;
+  border-color: #00ffff !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 25px rgba(0, 229, 255, 0.6) !important;
+}
+
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+  background: linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important;
+  color: #000 !important;
+  border-color: #00ffff !important;
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.8) !important;
+  font-weight: 700 !important;
+}
+
+/* Layout de dos columnas lado a lado */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 48% 48%;
+  gap: 30px;
+  margin-top: 25px;
+  justify-content: center;
+}
+
+@media (max-width: 1200px) {
+  .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Contenedores de tablas */
+.table-container {
+  background: linear-gradient(135deg, #0a0e1a 0%, #0d1117 100%);
+  border: 2px solid rgba(0, 229, 255, 0.3);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+
+.section-title {
+  color: #00e5ff;
+  font-size: 1.3em;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.3);
+}
+</style>
+
+###  Selecciona una Variable {.tabset .tabset-pills .unnumbered}
+```{r tablas-layout, results='asis'}
+for (variable in variables_numericas) {
+  cat(sprintf('\n\n#### %s {.unnumbered}\n\n', variable))
+  
+  datos <- crear_tabla_unificada(Base_2022, variable)
+  
+  cat('<div class="two-column-layout">\n\n')
+  
+  cat('<div class="table-container">\n\n')
+  
+  cat('<p class="section-title"> Estadísticas Globales</p>\n\n')
+  
+  tabla_stats <- datos$estadisticas %>%
+    kbl(
+      align = c('l', 'r'), 
+      escape = FALSE,
+      col.names = c("Métrica", "Valor")
+    ) %>%
+    kable_styling(
+      bootstrap_options = c("striped", "hover"),
+      full_width = TRUE,
+      font_size = 13
+    ) %>%
+    row_spec(0, background = "#00e5ff", color = "#000", bold = TRUE, font_size = 14) %>%
+    row_spec(1, background = "#12161f", color = "#00e5ff", bold = TRUE, font_size = 14) %>%
+    row_spec(2:8, background = "#0d1117", color = "#e0e6ed") %>%
+    column_spec(1, width = "14em", bold = TRUE, color = "#e0e6ed") %>%
+    column_spec(2, width = "10em", color = "#00e5ff", bold = TRUE)
+  
+  print(tabla_stats)
+  
+  cat('\n\n</div>\n\n')
+  
+  cat('<div class="table-container">\n\n')
+  
+  cat('<p class="section-title"> Top 10 Países</p>\n\n')
+  
+  tabla_top10_data <- datos$top10 %>%
+    mutate(
+      Pct_Display_Colored = cell_spec(
+        Pct_Display,
+        "html",
+        color = Pct_Color,
+        bold = TRUE
+      )
+    ) %>%
+    select(`#` = Ranking, País, Valor, `% vs Media` = Pct_Display_Colored)
+  
+  tabla_top10 <- tabla_top10_data %>%
+    kbl(
+      align = c('c', 'l', 'r', 'c'), 
+      escape = FALSE
+    ) %>%
+    kable_styling(
+      bootstrap_options = c("striped", "hover"),
+      full_width = TRUE,
+      font_size = 13
+    ) %>%
+    row_spec(0, background = "#0084ff", color = "#000", bold = TRUE, font_size = 14) %>%
+    row_spec(1:10, background = "#0d1117", color = "#e0e6ed") %>%
+    column_spec(1, width = "3em", bold = TRUE, color = "#000", background = "#00e5ff") %>%
+    column_spec(2, width = "13em", bold = TRUE) %>%
+    column_spec(3, width = "9em", color = "#00e5ff", bold = TRUE)
+  
+  print(tabla_top10)
+  
+  cat('\n\n</div>\n\n')
+  
+  cat('</div>\n\n')
+}
+```
+
+---
+##  Análisis por Dimensiones
+
+
+
+## Visualización Geoespacial
+
+```{r crear-datos-mapa}
+
+variables_mapa <- list(
+  "Crecimiento PIB" = "Crecimiento PIB",
+  "Acceso electricidad" = "Acceso electricidad",  
+  "Crecimiento poblacion" = "Crecimiento poblacion"  
+)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+mapeo_paises <- c(
+  "United States of America" = "United States",
+  "Russia" = "Russian Federation",
+  "South Korea" = "Korea, Rep.",
+  "North Korea" = "Korea, Dem. People's Rep.",
+  "Egypt" = "Egypt, Arab Rep.",
+  "Democratic Republic of the Congo" = "Congo, Dem. Rep.",
+  "Republic of the Congo" = "Congo, Rep.",
+  "Laos" = "Lao PDR",
+  "Syria" = "Syrian Arab Republic",
+  "Venezuela" = "Venezuela, RB",
+  "Iran" = "Iran, Islamic Rep.",
+  "Czech Republic" = "Czechia",
+  "Slovakia" = "Slovak Republic",
+  "Kyrgyzstan" = "Kyrgyz Republic",
+  "Yemen" = "Yemen, Rep.",
+  "Turkey" = "Turkiye",
+  "Gambia" = "Gambia, The",
+  "Bahamas" = "Bahamas, The",
+  "Ivory Coast" = "Cote d'Ivoire",
+  "Brunei" = "Brunei Darussalam",
+  "Cape Verde" = "Cabo Verde",
+  "Hong Kong" = "Hong Kong SAR, China",
+  "Macao" = "Macao SAR, China",
+  "Macedonia" = "North Macedonia",
+  "Saint Lucia" = "St. Lucia",
+  "Saint Vincent and the Grenadines" = "St. Vincent and the Grenadines",
+  "Saint Kitts and Nevis" = "St. Kitts and Nevis",
+  "Myanmar" = "Myanmar",
+  "Bolivia" = "Bolivia",
+  "Libya" = "Libya",
+  "Tanzania" = "Tanzania",
+  "Eswatini" = "Eswatini",
+  "Timor-Leste" = "Timor-Leste"
+)
+
+mapeo_df <- data.frame(
+  name_world = names(mapeo_paises),
+  name_data = unname(mapeo_paises),
+  stringsAsFactors = FALSE
+)
+
+world_data <- world %>%
+  left_join(mapeo_df, by = c("name" = "name_world")) %>%
+  left_join(
+    Base_2022 %>% select(Pais, all_of(unlist(variables_mapa))),
+    by = c("name_data" = "Pais")
+  ) %>%
+  mutate(
+    across(
+      all_of(unlist(variables_mapa)),
+      ~ifelse(is.na(.) & name %in% Base_2022$Pais,
+              Base_2022[[cur_column()]][match(name, Base_2022$Pais)], .)
+    )
+  )
+
+```
+
+```{r crear-mapa-interactivo, fig.height=6.5, fig.width=11}
+paletas <- list(
+  "Crecimiento PIB" = colorNumeric(
+    palette = colorRampPalette(c("#ff1744", "#ff6b00", "#ffd600", "#00e676", "#00e5ff"))(100),
+    domain = world_data$`Crecimiento PIB`,
+    na.color = "#1a1a2e"
+  ),
+  "Acceso electricidad" = colorNumeric(
+    palette = colorRampPalette(c("#1a1a2e", "#0084ff", "#00e5ff", "#00e676", "#ffd600"))(100),
+    domain = world_data$`Acceso electricidad`,
+    na.color = "#1a1a2e"
+  ),
+  "Crecimiento poblacion" = colorNumeric(
+    palette = colorRampPalette(c("#0084ff", "#00e5ff", "#a259ff", "#ff6b00", "#ff1744"))(100),
+    domain = world_data$`Crecimiento poblacion`,  # ✅ CORREGIDO
+    na.color = "#1a1a2e"
+  )
+)
+
+mapa <- leaflet(world_data, 
+                width = "100%", 
+                height = "550px",
+                options = leafletOptions(
+                  minZoom = 2,
+                  maxZoom = 7,
+                  worldCopyJump = TRUE
+                )) %>%
+  setView(lng = 15, lat = 20, zoom = 2.2) %>%
+  addProviderTiles("CartoDB.DarkMatter")
+
+for (var_display in names(variables_mapa)) {
+  var_col <- variables_mapa[[var_display]]
+  pal <- paletas[[var_display]]
+  
+  unidad <- if(grepl("Crecimiento", var_display)) "%" else "%"
+  
+  labels <- sprintf(
+    "<div style='font-family: sans-serif;'>
+      <strong style='color: #00e5ff; font-size: 15px;'>%s</strong><br/>
+      <span style='color: #8b92a0; font-size: 12px;'>%s:</span><br/>
+      <strong style='color: #00e5ff; font-size: 14px;'>%s</strong>
+    </div>",
+    world_data$name,
+    var_display,
+    ifelse(is.na(world_data[[var_col]]), 
+           "Sin datos", 
+           paste0(round(world_data[[var_col]], 2), unidad))
+  ) %>% lapply(HTML)
+  
+  mapa <- mapa %>%
+    addPolygons(
+      fillColor = ~pal(world_data[[var_col]]),
+      weight = 1.2,
+      opacity = 0.9,
+      color = "#00e5ff",
+      fillOpacity = 0.75,
+      highlight = highlightOptions(
+        weight = 2.5,
+        color = "#00ffff",
+        fillOpacity = 0.9,
+        bringToFront = TRUE
+      ),
+      label = labels,
+      labelOptions = labelOptions(
+        style = list(
+          "background" = "rgba(10, 14, 26, 0.95)",
+          "border" = "2px solid #00e5ff",
+          "border-radius" = "6px",
+          "padding" = "10px",
+          "box-shadow" = "0 0 15px rgba(0, 229, 255, 0.6)"
+        ),
+        textsize = "13px"
+      ),
+      group = var_display
+    )
+}
+
+mapa <- mapa %>%
+  addLayersControl(
+    baseGroups = names(variables_mapa),
+    options = layersControlOptions(collapsed = FALSE),
+    position = "topleft"
+  ) %>%
+  hideGroup(names(variables_mapa)[-1])
+
+mapa <- mapa %>%
+  htmlwidgets::onRender("
+    function(el, x) {
+      var map = this;
+      
+      // Configuración de leyendas
+      var legendConfigs = {
+        'Crecimiento PIB': {
+          title: 'CRECIMIENTO DEL PIB',
+          subtitle: '(% anual)',
+          min: -10,
+          max: 10,
+          colors: ['#ff1744', '#ff6b00', '#ffd600', '#00e676', '#00e5ff'],
+          labels: ['-10%', '-5%', '0%', '5%', '10%']
+        },
+        'Acceso electricidad': {
+          title: 'ACCESO A ELECTRICIDAD',
+          subtitle: '(% de población)',
+          min: 0,
+          max: 100,
+          colors: ['#1a1a2e', '#0084ff', '#00e5ff', '#00e676', '#ffd600'],
+          labels: ['0%', '25%', '50%', '75%', '100%']
+        },
+        'Crecimiento poblacion': {
+          title: 'CRECIMIENTO POBLACIÓN',
+          subtitle: '(% anual)',
+          min: -2,
+          max: 4,
+          colors: ['#0084ff', '#00e5ff', '#a259ff', '#ff6b00', '#ff1744'],
+          labels: ['-2%', '-1%', '0%', '2%', '4%']
+        }
+      };
+      
+      // Crear leyenda
+      var LegendControl = L.Control.extend({
+        options: { position: 'bottomright' },
+        onAdd: function(map) {
+          var div = L.DomUtil.create('div', 'info legend');
+          div.id = 'bar-legend';
+          return div;
+        }
+      });
+      
+      map.addControl(new LegendControl());
+      
+      // Función para crear barra de gradiente
+      function updateLegend(varName) {
+        var div = document.getElementById('bar-legend');
+        var config = legendConfigs[varName];
+        
+        // Crear gradiente CSS
+        var gradient = 'linear-gradient(to right';
+        config.colors.forEach(function(color) {
+          gradient += ', ' + color;
+        });
+        gradient += ')';
+        
+        var html = '<div style=\"background: linear-gradient(135deg, #0a0e1a, #12161f); padding: 18px; border-radius: 10px; border: 2px solid #00e5ff; box-shadow: 0 8px 32px rgba(0,0,0,0.9); min-width: 280px;\">';
+        
+        // Título
+        html += '<div style=\"color: #00e5ff; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 4px; text-align: center; text-shadow: 0 0 10px rgba(0,229,255,0.5);\">' + config.title + '</div>';
+        html += '<div style=\"color: #8b92a0; font-size: 11px; text-align: center; margin-bottom: 12px;\">' + config.subtitle + '</div>';
+        
+        // Barra de color
+        html += '<div style=\"height: 20px; background: ' + gradient + '; border-radius: 4px; border: 1px solid #00e5ff; margin-bottom: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);\"></div>';
+        
+        // Etiquetas
+        html += '<div style=\"display: flex; justify-content: space-between; font-size: 11px; color: #e0e6ed;\">';
+        config.labels.forEach(function(label) {
+          html += '<span>' + label + '</span>';
+        });
+        html += '</div>';
+        
+        html += '</div>';
+        div.innerHTML = html;
+      }
+      
+      // Inicializar
+      updateLegend('Crecimiento PIB');
+      
+      // Actualizar al cambiar capa
+      map.on('baselayerchange', function(e) {
+        updateLegend(e.name);
+      });
+      
+      // Estilizar control de capas
+      setTimeout(function() {
+        var ctrl = document.querySelector('.leaflet-control-layers');
+        if (ctrl) {
+          ctrl.style.background = 'linear-gradient(135deg, #0a0e1a, #12161f)';
+          ctrl.style.border = '2px solid rgba(0, 229, 255, 0.4)';
+          ctrl.style.borderRadius = '10px';
+          ctrl.style.padding = '18px';
+          ctrl.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.9)';
+        }
+        
+        var base = document.querySelector('.leaflet-control-layers-base');
+        if (base && !document.getElementById('sel-title')) {
+          var title = document.createElement('div');
+          title.id = 'sel-title';
+          title.innerHTML = '<strong style=\"color: #00e5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(0,229,255,0.5);\">📊 SELECCIONA VARIABLE</strong>';
+          title.style.marginBottom = '12px';
+          title.style.paddingBottom = '10px';
+          title.style.borderBottom = '2px solid rgba(0, 229, 255, 0.3)';
+          base.insertBefore(title, base.firstChild);
+        }
+        
+        var labels = document.querySelectorAll('.leaflet-control-layers-base label');
+        labels.forEach(function(label, idx) {
+          label.style.color = '#e0e6ed';
+          label.style.fontSize = '13px';
+          label.style.fontWeight = '600';
+          label.style.padding = '9px 12px';
+          label.style.margin = '4px 0';
+          label.style.display = 'block';
+          label.style.borderRadius = '6px';
+          label.style.cursor = 'pointer';
+          label.style.transition = 'all 0.3s';
+          
+          var input = label.querySelector('input');
+          if (input) {
+            input.style.accentColor = '#00e5ff';
+            if (idx === 0) {
+              label.style.background = 'rgba(0, 229, 255, 0.15)';
+              label.style.color = '#00e5ff';
+            }
+          }
+          
+          label.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(0, 229, 255, 0.1)';
+            this.style.color = '#00e5ff';
+          });
+          
+          label.addEventListener('mouseleave', function() {
+            if (!this.querySelector('input').checked) {
+              this.style.background = 'transparent';
+              this.style.color = '#e0e6ed';
+            }
+          });
+        });
+        
+        var inputs = document.querySelectorAll('.leaflet-control-layers-base input');
+        inputs.forEach(function(input) {
+          input.addEventListener('change', function() {
+            labels.forEach(function(l) {
+              l.style.background = 'transparent';
+              l.style.color = '#e0e6ed';
+            });
+            if (this.checked) {
+              this.parentElement.style.background = 'rgba(0, 229, 255, 0.15)';
+              this.parentElement.style.color = '#00e5ff';
+            }
+          });
+        });
+      }, 100);
+    }
+  ")
+
+mapa
+```
+---
+
+## Visualizaciones Exploratorias
+
+### Gráfico de Burbujas: Economía Global
+
+Análisis multidimensional de la economía mundial 2022. Este gráfico permite 
+visualizar simultáneamente cuatro dimensiones: PIB per cápita (eje X), crecimiento 
+económico (eje Y), tamaño poblacional (tamaño de burbuja) y ubicación geográfica 
+(color por continente).
+
+```{r grafico-burbujas-COMPLETO, fig.height=7, fig.width=11}
+
+asignar_continentes <- function(data) {
+  continentes_map <- c(
+    # AMÉRICA - COMPLETO
+    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
+    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
+    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
+    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
+    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
+    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
+    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
+    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
+    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
+    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
+    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
+    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
+    
+    # EUROPA - COMPLETO
+    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
+    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
+    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
+    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
+    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
+    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
+    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
+    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
+    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
+    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
+    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
+    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
+    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
+    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
+    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
+    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
+    "San Marino" = "Europe",
+    
+    # ASIA - COMPLETO
+    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
+    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
+    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
+    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
+    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
+    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
+    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
+    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
+    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
+    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
+    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
+    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
+    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
+    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
+    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
+    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
+    
+    # ÁFRICA - COMPLETO
+    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
+    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
+    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
+    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
+    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
+    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
+    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
+    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
+    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
+    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
+    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
+    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
+    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
+    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
+    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
+    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
+    "Zimbabwe" = "Africa",
+    
+    # OCEANÍA - COMPLETO
+    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
+    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
+    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
+    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
+  )
+  
+  data %>%
+    mutate(Continente = ifelse(Pais %in% names(continentes_map),
+                                continentes_map[Pais], NA))
+}
+
+# Preparar datos con burbujas PEQUEÑAS y proporcionales
+datos_burbujas <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(!is.na(PIB_per) & !is.na(`Crecimiento PIB`) & !is.na(Continente)) %>%
+  select(Pais, Continente, PIB_per, `Crecimiento PIB`, Poblacion) %>%
+  mutate(
+    # Tamaño: logaritmo para evitar burbujas enormes
+    Tamaño = log10(Poblacion),
+    
+    tooltip_text = paste0(
+      "<b>", Pais, "</b><br>",
+      Continente, "<br>",
+      "PIB: $", round(PIB_per), "<br>",
+      "Crec: ", round(`Crecimiento PIB`, 2), "%<br>",
+      "Población: ", round(Poblacion/1e6, 1), "M"
+    )
+  )
+
+# Colores por continente
+colores <- c(
+  "Americas" = "#00e676",
+  "Europe" = "#0084ff",
+  "Asia" = "#ffd600",
+  "Africa" = "#ff1744",
+  "Oceania" = "#a259ff"
+)
+
+# Gráfico
+plot_ly(
+  data = datos_burbujas,
+  x = ~PIB_per,
+  y = ~`Crecimiento PIB`,
+  size = ~Tamaño,
+  color = ~Continente,
+  colors = colores,
+  type = 'scatter',
+  mode = 'markers',
+  text = ~tooltip_text,
+  hovertemplate = "%{text}<extra></extra>",
+  marker = list(
+    sizeref = 2 * max(datos_burbujas$Tamaño) / 15^2,
+    sizemin = 3,
+    opacity = 0.65,
+    line = list(color = '#00e5ff', width = 0.8)
+  ),
+  showlegend = TRUE
+) %>%
+  layout(
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial", color = '#e0e6ed', size = 11),
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:18px;'>Economía Global: PIB per Cápita vs Crecimiento</b><br>
+               <span style='color:#8b92a0; font-size:12px;'>Tamaño burbuja = Población | Año 2022</span>",
+      x = 0.5, xanchor = 'center'
+    ),
+    xaxis = list(
+      title = "<b>PIB per cápita (USD)</b>",
+      type = 'linear',
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickcolor = '#8b92a0'
+    ),
+    yaxis = list(
+      title = "<b>Crecimiento PIB Anual (%)</b>",
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickcolor = '#8b92a0'
+    ),
+    legend = list(
+      bgcolor = 'rgba(10,14,26,0.85)',
+      bordercolor = '#00e5ff',
+      borderwidth = 1,
+      x = 0.01, y = 0.99
+    ),
+    margin = list(l = 60, r = 40, b = 60, t = 70),
+    hovermode = 'closest'
+  ) %>%
+  config(responsive = TRUE)
+
+```
+
+✅ Verificación
+
+```{r validar-grafico-completo}
+
+datos_check <- Base_2022 %>% asignar_continentes() %>% 
+  filter(!is.na(Continente) & !is.na(PIB_per) & !is.na(`Crecimiento PIB`))
+
+cat("✅ Total países:", nrow(datos_check), "\n")
+cat("📊 PIB rango: $", round(min(datos_check$PIB_per)), " - $", round(max(datos_check$PIB_per)), "\n")
+cat("📈 Crec rango: ", round(min(datos_check$`Crecimiento PIB`), 2), "% - ", round(max(datos_check$`Crecimiento PIB`), 2), "%\n")
+
+# Por continente
+stats <- datos_check %>% group_by(Continente) %>% summarise(Paises = n(), .groups = 'drop')
+cat("\nPor continente:\n")
+for(i in 1:nrow(stats)) {
+  cat("- ", stats$Continente[i], ": ", stats$Paises[i], " países\n")
+}
+
+```
+
+# Análisis de Componentes Principales
+
+## Matriz de Correlaciones
+
+```{r correlaciones}
+# Matriz de correlaciones
+```
+
+## Ejecución del ACP
+
+```{r acp}
+# ACP
+```
+
+## Varianza Explicada
+
+```{r varianza}
+# Varianza explicada
+```
+
+---
+
+# Clusterización
+
+## Determinación del Número Óptimo de Clusters
+
+```{r n-clusters}
+# Método del codo
+```
+
+## Aplicación del Método de Ward
+
+```{r ward}
+# Clustering Ward
+```
+
+## Visualización de Clusters
+
+```{r viz-clusters}
+# Visualización
+```
+
+---
+
+# Resultados e Interpretación
+
+## Hallazgos Principales
+
+Los resultados revelan patrones importantes en el desarrollo de los países analizados.
+
+## Patrones Observados
+
+Se identifican tendencias claras según las características de desarrollo económico y social.
+
+---
+
+# Conclusiones
+
+## Conclusiones del Estudio
+
+1. **Reducción de Dimensionalidad:** El ACP logró simplificar efectivamente los datos
+2. **Segmentación:** Los clusters identificados muestran agrupaciones coherentes
+3. **Implicaciones:** Los resultados tienen aplicaciones prácticas para políticas públicas
+
+## Limitaciones y Trabajo Futuro
+
+- Análisis transversal limitado a un período específico
+- Recomendación de análisis longitudinal futuro
+- Incorporación de variables adicionales
+
+---
+
+# Bibliografía
+
+1. **World Bank.** (2024). *World Development Indicators*
+2. **Jolliffe, I. T., & Cadima, J.** (2016). Principal component analysis: A review
+3. **Hastie, T., et al.** (2009). *The Elements of Statistical Learning*
+4. **James, G., et al.** (2013). *An Introduction to Statistical Learning with R*
+5. **Ward, J. H.** (1963). Hierarchical grouping to optimize an objective function
+
+---
+
+<div class="footer">
+  <strong>Universidad del Valle</strong> | <em>Facultad de Ingeniería</em> | Gestión de Datos<br>
+  Profesor: Orlando Joaqui Barandica | `r format(Sys.Date(), '%Y')`
+</div>
