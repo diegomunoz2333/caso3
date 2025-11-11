@@ -233,42 +233,6 @@ wss <- sapply(2:10, function(k) {
   }))
 })
 
-# Detectar número óptimo
-diff_wss <- diff(wss)
-diff_diff <- diff(diff_wss)
-k_optimo <- which.max(diff_diff) + 2
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
-
-# ASIGNAR CLUSTERS
-clusters <- cutree(arbol, k = k_optimo)
-
-# Nueva base con clusters
-NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
-view(NuevaBase)
-write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
-
-# Promedios por cluster
-carac_cont <- NuevaBase %>%
-  group_by(Cluster) %>%
-  summarise(across(everything(), mean, na.rm = TRUE), .groups = "drop") %>%
-  as.data.frame()
-resultado_ACP <- list(
-  dudi = acp_resultado,
-  cluster = clusters,
-  tree = arbol,
-  carac.cont = carac_cont
-)
-cat("Clusters formados:", length(unique(clusters)), "\n\n")
-# Gráfica del método del codo
-df_wss <- data.frame(
-  k = 2:10,
-  WSS = wss
-)
-
 # Gráfico del método del codo con estilo profesional
 df_wss <- data.frame(
   k = 2:10,
@@ -299,6 +263,23 @@ ggplot(df_wss, aes(x = k, y = WSS)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
+# Detectar número óptimo
+diff_wss <- diff(wss)
+diff_diff <- diff(diff_wss)
+k_optimo <- which.max(diff_diff) + 2
+if (k_optimo > 6) k_optimo <- 5
+if (k_optimo < 2) k_optimo <- 2
+
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
+
+# ASIGNAR CLUSTERS
+clusters <- cutree(arbol, k = k_optimo)
+
+# Nueva base con clusters
+NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
+write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
+
 
 ##FVIZ-PCA-INDIVIUS
 
@@ -463,6 +444,10 @@ centroides <- paises_clusters %>%
     Centroid2 = mean(Comp2)
   )
 
+###dendograma
+plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
+rect.hclust(arbol, k = k_optimo, border = 2:5)
+
 # paises en clusters
 
 ggplot(paises_clusters, aes(x = Comp1, y = Comp2, color = Cluster)) +
@@ -517,9 +502,6 @@ ggplot(paises_clusters, aes(x = Comp1, y = Comp2, color = Cluster)) +
     legend.background = element_rect(fill = "white", color = "gray80")
   )
 
-###dendograma
-plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
-rect.hclust(arbol, k = k_optimo, border = 2:5)
 
 # Crear la tabla manualmente con las dimensiones y variables
 dimensiones_tabla <- tribble(
@@ -621,9 +603,8 @@ nombres_clusters <- c(
 )
 NuevaBase <- NuevaBase %>%
   mutate(Cluster = recode(as.character(Cluster), !!!nombres_clusters))
-view(NuevaBase)
 
-#///////////////Base cluster x dimension con nombre////////////////////////////
+
 NuevaBase <- readr::read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
 possible_names <- c("Pais", "pais", "PAIS", "Country", "country", "COUNTRY", "Row.names", "Rowname", "X1", "...1")
 country_col <- intersect(possible_names, names(NuevaBase)) %>% first()
