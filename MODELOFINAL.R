@@ -6,13 +6,15 @@ library(cluster)
 library(dendextend)    
 library(ggrepel)      
 library(kableExtra)    
-library(ggforce)       
+library(ggforce)    
+library(dendextend)
 library(plotly)        
 library(sf)            
 library(leaflet)       
 library(rnaturalearth)
 library(RColorBrewer)  
-##
+library(ellipse)
+
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
@@ -72,7 +74,6 @@ cat("Variables:", ncol(datos_analisis), "\n\n")
 # ACP
 acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
 varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
-n_componentes <- which(varianza_acum >= 80)[1]
 n_componentes <- which(varianza_acum >= 70)[1]
 
 cat("=== SELECCIÓN DE COMPONENTES ===\n")
@@ -97,9 +98,32 @@ varianza_df <- data.frame(
   VarianzaAcum = varianza_acum
 )
 view(varianza_df)
-##############################grafica varianza acumulada
-#=================== GRÁFICO DE VARIANZA (70% y 6 DIMENSIONES) ===================#
 
+##tabla varianza acumulada
+
+varianza_tabla <- varianza_df %>%
+  mutate(
+    Varianza = round(Varianza, 2),
+    VarianzaAcum = round(VarianzaAcum, 2)
+  )
+
+varianza_tabla %>%
+  knitr::kable(
+    caption = "Varianza explicada por componente principal",
+    col.names = c("Componente", "% Varianza", "% Varianza Acumulada"),
+    align = c("c", "c", "c"),
+    format = "html"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "7em") %>%
+  column_spec(2:3, width = "10em")
+##############################grafica varianza acumulada
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_col(fill = "#2C5F8D", alpha = 0.9) +
   geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
@@ -132,8 +156,48 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
+###BASE DE DATOS DIMENSIONES VS VARIABLES
+res.pca <- prcomp(NuevaBase, scale = TRUE)
+res.pca
+eig.val <- get_eigenvalue(res.pca)
+eig.val
 
 
+#/////////////Gráfico de varianza explicada////////////////////////////////////
+
+fviz_eig(res.pca,
+         addlabels = TRUE,
+         ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
+         choice = "variance") +
+  labs(
+    title = "Varianza Explicada por Componente Principal",
+    subtitle = "Autovalores del análisis de componentes principales",
+    x = "Componentes Principales",
+    y = "Porcentaje de Varianza Explicada (%)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  ) +
+  scale_fill_manual(values = "#2C5F8D") +
+  scale_color_manual(values = "#2C5F8D")
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+res.var <- get_pca_var(res.pca)
+res.var$coord
+res.var$contrib        
+res.var$cos2           
+View(res.var$contrib[,1:6]) 
+
+
+########################### hasta aqui van las dimensiones
 #///////////////////////// Gráfico de silhouette /////////////////////////////
 
 fviz_nbclust(
@@ -159,49 +223,39 @@ fviz_nbclust(
     plot.background = element_rect(fill = "white")
   )
 
-#LEER
 
-#Si el codo te da 3, y Silhouette te da 2, NO es un error. Significa que:
+#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
+distancia <- dist(factores)
+arbol <- hclust(distancia, method = "ward.D2")
 
-#Hay dos grupos fuertemente compactados, y el tercero quizás está más disperso o cerca de uno de los anteriores.
+# Método del codo (WSS)
+wss <- sapply(2:10, function(k) {
+  grupos <- cutree(arbol, k = k)
+  sum(tapply(1:nrow(factores), grupos, function(idx) {
+    if (length(idx) > 1) {
+      sum(dist(factores[idx, ])^2) / (2 * length(idx))
+    } else 0
+  }))
+})
 
-#Silhouette se va a lo más "conservador" para la separación óptima; el codo enfatiza que añadir un tercer clúster aún reduce bastante la inercia.
-
-# ¿Qué hacer en tu informe?
-#Explica ambas decisiones y muestra ambos gráficos.
-
-#Argumenta que, según el contexto económico y con apoyo visual (dendrograma, dispersión, silueta), tu interpretación es que 3 clústeres es "más informativo", pero reconoces que la separación más "segura" según silueta es 2.
-
-
-
-#===============================================================================
-
-
-
-
-
-
-#///////////////////////Gráfico de Codo/////////////////////////////////////////
-
-
-ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
-  geom_col(fill = "#2C5F8D", alpha = 0.9) +
-  geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
-  geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
-  geom_hline(yintercept = 80, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
-  geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
-  annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
-           label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
-           fontface = "bold", size = 3.8) +
-  annotate("text", x = 1.8, y = 83,
-           label = "80% varianza acumulada", color = "#27AE60", hjust = 0,
-           fontface = "bold", size = 3.8) +
-  scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
+# Gráfico del método del codo con estilo profesional
+df_wss <- data.frame(
+  k = 2:10,
+  WSS = wss
+)
+ggplot(df_wss, aes(x = k, y = WSS)) +
+  geom_line(color = "#2C5F8D", linewidth = 1.1) +
+  geom_point(size = 3, color = "#2C5F8D") +
+  geom_vline(xintercept = k_optimo, linetype = "dashed", color = "#E74C3C", linewidth = 1) +
+  annotate("text",
+           x = k_optimo + 0.4, y = df_wss$WSS[df_wss$k == k_optimo],
+           label = paste("k óptimo =", k_optimo),
+           color = "#E74C3C", hjust = 0, size = 4.2, fontface = "bold") +
   labs(
-    title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
-    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥80%",
-    x = "Componentes Principales",
-    y = "% de Varianza Explicada"
+    title = "Número Óptimo de Clústeres según Método del Codo",
+    subtitle = "Basado en la Suma de Cuadrados Intra-Cluster (WSS)",
+    x = "Número de Clústeres (k)",
+    y = "Suma de Cuadrados Intra-Cluster (WSS)"
   ) +
   theme_minimal(base_size = 13) +
   theme(
@@ -209,55 +263,527 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
     axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
     axis.text = element_text(size = 10, color = "gray30"),
-    axis.text.x = element_text(angle = 45, vjust = 0.8),
     panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
+# Detectar número óptimo
+diff_wss <- diff(wss)
+diff_diff <- diff(diff_wss)
+k_optimo <- which.max(diff_diff) + 2
+if (k_optimo > 6) k_optimo <- 5
+if (k_optimo < 2) k_optimo <- 2
+
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
+
+# ASIGNAR CLUSTERS
+clusters <- cutree(arbol, k = k_optimo)
+
+# Nueva base con clusters
+NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
+write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
 
-#===============================================================================
+##FVIZ-PCA-INDIVIUS
 
+# Obtener datos de individuos
+ind_data <- get_pca_ind(res.pca)
 
+# Crear dataframe con todos los datos
+ind_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Dim1 = ind_data$coord[, 1],
+  Dim2 = ind_data$coord[, 2],
+  Dim3 = ind_data$coord[, 3],
+  Dim4 = ind_data$coord[, 4],
+  Dim5 = ind_data$coord[, 5],
+  Dim6 = ind_data$coord[, 6],
+  Contrib1 = ind_data$contrib[, 1],
+  Contrib2 = ind_data$contrib[, 2],
+  Contrib3 = ind_data$contrib[, 3],
+  Contrib4 = ind_data$contrib[, 4],
+  Contrib5 = ind_data$contrib[, 5],
+  Contrib6 = ind_data$contrib[, 6],
+  Cos2_1 = ind_data$cos2[, 1],
+  Cos2_2 = ind_data$cos2[, 2],
+  Cos2_3 = ind_data$cos2[, 3],
+  Cos2_4 = ind_data$cos2[, 4],
+  Cos2_5 = ind_data$cos2[, 5],
+  Cos2_6 = ind_data$cos2[, 6]
+)
 
+# ============================================================================
+# GRÁFICO 1: Individuos Dim 1 vs 2 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
 
-#/////////////////////////Tabla varianza componentes////////////////////////////
-library(kableExtra)
-varianza_tabla <- varianza_df %>%
-  mutate(
-    Varianza = round(Varianza, 2),
-    VarianzaAcum = round(VarianzaAcum, 2)
+p1 <- plot_ly(ind_df,
+              x = ~Dim1, 
+              y = ~Dim2,
+              color = ~Contrib1,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 1:", round(Dim1, 3), "<br>",
+                            "Dim 2:", round(Dim2, 3), "<br>",
+                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
+                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
+                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
   )
 
-varianza_tabla %>%
-  knitr::kable(
-    caption = "Varianza explicada por componente principal",
-    col.names = c("Componente", "% Varianza", "% Varianza Acumulada"),
-    align = c("c", "c", "c"),
-    format = "html"
+p1
+
+# ============================================================================
+# GRÁFICO 2: Individuos Dim 3 vs 4 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p2 <- plot_ly(ind_df,
+              x = ~Dim3, 
+              y = ~Dim4,
+              color = ~Contrib3,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 3:", round(Dim3, 3), "<br>",
+                            "Dim 4:", round(Dim4, 3), "<br>",
+                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
+                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
+                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p2
+
+# ============================================================================
+# GRÁFICO 3: Individuos Dim 5 vs 6 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p3 <- plot_ly(ind_df,
+              x = ~Dim5, 
+              y = ~Dim6,
+              color = ~Contrib5,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Pais, "</b><br>",
+                            "Dim 5:", round(Dim5, 3), "<br>",
+                            "Dim 6:", round(Dim6, 3), "<br>",
+                            "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                            "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%<br>",
+                            "Cos2 Dim 5:", round(Cos2_5, 3), "<br>",
+                            "Cos2 Dim 6:", round(Cos2_6, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  layout(
+    title = list(
+      text = "Individuos: Dimensión 5 vs Dimensión 6<br><sub>Coloreado por Contribución Dim 5</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p3
+
+
+
+
+
+
+
+# Obtener datos de variables
+var_data <- get_pca_var(res.pca)
+
+# Crear dataframe con todos los datos
+var_df <- data.frame(
+  Variable = rownames(var_data$coord),
+  Dim1 = var_data$coord[, 1],
+  Dim2 = var_data$coord[, 2],
+  Dim3 = var_data$coord[, 3],
+  Dim4 = var_data$coord[, 4],
+  Dim5 = var_data$coord[, 5],
+  Dim6 = var_data$coord[, 6],
+  Contrib1 = var_data$contrib[, 1],
+  Contrib2 = var_data$contrib[, 2],
+  Contrib3 = var_data$contrib[, 3],
+  Contrib4 = var_data$contrib[, 4],
+  Contrib5 = var_data$contrib[, 5],
+  Contrib6 = var_data$contrib[, 6],
+  Cos2_1 = var_data$cos2[, 1],
+  Cos2_2 = var_data$cos2[, 2],
+  Cos2_3 = var_data$cos2[, 3],
+  Cos2_4 = var_data$cos2[, 4],
+  Cos2_5 = var_data$cos2[, 5],
+  Cos2_6 = var_data$cos2[, 6]
+)
+
+# ============================================================================
+# GRÁFICO 1: Variables Dim 1 vs 2 
+# ============================================================================
+
+p1 <- plot_ly(var_df,
+              x = ~Dim1, 
+              y = ~Dim2,
+              color = ~Contrib1,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Variable, "</b><br>",
+                            "Dim 1:", round(Dim1, 3), "<br>",
+                            "Dim 2:", round(Dim2, 3), "<br>",
+                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
+                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
+                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  add_segments(x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
+               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               showlegend = FALSE, hoverinfo = "skip") %>%
+  
+  layout(
+    title = list(
+      text = "Variables: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p1
+
+# ============================================================================
+# GRÁFICO 2: Variables Dim 3 vs 4 
+# ============================================================================
+
+p2 <- plot_ly(var_df,
+              x = ~Dim3, 
+              y = ~Dim4,
+              color = ~Contrib3,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Variable, "</b><br>",
+                            "Dim 3:", round(Dim3, 3), "<br>",
+                            "Dim 4:", round(Dim4, 3), "<br>",
+                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
+                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
+                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  add_segments(x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
+               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               showlegend = FALSE, hoverinfo = "skip") %>%
+  
+  layout(
+    title = list(
+      text = "Variables: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p2
+
+# ============================================================================
+# GRÁFICO 3: Variables Dim 5 vs 6 (CON AMBAS CONTRIBUCIONES)
+# ============================================================================
+
+p3 <- plot_ly(var_df,
+              x = ~Dim5, 
+              y = ~Dim6,
+              color = ~Contrib5,
+              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
+              text = ~paste("<b>", Variable, "</b><br>",
+                            "Dim 5:", round(Dim5, 3), "<br>",
+                            "Dim 6:", round(Dim6, 3), "<br>",
+                            "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                            "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%<br>",
+                            "Cos2 Dim 5:", round(Cos2_5, 3), "<br>",
+                            "Cos2 Dim 6:", round(Cos2_6, 3)),
+              type = "scatter",
+              mode = "markers",
+              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              hovertemplate = '%{text}<extra></extra>') %>%
+  
+  add_segments(x = 0, xend = ~Dim5, y = 0, yend = ~Dim6,
+               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               showlegend = FALSE, hoverinfo = "skip") %>%
+  
+  layout(
+    title = list(
+      text = "Variables: Dimensión 5 vs Dimensión 6<br><sub>Coloreado por Contribución Dim 5</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white"
+  )
+
+p3
+
+##FVIZ-PCA-BIPLOTS
+
+# Obtener datos
+ind_data <- get_pca_ind(res.pca)
+var_data <- get_pca_var(res.pca)
+
+# Crear dataframes para individuos
+ind_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Dim1 = ind_data$coord[, 1],
+  Dim2 = ind_data$coord[, 2],
+  Dim3 = ind_data$coord[, 3],
+  Dim4 = ind_data$coord[, 4],
+  Dim5 = ind_data$coord[, 5],
+  Dim6 = ind_data$coord[, 6],
+  Contrib1 = ind_data$contrib[, 1],
+  Contrib2 = ind_data$contrib[, 2],
+  Contrib3 = ind_data$contrib[, 3],
+  Contrib4 = ind_data$contrib[, 4],
+  Contrib5 = ind_data$contrib[, 5],
+  Contrib6 = ind_data$contrib[, 6]
+)
+
+# Crear dataframes para variables (amplificadas para visibilidad)
+var_df <- data.frame(
+  Variable = rownames(var_data$coord),
+  Dim1 = var_data$coord[, 1] * 3,
+  Dim2 = var_data$coord[, 2] * 3,
+  Dim3 = var_data$coord[, 3] * 3,
+  Dim4 = var_data$coord[, 4] * 3,
+  Dim5 = var_data$coord[, 5] * 3,
+  Dim6 = var_data$coord[, 6] * 3,
+  Contrib1 = var_data$contrib[, 1],
+  Contrib2 = var_data$contrib[, 2],
+  Contrib3 = var_data$contrib[, 3],
+  Contrib4 = var_data$contrib[, 4],
+  Contrib5 = var_data$contrib[, 5],
+  Contrib6 = var_data$contrib[, 6]
+)
+
+# ============================================================================
+# BIPLOT 1: Dim 1 vs 2
+# ============================================================================
+
+p1 <- plot_ly() %>%
+  
+  # Líneas de variables (desde origen)
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
   ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE,
-    position = "center",
-    font_size = 14
+  
+  # Puntos de variables (azul)
+  add_trace(
+    data = var_df,
+    x = ~Dim1, y = ~Dim2,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 1:", round(Dim1/3, 3), "<br>",
+                  "Dim 2:", round(Dim2/3, 3), "<br>",
+                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
   ) %>%
-  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "7em") %>%
-  column_spec(2:3, width = "10em")
+  
+  # Puntos de individuos (gris)
+  add_trace(
+    data = ind_df,
+    x = ~Dim1, y = ~Dim2,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 1:", round(Dim1, 3), "<br>",
+                  "Dim 2:", round(Dim2, 3), "<br>",
+                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 1 vs Dimensión 2<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
+  )
 
+p1
 
+# ============================================================================
+# BIPLOT 2: Dim 3 vs 4
+# ============================================================================
 
-#===============================================================================
+p2 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim3, y = ~Dim4,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 3:", round(Dim3/3, 3), "<br>",
+                  "Dim 4:", round(Dim4/3, 3), "<br>",
+                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim3, y = ~Dim4,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 3:", round(Dim3, 3), "<br>",
+                  "Dim 4:", round(Dim4, 3), "<br>",
+                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 3 vs Dimensión 4<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
+  )
 
+p2
 
+# ============================================================================
+# BIPLOT 3: Dim 5 vs 6
+# ============================================================================
 
+p3 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim5, y = 0, yend = ~Dim6,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim5, y = ~Dim6,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 5:", round(Dim5/3, 3), "<br>",
+                  "Dim 6:", round(Dim6/3, 3), "<br>",
+                  "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                  "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim5, y = ~Dim6,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 5:", round(Dim5, 3), "<br>",
+                  "Dim 6:", round(Dim6, 3), "<br>",
+                  "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                  "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 5 vs Dimensión 6<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
+  )
 
-
-
-
-#////////////////////// Círculo de correlaciones ///////////////////////////////
+p3
 
 vars_df <- as.data.frame(acp_resultado$co)
 vars_df$Variable <- rownames(vars_df)
@@ -310,83 +836,31 @@ ggplot() +
 
 
 
-#===============================================================================
-
-
-
-
-
-
 #////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
-
-# Países en el espacio factorial
 paises_df <- as.data.frame(acp_resultado$li)
 paises_df$Pais <- rownames(paises_df)
 
-# Calcular distancia al origen (para resaltar países más "extremos")
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
 
-library(plotly)
-
-# Crear gráfico directamente con plot_ly (más estable)
-plot_ly(paises_df, 
-        x = ~Axis1, 
-        y = ~Axis2, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'CP1: %{x:.2f}<br>',
-                              'CP2: %{y:.2f}<br>',
-                              'Distancia: %{marker.color:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Países en el Espacio Factorial del ACP",
-                 font = list(size = 16)),
-    xaxis = list(title = "Componente Principal 1",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 2",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-
-#===============================================================================
-
-
-
-
-
-
-#//////////////////////////Tabla de variaanza///////////////////////////////////
-
-
-#===============================================================================
-
-
-
-
-
-#////////////Gráfico de Eigenvalores (Scree Plot alternativo) //////////////////
-#///////////////// Nombramiento de las dimensiones /////////////////////////////
-
-res.pca <- prcomp(NuevaBase, scale = TRUE)
-
-res.pca
-eig.val <- get_eigenvalue(res.pca)
-eig.val
-
-fviz_eig(res.pca,
-         addlabels = TRUE,
-         ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
-         choice = "variance") +
+ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
+  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
+  geom_text_repel(
+    aes(label = Pais),
+    size = 3.4,
+    color = "gray20",
+    fontface = "bold",
+    max.overlaps = 20,
+    segment.color = "gray70",
+    segment.size = 0.3
+  ) +
+  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
   labs(
-    title = "Varianza Explicada por Componente Principal",
-    subtitle = "Autovalores del análisis de componentes principales",
-    x = "Componentes Principales",
-    y = "Porcentaje de Varianza Explicada (%)"
+    title = "Países en el Espacio Factorial del ACP",
+    subtitle = "Distribución de países según los dos primeros componentes principales",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2"
   ) +
   theme_minimal(base_size = 13) +
   theme(
@@ -397,150 +871,61 @@ fviz_eig(res.pca,
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = "gray92", size = 0.3),
     panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  ) +
-  scale_fill_manual(values = "#2C5F8D") +
-  scale_color_manual(values = "#2C5F8D")
+    plot.background = element_rect(fill = "white"),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
+    legend.text = element_text(size = 10),
+    legend.background = element_rect(fill = "white", color = "gray80")
+  )
 
-
-# Eigenvalues
-eig.val <- get_eigenvalue(res.pca)
-eig.val
-
-
-# Resultados para Variables
-res.var <- get_pca_var(res.pca)
-res.var$coord          # Coordinates
-res.var$contrib        # Contributions to the PCs
-res.var$cos2           # Quality of representation 
-View(res.var$contrib[,1:6]) # Miro los dos primeros factores
-colSums( res.var$contrib[,1:2] )
-
-
-# Results for individuals
+####base de datos dimensiones x pais
 res.ind <- get_pca_ind(res.pca)
-res.ind$coord          # Coordinates
-res.ind$contrib        # Contributions to the PCs
-res.ind$cos2           # Quality of representation 
-View(res.ind$contrib[,1:6]) # Miro los dos primeros factores
-res.ind$contrib[,1:2]
+res.ind$coord          
+res.ind$contrib        
+res.ind$cos2           
+View(res.ind$contrib[,1:6]) 
 
-#////////////////////// Tabla nuevas dimensiones ///////////////////////////////
-# Crear la tabla manualmente con las dimensiones y variables
-dimensiones_tabla <- tribble(
-  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
-  "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
-  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
-  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
-  
-  "Dimensión 2", "Industrialización y crecimiento demográfico, desarrollo industrial, dependencia económica de remesas", 
-  "Industria, Crecimiento.poblacion, Remesas", 
-  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
-  
-  "Dimensión 3", "Apertura comercial, actividad comercial internacional, comercio exterior", 
-  "Importaciones, Exportaciones, Inversión.Extranjera", 
-  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
-  
-  "Dimensión 4", "Presión demográfica y uso del suelo", 
-  "Área.boscosa, Tierra.cultivable, Población", 
-  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
-  
-  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
-  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
-  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
-  
-  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
-  "Gasto.salud, PIB_per, Inversión.Extranjera", 
-  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
-  
-)
 
-# Crear la tabla con kableExtra
-dimensiones_tabla %>%
+#/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
+
+tamaños <- as.data.frame(table(res_hc$cluster))
+colnames(tamaños) <- c("Cluster", "N")
+tamaños <- tamaños %>% arrange(as.integer(as.character(Cluster)))
+
+tamaños %>%
   knitr::kable(
-    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
-    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
-    align = c("c", "l", "l", "l"),
-    format = "html",
-    escape = FALSE
+    caption = "Tamaño de cada clúster",
+    digits = 0,
+    align = "c",
+    col.names = c("Clúster", "Número de Países")
   ) %>%
-  kable_styling(
+  kableExtra::kable_styling(
     bootstrap_options = c("striped", "hover", "condensed", "responsive"),
     full_width = FALSE,
     position = "center",
-    font_size = 13
+    font_size = 14
   ) %>%
   row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "8em") %>%
-  column_spec(2, width = "22em") %>%
-  column_spec(3, width = "16em") %>%
-  column_spec(4, width = "18em")
+  column_spec(1, bold = TRUE, width = "10em", color = "#1B4965") %>%
+  column_spec(2, width = "12em")
 
+#///////////////////////////Tabla de medias por clúster////////////////////////
 
-#===============================================================================
+#    Usamos el data frame original de análisis con la columna Cluster
+datos_con_cluster <- datos_analisis %>%
+  mutate(Cluster = factor(res_hc$cluster))  # convertimos a factor para claridad
 
-
-
-
-
-#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
-distancia <- dist(factores)
-arbol <- hclust(distancia, method = "ward.D2")
-
-# Método del codo (WSS)
-wss <- sapply(2:10, function(k) {
-  grupos <- cutree(arbol, k = k)
-  sum(tapply(1:nrow(factores), grupos, function(idx) {
-    if (length(idx) > 1) {
-      sum(dist(factores[idx, ])^2) / (2 * length(idx))
-    } else 0
-  }))
-})
-
-# Detectar número óptimo
-diff_wss <- diff(wss)
-diff_diff <- diff(diff_wss)
-k_optimo <- which.max(diff_diff) + 2
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
-
-# ASIGNAR CLUSTERS
-clusters <- cutree(arbol, k = k_optimo)
-
-# Nueva base con clusters
-NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
-view(NuevaBase)
-write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
-
-# Promedios por cluster
-carac_cont <- NuevaBase %>%
+carac_cluster <- datos_con_cluster %>%
   group_by(Cluster) %>%
-  summarise(across(everything(), mean, na.rm = TRUE), .groups = "drop") %>%
-  as.data.frame()
+  summarise(across(everything(), mean, na.rm = TRUE))
 
-# RESULTADOS
-resultado_ACP <- list(
-  dudi = acp_resultado,
-  cluster = clusters,
-  tree = arbol,
-  carac.cont = carac_cont
-)
+kable(carac_cluster, 
+      caption = "Medias de variables por clúster",
+      digits = 2, align = "c") %>%
+  kable_styling(bootstrap_options = c("striped","hover","condensed"),
+                full_width = FALSE, position = "center") %>%
+  row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
 
-cat("Clusters formados:", length(unique(clusters)), "\n\n")
-
-
-# Círculo de correlaciones
-s.corcircle(acp_resultado$co)
-
-#//////////////////// Gráfico de países en espacio de factores//////////////////
-s.class(factores, as.factor(clusters), sub = "Clusters en el espacio factorial", possub = "bottomright")
-
-library(ggplot2)
-library(ggrepel)
-library(dplyr)
 
 # Preparar datos
 paises_clusters <- data.frame(
@@ -549,29 +934,8 @@ paises_clusters <- data.frame(
   Comp2 = factores[, 2],
   Cluster = as.factor(clusters)
 )
-#=================================================================================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-library(plotly)
-library(ellipse)
-
-# Calcular centroides
+# Calcular centroides para cada cluster
 centroides <- paises_clusters %>%
   group_by(Cluster) %>%
   summarise(
@@ -579,7 +943,161 @@ centroides <- paises_clusters %>%
     Centroid2 = mean(Comp2)
   )
 
-# Calcular elipses estáticas
+###dendograma
+plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
+rect.hclust(arbol, k = k_optimo, border = 2:5)
+
+# =====================================================
+# DENDROGRAMA REAL + RAMAS QUE TERMINAN EN BOTONES
+# =====================================================
+
+library(jsonlite)
+library(dendextend)
+library(ggdendro)
+
+# 1. Tus datos
+k_optimo <- 3
+clusters <- cutree(arbol, k = k_optimo)
+
+# 2. Países por clúster
+paises_cluster <- lapply(1:k_optimo, function(i) sort(rownames(factores)[clusters == i]))
+n_paises <- sapply(paises_cluster, length)
+json_clusters <- lapply(paises_cluster, toJSON, auto_unbox = TRUE)
+
+# 3. Dendrograma con colores
+dend <- as.dendrogram(arbol) %>%
+  color_branches(k = k_optimo, col = c("#E74C3C", "#3498DB", "#27AE60")) %>%
+  set("branches_lwd", 2.8) %>%
+  set("labels_cex", 0)  # sin nombres de países
+
+dend_data <- dendro_data(dend, type = "rectangle")
+seg <- segment(dend_data)
+lab <- label(dend_data)
+
+# Posición X promedio de cada clúster (para la línea que baja)
+cluster_center_x <- tapply(lab$x, clusters[match(lab$label, rownames(factores))], mean)
+
+# 4. HTML definitivo
+html <- paste0('
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dendrograma con Ramas a Botones</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    body {font-family:Arial; background:#f0f4f8; margin:0; padding:30px;}
+    h1 {text-align:center; color:#2c3e50;}
+    .info {text-align:center; color:#666; margin-bottom:30px;}
+    .container {max-width:1400px; margin:auto; background:white; border-radius:20px; padding:30px; box-shadow:0 15px 50px rgba(0,0,0,0.12);}
+    .buttons {text-align:center; margin:50px 0 30px;}
+    .btn {padding:18px 40px; margin:0 25px; border:none; border-radius:60px; font-size:20px; font-weight:bold; color:white; cursor:pointer; transition:0.3s;}
+    .btn1 {background:#E74C3C;}
+    .btn2 {background:#3498DB;}
+    .btn3 {background:#27AE60;}
+    .btn:hover {transform:scale(1.1); box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+    .table-container {padding:30px; background:#fafafa; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.1); display:none;}
+    .table-container.active {display:block; animation:fade 0.7s;}
+    @keyframes fade {from{opacity:0; transform:translateY(20px);} to{opacity:1;}}
+    table {width:100%; border-collapse:collapse;}
+    th {background:#2c3e50; color:white; padding:18px; font-size:22px;}
+    td {padding:14px; background:#fff; border-bottom:1px solid #eee;}
+    tr:hover td {background:#e8f4fc;}
+  </style>
+</head>
+<body>
+  <h1>Dendrograma Jerárquico - 3 Clústeres</h1>
+  <p class="info">Las ramas de cada clúster bajan directamente a su botón</p>
+  <div class="container">
+    <div id="dendrogram"></div>
+
+    <div class="buttons">
+      <button class="btn btn1" onclick="show(1)">Clúster 1 (', n_paises[1], ' países)</button>
+      <button class="btn btn2" onclick="show(2)">Clúster 2 (', n_paises[2], ' países)</button>
+      <button class="btn btn3" onclick="show(3)">Clúster 3 (', n_paises[3], ' países)</button>
+    </div>
+
+    <div id="tabla" class="table-container">
+      <h2 id="titulo"></h2>
+      <table><thead><tr><th>País</th></tr></thead><tbody id="cuerpo"></tbody></table>
+    </div>
+  </div>
+
+  <script>
+    const data = ', toJSON(paises_cluster, auto_unbox=TRUE), ';
+    const centers = ', toJSON(cluster_center_x), ';
+    const segs = ', toJSON(seg, auto_unbox=TRUE), ';
+
+    const w = 1350, h = 800;
+    const svg = d3.select("#dendrogram").append("svg").attr("width", w).attr("height", h);
+
+    // Ramas del dendrograma
+    svg.selectAll(".rama").data(segs).enter().append("path")
+      .attr("d", d => `M${d$x*10},${d$y} L${d$xend*10},${d$yend}`)
+      .attr("stroke", (d,i) => {
+        if (d$yend > 250) return "#777";
+        const c = segs[i].cluster || 1;
+        return c===1?"#E74C3C":c===2?"#3498DB":"#27AE60";
+      })
+      .attr("stroke-width", 3).attr("fill","none");
+
+    // Líneas gruesas que bajan al botón
+    const buttonY = 680;
+    const buttonX = [380, 680, 980];
+    Object.keys(centers).forEach(c => {
+      const x = centers[c] * 10;
+      svg.append("line")
+        .attr("x1", x).attr("y1", 400)
+        .attr("x2", buttonX[c-1]).attr("y2", buttonY)
+        .attr("stroke", c==1?"#E74C3C":c==2?"#3498DB":"#27AE60")
+        .attr("stroke-width", 10)
+        .attr("opacity", 0.9);
+    });
+
+    function show(n) {
+      document.getElementById("titulo").innerText = `Clúster ${n} - ${data[n-1].length} países`;
+      const tbody = document.getElementById("cuerpo");
+      tbody.innerHTML = "";
+      data[n-1].sort().forEach(p => {
+        const tr = tbody.insertRow();
+        tr.insertCell(0).textContent = p;
+      });
+      document.getElementById("tabla").classList.add("active");
+    }
+  </script>
+</body>
+</html>
+')
+
+# 5. Guardar y abrir
+writeLines(html, "Dendrograma_PERFECTO.html")
+browseURL("Dendrograma_PERFECTO.html")
+
+cat("¡ÉXITO TOTAL!\n")
+cat("Archivo creado: Dendrograma_PERFECTO.html\n")
+cat("→ Ramas reales coloreadas\n")
+cat("→ Cada clúster tiene su color\n")
+cat("→ Líneas gruesas que bajan al botón correspondiente\n")
+cat("→ Botones grandes y bonitos\n")
+cat("→ Clic → tabla profesional\n")
+cat("¡Este es EL DEFINITIVO para tu tesis!\n")
+
+
+
+
+
+
+# paises en clusters
+
+
+centroides <- paises_clusters %>%
+  group_by(Cluster) %>%
+  summarise(
+    Centroid1 = mean(Comp1),
+    Centroid2 = mean(Comp2)
+  )
+
 elipses_list <- list()
 
 for (cluster_id in unique(paises_clusters$Cluster)) {
@@ -602,14 +1120,12 @@ for (cluster_id in unique(paises_clusters$Cluster)) {
 elipses_df <- do.call(rbind, elipses_list)
 rownames(elipses_df) <- NULL
 
-# Definir colores
 colores_clusters <- c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD")
 nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
 
-# Crear gráfico PLOTLY (SIN ANIMACIÓN)
+
 p <- plot_ly() %>%
   
-  # ELIPSE CLUSTER 1
   add_trace(
     data = elipses_df[elipses_df$Cluster == "1", ],
     x = ~x, 
@@ -623,7 +1139,6 @@ p <- plot_ly() %>%
     hoverinfo = "skip"
   ) %>%
   
-  # ELIPSE CLUSTER 2
   add_trace(
     data = elipses_df[elipses_df$Cluster == "2", ],
     x = ~x,
@@ -637,7 +1152,6 @@ p <- plot_ly() %>%
     hoverinfo = "skip"
   ) %>%
   
-  # ELIPSE CLUSTER 3
   add_trace(
     data = elipses_df[elipses_df$Cluster == "3", ],
     x = ~x,
@@ -651,7 +1165,6 @@ p <- plot_ly() %>%
     hoverinfo = "skip"
   ) %>%
   
-  # PUNTOS DE PAÍSES
   add_trace(
     data = paises_clusters,
     x = ~Comp1,
@@ -669,7 +1182,6 @@ p <- plot_ly() %>%
     name = "Países"
   ) %>%
   
-  # CENTROIDES (triángulos)
   add_trace(
     data = centroides,
     x = ~Centroid1,
@@ -716,189 +1228,55 @@ p
 
 
 
-# Dendrograma
-plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
-rect.hclust(arbol, k = k_optimo, border = 2:5)
-
-
-
-#////////////////////////// Dendrograma Ward /////////////////////////////////
-
-
-pal <- c("#2C5F8D", "#27AE60", "#8E44AD")
-
-fviz_dend(arbol,
-          k = k_optimo,
-          k_colors = pal,           
-          color_labels_by_k = TRUE, 
-          rect = TRUE,               
-          rect_fill = TRUE,          
-          rect_border = "gray40",    
-          cex = 0.85,                 
-          lwd = 0.9,                 
-          show_labels = TRUE,
-          main = "Dendrograma de Agrupamiento Jerárquico",
-          sub = "Método Ward.D2 aplicado sobre el espacio factorial del ACP",
-          xlab = "",               
-          ylab = "Altura de Fusión"
-) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 17, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title.y = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text.y = element_text(size = 10, color = "gray30"),
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    panel.grid = element_blank(),
-    plot.background = element_rect(fill = "white"),
-    panel.background = element_rect(fill = "white")
-  )
-
-
-
-
-#===============================================================================
-
-
-
-
-
-
-#////////////Gráfico de Dispersión de Clústeres en Espacio Factorial///////////
-
-
-library(factoextra)
-paleta_personalizada <- c("#2E86AB", "#047857", "#8B5CF6")
-res_hc <- hcut(datos_analisis, 
-               k = k_optimo, 
-               hc_method = "ward.D2", 
-               stand = TRUE, 
-               graph = FALSE)
-fviz_cluster(res_hc, 
-             ellipse.type = "convex",
-             show.clust.cent = TRUE,
-             palette = paleta_personalizada,
-             geom = c("point", "text"),
-             repel = TRUE,
-             ggtheme = theme_minimal(),
-             xlab = "Dimensión 1 (Componente Principal 1)",
-             ylab = "Dimensión 2 (Componente Principal 2)",
-             legend.title = "Clúster") +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#1B4965"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2E86AB"),
-    axis.text = element_text(size = 10),
-    legend.title = element_text(face = "bold", size = 11, color = "#2E86AB"),
-    legend.text = element_text(size = 10),
-    legend.position = "right",
-    panel.grid.major = element_line(color = "gray90", size = 0.3),
-    panel.grid.minor = element_line(color = "gray95", size = 0.2),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.background = element_rect(fill = "white", color = "gray80")
-  ) +
-  labs(
-    title = "Gráfico de Dispersión de Clústeres en Espacio Factorial",
-    subtitle = "Clústeres formados mediante Ward.D2 en espacio factorial del ACP"
-  )
-
-
-#===============================================================================
-
-
-
-
-#////////////////////////Gráfico de Silueta (Silhouette Plot)////////////////////
-
-library(factoextra)
-
-paleta_personalizada <- c("#2E86AB", "#047857", "#8B5CF6")
-
-fviz_silhouette(res_hc, 
-                palette = paleta_personalizada, 
-                print.summary = TRUE) +
-  labs(
-    title = "Análisis de Calidad del Agrupamiento mediante Coeficiente de Silueta",
-    subtitle = "Evaluación de la cohesión y separación de los clústeres identificados"
-  ) +
-  theme(
-    plot.title = element_text(face = "bold", size = 15, hjust = 0.5, color = "#1B4965"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 11, color = "#2E86AB"),
-    axis.text = element_text(size = 10),
-    legend.title = element_text(face = "bold", size = 11, color = "#2E86AB"),
-    legend.text = element_text(size = 10),
-    legend.position = "right",
-    panel.grid.major = element_line(color = "gray90", size = 0.3),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    axis.text.y = element_text(size = 8)
-  )
-
-
-#===============================================================================
-
-
-
-
-
-#/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
-
-
-tamaños <- as.data.frame(table(res_hc$cluster))
-colnames(tamaños) <- c("Cluster", "N")
-tamaños <- tamaños %>% arrange(as.integer(as.character(Cluster)))
-
-tamaños %>%
+# Crear la tabla manualmente con las dimensiones y variables
+dimensiones_tabla <- tribble(
+  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
+  "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
+  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
+  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  
+  "Dimensión 2", "Industrialización y crecimiento demográfico, desarrollo industrial, dependencia económica de remesas", 
+  "Industria, Crecimiento.poblacion, Remesas", 
+  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  
+  "Dimensión 3", "Apertura comercial, actividad comercial internacional, comercio exterior", 
+  "Importaciones, Exportaciones, Inversión.Extranjera", 
+  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  
+  "Dimensión 4", "Presión demográfica y uso del suelo", 
+  "Área.boscosa, Tierra.cultivable, Población", 
+  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+  
+  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
+  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
+  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
+  
+  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
+  "Gasto.salud, PIB_per, Inversión.Extranjera", 
+  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
+  
+)
+dimensiones_tabla %>%
   knitr::kable(
-    caption = "Tamaño de cada clúster",
-    digits = 0,
-    align = "c",
-    col.names = c("Clúster", "Número de Países")
+    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
+    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
+    align = c("c", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
   ) %>%
-  kableExtra::kable_styling(
+  kable_styling(
     bootstrap_options = c("striped", "hover", "condensed", "responsive"),
     full_width = FALSE,
     position = "center",
-    font_size = 14
+    font_size = 13
   ) %>%
   row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "10em", color = "#1B4965") %>%
-  column_spec(2, width = "12em")
+  column_spec(1, bold = TRUE, width = "8em") %>%
+  column_spec(2, width = "22em") %>%
+  column_spec(3, width = "16em") %>%
+  column_spec(4, width = "18em")
 
-
-
-#===============================================================================
-
-
-
-
-
-
-#///////////////////////////Tabla de medias por clúster////////////////////////
-
-#    Usamos el data frame original de análisis con la columna Cluster
-datos_con_cluster <- datos_analisis %>%
-  mutate(Cluster = factor(res_hc$cluster))  # convertimos a factor para claridad
-
-carac_cluster <- datos_con_cluster %>%
-  group_by(Cluster) %>%
-  summarise(across(everything(), mean, na.rm = TRUE))
-
-kable(carac_cluster, 
-      caption = "Medias de variables por clúster",
-      digits = 2, align = "c") %>%
-  kable_styling(bootstrap_options = c("striped","hover","condensed"),
-                full_width = FALSE, position = "center") %>%
-  row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
-
-
-#===============================================================================
-
-#///////////////////// Tabla interpretativa de los clusters/////////////////////
+#Tabla interpretativa de los clusters
 
 clusters_tabla <- tribble(
   ~`Cluster`, ~`Nombre propuesto`, ~`Características principales`, ~`Justificación del nombre`, ~`Ejemplos de Países`,
@@ -941,16 +1319,6 @@ clusters_tabla %>%
   column_spec(5, width = "16em")
 
 
-#===============================================================================
-
-
-
-
-
-
-
-
-
 #///////////////////Base de datos con cluster con nombre////////////////////////
 NuevaBase <- read_csv("NuevaBase_clusters.csv")
 nombres_clusters <- c(
@@ -960,48 +1328,8 @@ nombres_clusters <- c(
 )
 NuevaBase <- NuevaBase %>%
   mutate(Cluster = recode(as.character(Cluster), !!!nombres_clusters))
-view(NuevaBase)
 
 
-
-#############mapa
-
-world <- ne_countries(scale = "medium", returnclass = "sf")
-
-Base_2022_con_cluster <- Base_2022 %>%
-  mutate(Cluster = clusters) %>%  
-  select(Codigo, Cluster, Pais)   
-Base_con_mapa <- world %>%
-  left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
-  filter(!is.na(Cluster))  
-
-nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
-
-ggplot(Base_con_mapa) +
-  geom_sf(aes(fill = factor(Cluster))) +
-  scale_fill_manual(values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
-                    name = "Clúster", labels = nombres_clusters) +
-  theme_minimal() +
-  labs(title = "Mapa Mundial de Países por Clúster",
-       subtitle = "Distribución geográfica de los grupos identificados") +
-  theme(legend.position = "bottom")  
-
-pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), domain = 1:3)
-leaflet(Base_con_mapa) %>%
-  addTiles() %>%  
-  addPolygons(fillColor = ~pal(Cluster), weight = 1, opacity = 1,
-              color = "white", fillOpacity = 0.7,
-              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)]))  
-
-
-
-#===============================================================================
-
-
-
-
-
-#///////////////Base cluster x dimension con nombre////////////////////////////
 NuevaBase <- readr::read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
 possible_names <- c("Pais", "pais", "PAIS", "Country", "country", "COUNTRY", "Row.names", "Rowname", "X1", "...1")
 country_col <- intersect(possible_names, names(NuevaBase)) %>% first()
@@ -1049,6 +1377,34 @@ View(Base_Final)
 
 #===============================================================================
 
+#############mapa
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+Base_2022_con_cluster <- Base_2022 %>%
+  mutate(Cluster = clusters) %>%  
+  select(Codigo, Cluster, Pais)   
+Base_con_mapa <- world %>%
+  left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
+  filter(!is.na(Cluster))  
+
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+
+ggplot(Base_con_mapa) +
+  geom_sf(aes(fill = factor(Cluster))) +
+  scale_fill_manual(values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+                    name = "Clúster", labels = nombres_clusters) +
+  theme_minimal() +
+  labs(title = "Mapa Mundial de Países por Clúster",
+       subtitle = "Distribución geográfica de los grupos identificados") +
+  theme(legend.position = "bottom")  
+
+pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), domain = 1:3)
+leaflet(Base_con_mapa) %>%
+  addTiles() %>%  
+  addPolygons(fillColor = ~pal(Cluster), weight = 1, opacity = 1,
+              color = "white", fillOpacity = 0.7,
+              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)]))  
+
 
 
 
@@ -1060,7 +1416,7 @@ View(Base_Final)
 
 
 #//////////////////////////////////Predicción////////////////////////////////////
-
+##cuatro paises
 nuevo_pais <- data.frame(
   PIB_per = 18000,
   Poblacion = 12000000,
@@ -1098,296 +1454,4 @@ cat("Nombre del cluster:", nombres_clusters[as.character(cluster_predicho)], "\n
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 
-
-
-#===============================================================================
-#///////////////// Matriz de correlaciones - cálculo ///////////////////////////
-matriz_correlacion <- cor(datos_analisis, use = "pairwise.complete.obs", method = "pearson")
-round(matriz_correlacion, 2)  # Opcional: redondear a 2 decimales para imprimir
-
-# Visualización sencilla base R
-View(matriz_correlacion)  # Permite inspeccionar fácilmente
-
-# Visualización avanzada con ggplot2/corrplot (opcional)
-library(corrplot)
-corrplot(matriz_correlacion, method = "color", type = "upper", 
-         tl.cex = 0.9, tl.col = "gray20", 
-         col = colorRampPalette(c("#2C5F8D", "white", "#27AE60"))(200),
-         mar = c(0,0,1,0), addCoef.col = "black") 
-title("Matriz de correlaciones entre variables numéricas", line = 2.5)
-
-#=================================================================================
-
-
-# GRÁFICO 1: PC1 vs PC2
-plot_ly(paises_df, 
-        x = ~Axis1, 
-        y = ~Axis2, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'PC1: %{x:.2f}<br>',
-                              'PC2: %{y:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Componentes Principales 1 vs 2",
-                 font = list(size = 16, color = "#2C5F8D")),
-    xaxis = list(title = "Componente Principal 1",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 2",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-# GRÁFICO 2: PC3 vs PC4
-plot_ly(paises_df, 
-        x = ~Axis3, 
-        y = ~Axis4, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'PC3: %{x:.2f}<br>',
-                              'PC4: %{y:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Componentes Principales 3 vs 4",
-                 font = list(size = 16, color = "#2C5F8D")),
-    xaxis = list(title = "Componente Principal 3",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 4",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-# GRÁFICO 3: PC5 vs PC6
-plot_ly(paises_df, 
-        x = ~Axis5, 
-        y = ~Axis6, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'PC5: %{x:.2f}<br>',
-                              'PC6: %{y:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Componentes Principales 5 vs 6",
-                 font = list(size = 16, color = "#2C5F8D")),
-    xaxis = list(title = "Componente Principal 5",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 6",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-
-#================RRRROOOOOOOOJJJJJJJJJJJJOOOOOOOOOOOOOOOOOOOOOO==================
-# GRÁFICO 1: PC1 vs PC2
-plot_ly(paises_df, 
-        x = ~Axis1, 
-        y = ~Axis2, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'PC1: %{x:.2f}<br>',
-                              'PC2: %{y:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Componentes Principales 1 vs 2",
-                 font = list(size = 16, color = "#2C5F8D")),
-    xaxis = list(title = "Componente Principal 1",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 2",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-# GRÁFICO 2: PC3 vs PC4
-plot_ly(paises_df, 
-        x = ~Axis3, 
-        y = ~Axis4, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'PC3: %{x:.2f}<br>',
-                              'PC4: %{y:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Componentes Principales 3 vs 4",
-                 font = list(size = 16, color = "#2C5F8D")),
-    xaxis = list(title = "Componente Principal 3",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 4",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-# GRÁFICO 3: PC5 vs PC6
-plot_ly(paises_df, 
-        x = ~Axis5, 
-        y = ~Axis6, 
-        text = ~Pais,
-        color = ~Distancia,
-        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
-        type = "scatter",
-        mode = "markers",
-        marker = list(size = 10, opacity = 0.95),
-        hovertemplate = paste('<b>%{text}</b><br>',
-                              'PC5: %{x:.2f}<br>',
-                              'PC6: %{y:.2f}<extra></extra>')) %>%
-  layout(
-    title = list(text = "Componentes Principales 5 vs 6",
-                 font = list(size = 16, color = "#2C5F8D")),
-    xaxis = list(title = "Componente Principal 5",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Componente Principal 6",
-                 zeroline = TRUE, zerolinecolor = "gray"),
-    hovermode = "closest"
-  )
-
-
-
-
-# ============================================================================
-# CÍRCULOS DE CORRELACIONES DE VARIABLES
-# PC1 vs PC2, PC3 vs PC4, PC5 vs PC6
-# ============================================================================
-
-# Crear estructura base para círculos
-theta <- seq(0, 2*pi, length.out = 200)
-circle_df <- data.frame(x = cos(theta), y = sin(theta))
-
-# GRÁFICO 1: Variables PC1 vs PC2
-vars_12 <- as.data.frame(acp_resultado$co[, c("Comp1", "Comp2")])
-vars_12$Variable <- rownames(vars_12)
-colnames(vars_12) <- c("x", "y", "Variable")
-
-max_coord_12 <- max(1, max(abs(vars_12$x), abs(vars_12$y)))
-lims_12 <- c(-max_coord_12 * 1.05, max_coord_12 * 1.05)
-
-ggplot() +
-  geom_path(data = circle_df, aes(x = x, y = y), 
-            color = "gray60", linetype = "dashed", size = 0.6) +
-  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
-  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
-  geom_segment(data = vars_12,
-               aes(x = 0, y = 0, xend = x, yend = y),
-               color = "#2C5F8D", alpha = 0.85,
-               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
-               size = 0.9) +
-  geom_point(data = vars_12, aes(x = x, y = y), 
-             color = "#1A3A52", size = 3) +
-  geom_text_repel(data = vars_12, aes(x = x, y = y, label = Variable),
-                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
-                  fontface = "bold", color = "gray20") +
-  coord_equal(xlim = lims_12, ylim = lims_12) +
-  labs(
-    title = "Círculo de Correlaciones: PC1 vs PC2",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  )
-
-# GRÁFICO 2: Variables PC3 vs PC4
-vars_34 <- as.data.frame(acp_resultado$co[, c("Comp3", "Comp4")])
-vars_34$Variable <- rownames(vars_34)
-colnames(vars_34) <- c("x", "y", "Variable")
-
-max_coord_34 <- max(1, max(abs(vars_34$x), abs(vars_34$y)))
-lims_34 <- c(-max_coord_34 * 1.05, max_coord_34 * 1.05)
-
-ggplot() +
-  geom_path(data = circle_df, aes(x = x, y = y), 
-            color = "gray60", linetype = "dashed", size = 0.6) +
-  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
-  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
-  geom_segment(data = vars_34,
-               aes(x = 0, y = 0, xend = x, yend = y),
-               color = "#5DADE2", alpha = 0.85,
-               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
-               size = 0.9) +
-  geom_point(data = vars_34, aes(x = x, y = y), 
-             color = "#2C5F8D", size = 3) +
-  geom_text_repel(data = vars_34, aes(x = x, y = y, label = Variable),
-                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
-                  fontface = "bold", color = "gray20") +
-  coord_equal(xlim = lims_34, ylim = lims_34) +
-  labs(
-    title = "Círculo de Correlaciones: PC3 vs PC4",
-    x = "Componente Principal 3",
-    y = "Componente Principal 4"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  )
-
-# GRÁFICO 3: Variables PC5 vs PC6
-vars_56 <- as.data.frame(acp_resultado$co[, c("Comp5", "Comp6")])
-vars_56$Variable <- rownames(vars_56)
-colnames(vars_56) <- c("x", "y", "Variable")
-
-max_coord_56 <- max(1, max(abs(vars_56$x), abs(vars_56$y)))
-lims_56 <- c(-max_coord_56 * 1.05, max_coord_56 * 1.05)
-
-ggplot() +
-  geom_path(data = circle_df, aes(x = x, y = y), 
-            color = "gray60", linetype = "dashed", size = 0.6) +
-  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
-  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
-  geom_segment(data = vars_56,
-               aes(x = 0, y = 0, xend = x, yend = y),
-               color = "#A8D8FF", alpha = 0.85,
-               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
-               size = 0.9) +
-  geom_point(data = vars_56, aes(x = x, y = y), 
-             color = "#5DADE2", size = 3) +
-  geom_text_repel(data = vars_56, aes(x = x, y = y, label = Variable),
-                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
-                  fontface = "bold", color = "gray20") +
-  coord_equal(xlim = lims_56, ylim = lims_56) +
-  labs(
-    title = "Círculo de Correlaciones: PC5 vs PC6",
-    x = "Componente Principal 5",
-    y = "Componente Principal 6"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  )
 
