@@ -75,10 +75,6 @@ datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
 
-# Guardar bases limpias
-write_csv(Base_2022, "Base_2022_limpia.csv")
-write_csv(datos_analisis %>% rownames_to_column(var = "Pais"), "Base_2022_analisis.csv")
-
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
@@ -142,11 +138,6 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
-###BASE DE DATOS DIMENSIONES VS VARIABLES
-res.pca <- prcomp(NuevaBase, scale = TRUE)
-res.pca
-eig.val <- get_eigenvalue(res.pca)
-eig.val
 
 
 #/////////////Gráfico de varianza explicada////////////////////////////////////
@@ -175,12 +166,12 @@ fviz_eig(res.pca,
   scale_fill_manual(values = "#2C5F8D") +
   scale_color_manual(values = "#2C5F8D")
 eig.val <- get_eigenvalue(res.pca)
-eig.val
+eig.val # tabla ?
 res.var <- get_pca_var(res.pca)
 res.var$coord
 res.var$contrib        
 res.var$cos2           
-View(res.var$contrib[,1:6]) 
+View(res.var$contrib[,1:6]) ## clustrer ??
 
 
 ########################### hasta aqui van las dimensiones
@@ -214,12 +205,32 @@ fviz_nbclust(
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
 
+wss <- sapply(2:10, function(k) {
+  grupos <- cutree(arbol, k = k)
+  sum(tapply(1:nrow(factores), grupos, function(idx) {
+    if (length(idx) > 1) {
+      sum(dist(factores[idx, ])^2) / (2 * length(idx))
+    } else 0
+  }))
+}) ## verificar 
 
 # Gráfico del método del codo con estilo profesional
 df_wss <- data.frame(
   k = 2:10,
   WSS = wss
-)
+) ## <correccion wss ??
+
+# Detectar número óptimo
+diff_wss <- diff(wss)
+diff_diff <- diff(diff_wss)
+k_optimo <- which.max(diff_diff) + 2 ## Por que mas dos??
+if (k_optimo > 6) k_optimo <- 5
+if (k_optimo < 2) k_optimo <- 2
+
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
+
+
 ggplot(df_wss, aes(x = k, y = WSS)) +
   geom_line(color = "#2C5F8D", linewidth = 1.1) +
   geom_point(size = 3, color = "#2C5F8D") +
@@ -245,15 +256,6 @@ ggplot(df_wss, aes(x = k, y = WSS)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
-# Detectar número óptimo
-diff_wss <- diff(wss)
-diff_diff <- diff(diff_wss)
-k_optimo <- which.max(diff_diff) + 2
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
 
 # ASIGNAR CLUSTERS
 clusters <- cutree(arbol, k = k_optimo)
@@ -262,6 +264,11 @@ clusters <- cutree(arbol, k = k_optimo)
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
+###BASE DE DATOS DIMENSIONES VS VARIABLES
+res.pca <- prcomp(NuevaBase, scale = TRUE) ## tabla de las dimenciones elegidas 
+res.pca
+eig.val <- get_eigenvalue(res.pca)
+eig.val ## tambien deberia 
 
 ##FVIZ-PCA-INDIVIUS
 
@@ -646,6 +653,8 @@ p1 <- plot_ly() %>%
 
 p1
 
+### los graficos relacionados a los mismo como el bitplot se pueden hacer en uno solo
+# con faceta horizontal???'???'?'
 # ============================================================================
 # BIPLOT 2: Dim 3 vs 4
 # ============================================================================
@@ -812,7 +821,7 @@ ggplot() +
   )
 
 
-
+## por pares de componenete 
 #////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
 paises_df <- as.data.frame(acp_resultado$li)
 paises_df$Pais <- rownames(paises_df)
@@ -854,13 +863,9 @@ ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
     legend.text = element_text(size = 10),
     legend.background = element_rect(fill = "white", color = "gray80")
   )
-
+## interactivo mejorar 
 ####base de datos dimensiones x pais
-res.ind <- get_pca_ind(res.pca)
-res.ind$coord          
-res.ind$contrib        
-res.ind$cos2           
-View(res.ind$contrib[,1:6]) 
+ 
 
 
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
