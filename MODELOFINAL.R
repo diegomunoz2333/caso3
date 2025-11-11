@@ -61,8 +61,10 @@ Base_2022 <- Base_2022 %>%
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
-
-
+write_csv(Base_2022, "Base_2022_limpia.csv")
+write_csv(datos_analisis %>% 
+            rownames_to_column(var = "Pais"), 
+          "Base_2022_analisis.csv")
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
