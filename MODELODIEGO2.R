@@ -156,12 +156,6 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
-###BASE DE DATOS DIMENSIONES VS VARIABLES
-res.pca <- prcomp(NuevaBase, scale = TRUE)
-res.pca
-eig.val <- get_eigenvalue(res.pca)
-eig.val
-
 
 #/////////////Gráfico de varianza explicada////////////////////////////////////
 
@@ -287,6 +281,12 @@ clusters <- cutree(arbol, k = k_optimo)
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
+
+###BASE DE DATOS DIMENSIONES VS VARIABLES
+res.pca <- prcomp(NuevaBase, scale = TRUE)
+res.pca
+eig.val <- get_eigenvalue(res.pca)
+eig.val
 
 ##FVIZ-PCA-INDIVIUS
 
