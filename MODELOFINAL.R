@@ -165,7 +165,7 @@ fviz_eig(res.pca,
   scale_fill_manual(values = "#2C5F8D") +
   scale_color_manual(values = "#2C5F8D")
 eig.val <- get_eigenvalue(res.pca)
-eig.val # tabla ?
+eig.val # AGREGAR TABLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 res.var <- get_pca_var(res.pca)
 res.var$coord
 res.var$contrib        
