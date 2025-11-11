@@ -1,133 +1,751 @@
-library(tidyverse)
-library(readxl)
-library(factoextra)
-library(cluster)
+library(tidyverse)     
+library(FactoClass)    
+library(ade4)          
+library(factoextra)    
+library(cluster)       
+library(dendextend)    
+library(ggrepel)      
+library(kableExtra)    
+library(ggforce)    
 library(dendextend)
-library(pheatmap)
-library(mclust)
+library(plotly)        
+library(sf)            
+library(leaflet)       
+library(rnaturalearth)
+library(RColorBrewer)  
+##
+Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
+                 show_col_types = FALSE)
 
-datos23 <- "P_Data_Extract_From_World_Development_Indicators (1).xlsx"
-datosfinal <- read_excel(datos23)
+Base_2022 <- Base %>%
+  select(
+    Pais = `Country Name`,
+    Codigo = `Country Code`,
+    PIB_per = `GDP per capita (current US$) [NY.GDP.PCAP.CD]`,
+    Poblacion = `Population, total [SP.POP.TOTL]`,
+    `Esperanza vida` = `Life expectancy at birth, total (years) [SP.DYN.LE00.IN]`,
+    `Acceso electricidad` = `Access to electricity (% of population) [EG.ELC.ACCS.ZS]`,
+    `Area boscosa` = `Forest area (% of land area) [AG.LND.FRST.ZS]`,
+    `Suscripciones movil` = `Mobile cellular subscriptions (per 100 people) [IT.CEL.SETS.P2]`,
+    `Crecimiento PIB` = `GDP growth (annual %) [NY.GDP.MKTP.KD.ZG]`,
+    `Mortalidad infantil` = `Mortality rate, infant (per 1,000 live births) [SP.DYN.IMRT.IN]`,
+    `Inversion extranjera` = `Foreign direct investment, net inflows (% of GDP) [BX.KLT.DINV.WD.GD.ZS]`,
+    `Gasto salud` = `Current health expenditure (% of GDP) [SH.XPD.CHEX.GD.ZS]`,
+    `Uso internet` = `Individuals using the Internet (% of population) [IT.NET.USER.ZS]`,
+    Importaciones = `Imports of goods and services (% of GDP) [NE.IMP.GNFS.ZS]`,
+    Exportaciones = `Exports of goods and services (% of GDP) [NE.EXP.GNFS.ZS]`,
+    `Tierra cultivable` = `Arable land (% of land area) [AG.LND.ARBL.ZS]`,
+    `Crecimiento poblacion` = `Population growth (annual %) [SP.POP.GROW]`,
+    Industria = `Industry (including construction), value added (% of GDP) [NV.IND.TOTL.ZS]`,
+    Remesas = `Personal remittances, received (% of GDP) [BX.TRF.PWKR.DT.GD.ZS]`
+  )
 
-datos <- datosfinal %>%
-  select(`Country Name`, `Series Name`, `2022 [YR2022]`) %>%
-  mutate(`2022 [YR2022]` = as.numeric(gsub("[^0-9\\.-]", "", as.character(`2022 [YR2022]`)))) %>%
-  group_by(`Country Name`, `Series Name`) %>%
-  summarise(valor = mean(`2022 [YR2022]`, na.rm = TRUE), .groups = "drop") %>%
-  pivot_wider(names_from = `Series Name`, values_from = valor)
+Base_2022[Base_2022 == ".."] <- NA
 
-# Eliminar variables con >50% NA
-datos <- datos %>%
-  filter(!is.na(`Country Name`)) %>%
-  select(where(~ mean(is.na(.x)) < 0.5))
+Base_2022 <- Base_2022 %>%
+  mutate(across(-c(Pais, Codigo), as.numeric)) %>%
+  drop_na() %>%
+  filter(!Pais %in% c("World", "High income", "Low income", "European Union",
+                      "Latin America & Caribbean", "Middle income", "OECD members",
+                      "East Asia & Pacific", "Sub-Saharan Africa", "South Asia",
+                      "North America", "Euro area", "Arab World", "West Bank and Gaza",
+                      "Lower middle income", "Upper middle income", 
+                      "Least developed countries: UN classification",
+                      "Fragile and conflict affected situations", 
+                      "Heavily indebted poor countries (HIPC)",
+                      "IDA total", "Low & middle income", "Middle East & North Africa",
+                      "Pacific island small states", "Small states", 
+                      "Caribbean small states", "Other small states", 
+                      "IDA & IBRD total", "IDA only", "IBRD only",
+                      "Pre-demographic dividend", "Post-demographic dividend", 
+                      "Early-demographic dividend", "Late-demographic dividend")) %>% 
+  filter(Pais != "Luxembourg")
+datos_analisis <- Base_2022 %>%
+  select(-Codigo) %>%
+  column_to_rownames("Pais")
+write_csv(Base_2022, "Base_2022_limpia.csv")
+write_csv(datos_analisis %>% 
+            rownames_to_column(var = "Pais"), 
+          "Base_2022_analisis.csv")
+cat("Países:", nrow(datos_analisis), "\n")
+cat("Variables:", ncol(datos_analisis), "\n\n")
 
-# Reemplazar NA por la media
-datos_imputed <- datos %>%
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)))
+# ACP
+acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
+varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
+n_componentes <- which(varianza_acum >= 70)[1]
 
-# Matriz numérica y vector de países
-datos_num <- datos_imputed %>%
-  select(-`Country Name`) %>%
-  mutate(across(everything(), as.numeric))
+cat("=== SELECCIÓN DE COMPONENTES ===\n")
+cat("Componentes necesarios para ≥70% varianza:", n_componentes, "\n")
+cat("Varianza explicada:", round(varianza_acum[n_componentes], 2), "%\n\n")
 
-paises <- datos_imputed$`Country Name`
+acp_resultado <- dudi.pca(
+  df = datos_analisis,
+  center = TRUE,
+  scale = TRUE,
+  scannf = FALSE,
+  nf = n_componentes
+)
 
-# Eliminar variables constantes
-datos_num <- datos_num %>%
-  select(where(is.numeric)) %>%
-  select(where(~ sd(.x, na.rm = TRUE) > 0))
+# Extraer los factores 
+factores <- acp_resultado$li  # cada país con sus coordenadas 
 
-# =======================
-# 2) PCA
-# =======================
-res.pca <- prcomp(datos_num, scale. = TRUE)
+# Gráficos ACP
+varianza_df <- data.frame(
+  Componente = factor(1:length(acp_resultado$eig)),
+  Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
+  VarianzaAcum = varianza_acum
+)
+view(varianza_df)
 
-fviz_eig(res.pca, addlabels = TRUE, main = "Varianza explicada por componentes")
-summary(res.pca)
+##tabla varianza acumulada
+library(kableExtra)
+varianza_tabla <- varianza_df %>%
+  mutate(
+    Varianza = round(Varianza, 2),
+    VarianzaAcum = round(VarianzaAcum, 2)
+  )
 
-# =======================
-# 3) Seleccionar número de componentes
-# =======================
+varianza_tabla %>%
+  knitr::kable(
+    caption = "Varianza explicada por componente principal",
+    col.names = c("Componente", "% Varianza", "% Varianza Acumulada"),
+    align = c("c", "c", "c"),
+    format = "html"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "7em") %>%
+  column_spec(2:3, width = "10em")
+##############################grafica varianza acumulada
+ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
+  geom_col(fill = "#2C5F8D", alpha = 0.9) +
+  geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
+  geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
+  geom_hline(yintercept = 70, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
+  annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
+           label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0,
+           fontface = "bold", size = 3.8) +
+  annotate("text", x = 1.8, y = 73,
+           label = "70% varianza acumulada", color = "#27AE60", hjust = 0,
+           fontface = "bold", size = 3.8) +
+  scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
+  labs(
+    title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
+    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥70%",
+    x = "Componentes Principales",
+    y = "% de Varianza Explicada"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    axis.text.x = element_text(angle = 45, vjust = 0.8),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray90", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+###BASE DE DATOS DIMENSIONES VS VARIABLES
+res.pca <- prcomp(NuevaBase, scale = TRUE)
+res.pca
 eig.val <- get_eigenvalue(res.pca)
-cum_var <- cumsum(eig.val[,2])
-num_pcs <- which(cum_var >= 80)[1]
-if (is.na(num_pcs)) num_pcs <- 3
-cat("Número de PC seleccionadas (>=80% varianza):", num_pcs, "\n")
+eig.val
+fviz_eig(res.pca,
+         addlabels = TRUE,
+         ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
+         choice = "variance") +
+  labs(
+    title = "Varianza Explicada por Componente Principal",
+    subtitle = "Autovalores del análisis de componentes principales",
+    x = "Componentes Principales",
+    y = "Porcentaje de Varianza Explicada (%)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  ) +
+  scale_fill_manual(values = "#2C5F8D") +
+  scale_color_manual(values = "#2C5F8D")
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+res.var <- get_pca_var(res.pca)
+res.var$coord
+res.var$contrib        
+res.var$cos2           
+View(res.var$contrib[,1:6]) 
 
-pca_scores <- as.data.frame(res.pca$x[, 1:num_pcs])
-rownames(pca_scores) <- paises
 
-# =======================
-# 4) Determinar número óptimo de clusters
-# =======================
-set.seed(123)
-fviz_nbclust(pca_scores, kmeans, method = "wss") + labs(title = "Método del codo (WSS)")
-fviz_nbclust(pca_scores, kmeans, method = "silhouette") + labs(title = "Método de la silueta")
+########################### hasta aqui van las dimensiones
+#///////////////////////// Gráfico de silhouette /////////////////////////////
 
-# Escogemos k automático según silhouette
-sil_scores <- sapply(2:8, function(k) {
-  km <- kmeans(pca_scores, centers = k, nstart = 10)
-  ss <- silhouette(km$cluster, dist(pca_scores))
-  mean(ss[, 3])
+fviz_nbclust(
+  datos_analisis, 
+  FUN = kmeans, 
+  method = "silhouette"
+) +
+  labs(
+    title = "Número Óptimo de Clústeres según Silhouette",
+    subtitle = "Método de la silueta aplicado sobre k-means",
+    x = "Número de Clústeres (k)",
+    y = "Ancho promedio de la silueta"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
+distancia <- dist(factores)
+arbol <- hclust(distancia, method = "ward.D2")
+
+# Método del codo (WSS)
+wss <- sapply(2:10, function(k) {
+  grupos <- cutree(arbol, k = k)
+  sum(tapply(1:nrow(factores), grupos, function(idx) {
+    if (length(idx) > 1) {
+      sum(dist(factores[idx, ])^2) / (2 * length(idx))
+    } else 0
+  }))
 })
-k_opt <- which.max(sil_scores) + 1
-cat("Número óptimo de clusters por silhouette:", k_opt, "\n")
 
-# =======================
-# 5) K-means final
-# =======================
-set.seed(123)
-km_res <- kmeans(pca_scores, centers = k_opt, nstart = 50)
-clusters_km <- km_res$cluster
+# Detectar número óptimo
+diff_wss <- diff(wss)
+diff_diff <- diff(diff_wss)
+k_optimo <- which.max(diff_diff) + 2
+if (k_optimo > 6) k_optimo <- 5
+if (k_optimo < 2) k_optimo <- 2
 
-fviz_cluster(list(data = pca_scores, cluster = clusters_km),
-             geom = "point", ellipse.type = "norm", main = paste("K-means k =", k_opt))
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
 
-sil <- silhouette(clusters_km, dist(pca_scores))
-fviz_silhouette(sil) + ggtitle(paste("Silhouette - k =", k_opt))
+# ASIGNAR CLUSTERS
+clusters <- cutree(arbol, k = k_optimo)
 
-# =======================
-# 6) Jerárquico (Ward)
-# =======================
-distancias <- dist(pca_scores)
-hclust_res <- hclust(distancias, method = "ward.D2")
-clusters_hc <- cutree(hclust_res, k = k_opt)
+# Nueva base con clusters
+NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
+view(NuevaBase)
+write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
-fviz_dend(hclust_res, k = k_opt, rect = TRUE, main = "Dendrograma (Ward.D2)")
-
-# Comparar resultados
-ari <- adjustedRandIndex(clusters_km, clusters_hc)
-cat("ARI entre K-means y Jerárquico:", ari, "\n")
-
-# =======================
-# 7) Resumen de clusters
-# =======================
-tabla_clusters <- data.frame(País = paises, Cluster = clusters_km)
-write.csv(tabla_clusters, "Resultados_clusters.csv", row.names = FALSE)
-
-summary_clusters <- datos_imputed %>%
-  filter(`Country Name` %in% tabla_clusters$País) %>%
-  left_join(tabla_clusters, by = c("Country Name" = "País")) %>%
+# Promedios por cluster
+carac_cont <- NuevaBase %>%
   group_by(Cluster) %>%
-  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE)))
+  summarise(across(everything(), mean, na.rm = TRUE), .groups = "drop") %>%
+  as.data.frame()
+resultado_ACP <- list(
+  dudi = acp_resultado,
+  cluster = clusters,
+  tree = arbol,
+  carac.cont = carac_cont
+)
+cat("Clusters formados:", length(unique(clusters)), "\n\n")
+# Gráfica del método del codo
+df_wss <- data.frame(
+  k = 2:10,
+  WSS = wss
+)
 
-write.csv(summary_clusters, "Resumen_por_cluster.csv", row.names = FALSE)
-print(summary_clusters)
+# Gráfico del método del codo con estilo profesional
+df_wss <- data.frame(
+  k = 2:10,
+  WSS = wss
+)
+ggplot(df_wss, aes(x = k, y = WSS)) +
+  geom_line(color = "#2C5F8D", linewidth = 1.1) +
+  geom_point(size = 3, color = "#2C5F8D") +
+  geom_vline(xintercept = k_optimo, linetype = "dashed", color = "#E74C3C", linewidth = 1) +
+  annotate("text",
+           x = k_optimo + 0.4, y = df_wss$WSS[df_wss$k == k_optimo],
+           label = paste("k óptimo =", k_optimo),
+           color = "#E74C3C", hjust = 0, size = 4.2, fontface = "bold") +
+  labs(
+    title = "Número Óptimo de Clústeres según Método del Codo",
+    subtitle = "Basado en la Suma de Cuadrados Intra-Cluster (WSS)",
+    x = "Número de Clústeres (k)",
+    y = "Suma de Cuadrados Intra-Cluster (WSS)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
 
-# =======================
-# 8) Heatmap (variables originales estandarizadas)
-# =======================
-mat <- scale(datos_num)
-rownames(mat) <- paises
-annotation_row <- data.frame(Cluster = factor(clusters_km))
-rownames(annotation_row) <- paises
+##FVIZ-PCA-INDIVIUS
 
-pheatmap(mat, annotation_row = annotation_row, show_rownames = FALSE,
-         main = "Heatmap de países según variables estandarizadas")
 
-# =======================
-# 9) Guardar resultados
-# =======================
-save(res.pca, km_res, clusters_km, clusters_hc, file = "pca_clustering_results.RData")
-cat("Listo: análisis completo ejecutado y guardado.\n")
+##FVIZ-PCA-VARIBALES VECTOR
+
+vars_df <- as.data.frame(acp_resultado$co)
+vars_df$Variable <- rownames(vars_df)
+
+vars_df <- as.data.frame(acp_resultado$co)
+vars_df$Variable <- rownames(vars_df)
+
+theta <- seq(0, 2*pi, length.out = 200)
+circle_df <- data.frame(
+  x = cos(theta),
+  y = sin(theta)
+)
+max_coord <- max(1, max(abs(vars_df$Comp1), abs(vars_df$Comp2)))
+lims <- c(-max_coord * 1.05, max_coord * 1.05) 
+
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = vars_df,
+               aes(x = 0, y = 0, xend = Comp1, yend = Comp2),
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = vars_df, aes(x = Comp1, y = Comp2), 
+             color = "#8E44AD", size = 3) +
+  geom_text_repel(data = vars_df, aes(x = Comp1, y = Comp2, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims, ylim = lims) +
+  labs(
+    title = "Círculo de Correlaciones de Variables en el Plano Factorial",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2",
+    subtitle = "Vectores indican la correlación de cada variable con los dos primeros componentes"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+
+#////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
+paises_df <- as.data.frame(acp_resultado$li)
+paises_df$Pais <- rownames(paises_df)
+
+paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
+
+ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
+  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
+  geom_text_repel(
+    aes(label = Pais),
+    size = 3.4,
+    color = "gray20",
+    fontface = "bold",
+    max.overlaps = 20,
+    segment.color = "gray70",
+    segment.size = 0.3
+  ) +
+  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
+  labs(
+    title = "Países en el Espacio Factorial del ACP",
+    subtitle = "Distribución de países según los dos primeros componentes principales",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
+    legend.text = element_text(size = 10),
+    legend.background = element_rect(fill = "white", color = "gray80")
+  )
+
+####base de datos dimensiones x pais
+res.ind <- get_pca_ind(res.pca)
+res.ind$coord          
+res.ind$contrib        
+res.ind$cos2           
+View(res.ind$contrib[,1:6]) 
+
+
+#/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
+
+tamaños <- as.data.frame(table(res_hc$cluster))
+colnames(tamaños) <- c("Cluster", "N")
+tamaños <- tamaños %>% arrange(as.integer(as.character(Cluster)))
+
+tamaños %>%
+  knitr::kable(
+    caption = "Tamaño de cada clúster",
+    digits = 0,
+    align = "c",
+    col.names = c("Clúster", "Número de Países")
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "10em", color = "#1B4965") %>%
+  column_spec(2, width = "12em")
+
+#///////////////////////////Tabla de medias por clúster////////////////////////
+
+#    Usamos el data frame original de análisis con la columna Cluster
+datos_con_cluster <- datos_analisis %>%
+  mutate(Cluster = factor(res_hc$cluster))  # convertimos a factor para claridad
+
+carac_cluster <- datos_con_cluster %>%
+  group_by(Cluster) %>%
+  summarise(across(everything(), mean, na.rm = TRUE))
+
+kable(carac_cluster, 
+      caption = "Medias de variables por clúster",
+      digits = 2, align = "c") %>%
+  kable_styling(bootstrap_options = c("striped","hover","condensed"),
+                full_width = FALSE, position = "center") %>%
+  row_spec(0, bold = TRUE, background = "#2E86AB", color = "white")
+
+
+# Preparar datos
+paises_clusters <- data.frame(
+  Pais = rownames(factores),
+  Comp1 = factores[, 1],
+  Comp2 = factores[, 2],
+  Cluster = as.factor(clusters)
+)
+
+# Calcular centroides para cada cluster
+centroides <- paises_clusters %>%
+  group_by(Cluster) %>%
+  summarise(
+    Centroid1 = mean(Comp1),
+    Centroid2 = mean(Comp2)
+  )
+
+# paises en clusters
+
+ggplot(paises_clusters, aes(x = Comp1, y = Comp2, color = Cluster)) +
+  geom_point(size = 3.5, alpha = 0.8) +
+  stat_ellipse(aes(fill = Cluster), 
+               type = "norm", 
+               level = 0.68,
+               geom = "polygon", 
+               alpha = 0.15,
+               size = 1.2) +
+  geom_point(data = centroides, 
+             aes(x = Centroid1, y = Centroid2, color = Cluster),
+             size = 6, shape = 17, stroke = 1.5) +
+  geom_text_repel(
+    aes(label = Pais),
+    size = 3.2,
+    max.overlaps = 15,
+    segment.alpha = 0.4,
+    fontface = "bold",
+    show.legend = FALSE
+  ) +
+  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
+  scale_color_manual(
+    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+    name = "Clúster",
+    labels = c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+  ) +
+  scale_fill_manual(
+    values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+    guide = "none"
+  ) +
+  labs(
+    title = "Distribución de Clústeres en el Espacio Factorial",
+    subtitle = "Agrupamiento de países según los dos primeros componentes principales",
+    x = "Componente Principal 1",
+    y = "Componente Principal 2"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
+    legend.text = element_text(size = 10),
+    legend.background = element_rect(fill = "white", color = "gray80")
+  )
+
+###dendograma
+plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
+rect.hclust(arbol, k = k_optimo, border = 2:5)
+
+# Crear la tabla manualmente con las dimensiones y variables
+dimensiones_tabla <- tribble(
+  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
+  "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
+  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
+  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  
+  "Dimensión 2", "Industrialización y crecimiento demográfico, desarrollo industrial, dependencia económica de remesas", 
+  "Industria, Crecimiento.poblacion, Remesas", 
+  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  
+  "Dimensión 3", "Apertura comercial, actividad comercial internacional, comercio exterior", 
+  "Importaciones, Exportaciones, Inversión.Extranjera", 
+  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  
+  "Dimensión 4", "Presión demográfica y uso del suelo", 
+  "Área.boscosa, Tierra.cultivable, Población", 
+  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+  
+  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
+  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
+  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
+  
+  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
+  "Gasto.salud, PIB_per, Inversión.Extranjera", 
+  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
+  
+)
+dimensiones_tabla %>%
+  knitr::kable(
+    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
+    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
+    align = c("c", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "8em") %>%
+  column_spec(2, width = "22em") %>%
+  column_spec(3, width = "16em") %>%
+  column_spec(4, width = "18em")
+
+#Tabla interpretativa de los clusters
+
+clusters_tabla <- tribble(
+  ~`Cluster`, ~`Nombre propuesto`, ~`Características principales`, ~`Justificación del nombre`, ~`Ejemplos de Países`,
+  
+  "Cluster 1", "Países Desarrollados / Economías Avanzadas",
+  "Alto PIB per cápita, larga esperanza de vida, baja mortalidad infantil, acceso casi total a electricidad e internet, gasto alto en salud.",
+  "Agrupa países con indicadores sociales y económicos altos. Corresponde a economías de alto ingreso y alto desarrollo humano según ONU y Banco Mundial.",
+  "Alemania, Estados Unidos, Japón, Australia",
+  
+  "Cluster 2", "Países en Desarrollo / Economías Emergentes",
+  "PIB medio, crecimiento económico sostenido, buena industrialización, pero con desigualdades sociales y de acceso a servicios.",
+  "Incluye países en transición hacia el desarrollo; presentan expansión industrial y tecnológica, pero aún brechas de ingreso.",
+  "México, Turquía, Vietnam, Marruecos",
+  
+  "Cluster 3", "Países Subdesarrollados / Economías de Bajo Ingreso",
+  "Bajo PIB, esperanza de vida reducida, alta mortalidad infantil, acceso limitado a electricidad, educación y salud.",
+  "Refleja países con grandes desafíos estructurales y económicos. Clasificados como de bajo desarrollo humano o renta baja.",
+  "Angola, Uganda, Haití, Zimbabue"
+)
+
+clusters_tabla %>%
+  knitr::kable(
+    caption = "Resumen interpretativo de los Clusters identificados mediante ACP y Análisis Jerárquico",
+    col.names = c("Cluster", "Nombre propuesto", "Características principales", "Justificación del nombre", "Ejemplos de Países"),
+    align = c("c", "l", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "6em") %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "22em") %>%
+  column_spec(4, width = "22em") %>%
+  column_spec(5, width = "16em")
+
+
+#///////////////////Base de datos con cluster con nombre////////////////////////
+NuevaBase <- read_csv("NuevaBase_clusters.csv")
+nombres_clusters <- c(
+  "1" = "Desarrollado",
+  "2" = "Emergente",
+  "3" = "Subdesarrollado"
+)
+NuevaBase <- NuevaBase %>%
+  mutate(Cluster = recode(as.character(Cluster), !!!nombres_clusters))
+view(NuevaBase)
+
+#///////////////Base cluster x dimension con nombre////////////////////////////
+NuevaBase <- readr::read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
+possible_names <- c("Pais", "pais", "PAIS", "Country", "country", "COUNTRY", "Row.names", "Rowname", "X1", "...1")
+country_col <- intersect(possible_names, names(NuevaBase)) %>% first()
+if (is.null(country_col)) {
+  if (!is.numeric(NuevaBase[[1]])) {
+    country_col <- names(NuevaBase)[1]
+  } else stop("No se pudo detectar la columna 'Pais'.")
+}
+if (country_col != "Pais") NuevaBase <- NuevaBase %>% rename(Pais = all_of(country_col))
+if (!"Cluster" %in% names(NuevaBase)) stop("La tabla no tiene columna 'Cluster'.")
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+NuevaBase <- NuevaBase %>%
+  mutate(Cluster = as.character(Cluster),
+         Cluster_nombre = recode(Cluster, !!!nombres_clusters, .default = Cluster)) %>%
+  relocate(Cluster_nombre, .after = Cluster)
+vars_num <- NuevaBase %>%
+  select(-Pais, -Cluster, -Cluster_nombre) %>%
+  select(where(is.numeric)) %>%
+  names()
+if (length(vars_num) < 2) stop("No hay suficientes variables numéricas para hacer PCA (mínimo 2).")
+mat <- NuevaBase %>%
+  select(Pais, all_of(vars_num)) %>%
+  column_to_rownames("Pais")
+n_comp_requested <- 8
+n_comp_available <- min(n_comp_requested, ncol(mat))
+res.pca <- prcomp(mat, center = TRUE, scale. = TRUE, rank. = n_comp_available)
+scores <- as.data.frame(res.pca$x[, 1:n_comp_available, drop = FALSE]) %>%
+  rownames_to_column("Pais")
+nombre_dimensiones <- c(
+  "DesarrolloHumano",
+  "Industrializacion",
+  "ComercioApertura",
+  "PresionDemografica",
+  "Agricultura_Remesas",
+  "Salud_Inversion",
+  "CrecimientoIntensivo",
+  "Conectividad_Dinamismo"
+)
+nombre_dimensiones <- nombre_dimensiones[1:n_comp_available]
+colnames(scores)[-1] <- nombre_dimensiones
+Base_Final <- NuevaBase %>%
+  select(Pais, Cluster_nombre) %>%
+  left_join(scores, by = "Pais")
+View(Base_Final)
+
+#===============================================================================
+
+#############mapa
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+Base_2022_con_cluster <- Base_2022 %>%
+  mutate(Cluster = clusters) %>%  
+  select(Codigo, Cluster, Pais)   
+Base_con_mapa <- world %>%
+  left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
+  filter(!is.na(Cluster))  
+
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+
+ggplot(Base_con_mapa) +
+  geom_sf(aes(fill = factor(Cluster))) +
+  scale_fill_manual(values = c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD"),
+                    name = "Clúster", labels = nombres_clusters) +
+  theme_minimal() +
+  labs(title = "Mapa Mundial de Países por Clúster",
+       subtitle = "Distribución geográfica de los grupos identificados") +
+  theme(legend.position = "bottom")  
+
+pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), domain = 1:3)
+leaflet(Base_con_mapa) %>%
+  addTiles() %>%  
+  addPolygons(fillColor = ~pal(Cluster), weight = 1, opacity = 1,
+              color = "white", fillOpacity = 0.7,
+              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)]))  
+
+
+
+
+
+
+
+
+
+
+
+#//////////////////////////////////Predicción////////////////////////////////////
+##cuatro paises
+nuevo_pais <- data.frame(
+  PIB_per = 18000,
+  Poblacion = 12000000,
+  Esperanza.vida = 76,
+  Acceso.electricidad = 98,
+  Area.boscosa = 35,
+  Suscripciones.movil = 120,
+  Crecimiento.PIB = 3.2,
+  Mortalidad.infantil = 15,
+  Inversion.extranjera = 4,
+  Gasto.salud = 7,
+  Uso.internet = 85,
+  Importaciones = 25,
+  Exportaciones = 22,
+  Tierra.cultivable = 12,
+  Crecimiento.poblacion = 1.1,
+  Industria = 28,
+  Remesas = 2
+)
+
+nuevo_pais_pca <- predict(res.pca, newdata = nuevo_pais)
+
+centroides <- aggregate(res.pca$x[, 1:8], 
+                        by = list(Cluster = res_hc$cluster), 
+                        FUN = mean)
+
+distancias <- apply(centroides[, -1], 1, function(c) dist(rbind(c, nuevo_pais_pca[1, 1:8])))
+cluster_predicho <- centroides$Cluster[which.min(distancias)]
+
+cat("El nuevo país se clasifica en el Cluster:", cluster_predicho, "\n")
+nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
+cat("Nombre del cluster:", nombres_clusters[as.character(cluster_predicho)], "\n")
+
+# Obtener mapa mundial de rnaturalearth
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+
 
