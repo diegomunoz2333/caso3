@@ -137,7 +137,7 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
-
+##
 
 
 #/////////////Gráfico de varianza explicada////////////////////////////////////
