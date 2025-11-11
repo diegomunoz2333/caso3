@@ -76,7 +76,6 @@ n_componentes <- which(varianza_acum >= 80)[1]
 n_componentes <- which(varianza_acum >= 70)[1]
 
 cat("=== SELECCIÓN DE COMPONENTES ===\n")
-cat("Componentes necesarios para ≥80% varianza:", n_componentes, "\n")
 cat("Componentes necesarios para ≥70% varianza:", n_componentes, "\n")
 cat("Varianza explicada:", round(varianza_acum[n_componentes], 2), "%\n\n")
 
@@ -190,9 +189,9 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
   geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
   geom_hline(yintercept = 80, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
-  geom_vline(xintercept = 8, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
-  annotate("text", x = 8.3, y = max(varianza_df$Varianza) * 0.9,
-           label = "8 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
+  geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
+  annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
+           label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0, 
            fontface = "bold", size = 3.8) +
   annotate("text", x = 1.8, y = 83,
            label = "80% varianza acumulada", color = "#27AE60", hjust = 0,
@@ -327,43 +326,31 @@ paises_df$Pais <- rownames(paises_df)
 # Calcular distancia al origen (para resaltar países más "extremos")
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
 
-ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
-  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
-  geom_text_repel(
-    aes(label = Pais),
-    size = 3.4,
-    color = "gray20",
-    fontface = "bold",
-    max.overlaps = 20,
-    segment.color = "gray70",
-    segment.size = 0.3
-  ) +
-  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
-  labs(
-    title = "Países en el Espacio Factorial del ACP",
-    subtitle = "Distribución de países según los dos primeros componentes principales",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.position = "right",
-    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
-    legend.text = element_text(size = 10),
-    legend.background = element_rect(fill = "white", color = "gray80")
+library(plotly)
+
+# Crear gráfico directamente con plot_ly (más estable)
+plot_ly(paises_df, 
+        x = ~Axis1, 
+        y = ~Axis2, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'CP1: %{x:.2f}<br>',
+                              'CP2: %{y:.2f}<br>',
+                              'Distancia: %{marker.color:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Países en el Espacio Factorial del ACP",
+                 font = list(size = 16)),
+    xaxis = list(title = "Componente Principal 1",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 2",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
   )
-
-
 
 
 #===============================================================================
@@ -683,7 +670,11 @@ fviz_dend(arbol,
 
 library(factoextra)
 paleta_personalizada <- c("#2E86AB", "#047857", "#8B5CF6")
-
+res_hc <- hcut(datos_analisis, 
+               k = k_optimo, 
+               hc_method = "ward.D2", 
+               stand = TRUE, 
+               graph = FALSE)
 fviz_cluster(res_hc, 
              ellipse.type = "convex",
              show.clust.cent = TRUE,
@@ -874,7 +865,7 @@ view(NuevaBase)
 
 
 #############mapa
-install.packages("rnaturalearthdata")
+
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 Base_2022_con_cluster <- Base_2022 %>%
@@ -1009,9 +1000,8 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 
 
 
-###########################
-#########################
-# Matriz de correlaciones - cálculo
+#===============================================================================
+#///////////////// Matriz de correlaciones - cálculo ///////////////////////////
 matriz_correlacion <- cor(datos_analisis, use = "pairwise.complete.obs", method = "pearson")
 round(matriz_correlacion, 2)  # Opcional: redondear a 2 decimales para imprimir
 
@@ -1025,3 +1015,146 @@ corrplot(matriz_correlacion, method = "color", type = "upper",
          col = colorRampPalette(c("#2C5F8D", "white", "#27AE60"))(200),
          mar = c(0,0,1,0), addCoef.col = "black") 
 title("Matriz de correlaciones entre variables numéricas", line = 2.5)
+
+#=================================================================================
+
+
+# GRÁFICO 1: PC1 vs PC2
+plot_ly(paises_df, 
+        x = ~Axis1, 
+        y = ~Axis2, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC1: %{x:.2f}<br>',
+                              'PC2: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 1 vs 2",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 1",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 2",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 2: PC3 vs PC4
+plot_ly(paises_df, 
+        x = ~Axis3, 
+        y = ~Axis4, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC3: %{x:.2f}<br>',
+                              'PC4: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 3 vs 4",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 3",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 4",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 3: PC5 vs PC6
+plot_ly(paises_df, 
+        x = ~Axis5, 
+        y = ~Axis6, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#F0F8FF", "#A8D8FF", "#5DADE2", "#2C5F8D", "#1A3A52"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC5: %{x:.2f}<br>',
+                              'PC6: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 5 vs 6",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 5",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 6",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+
+#================RRRROOOOOOOOJJJJJJJJJJJJOOOOOOOOOOOOOOOOOOOOOO==================
+# GRÁFICO 1: PC1 vs PC2
+plot_ly(paises_df, 
+        x = ~Axis1, 
+        y = ~Axis2, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC1: %{x:.2f}<br>',
+                              'PC2: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 1 vs 2",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 1",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 2",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 2: PC3 vs PC4
+plot_ly(paises_df, 
+        x = ~Axis3, 
+        y = ~Axis4, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC3: %{x:.2f}<br>',
+                              'PC4: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 3 vs 4",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 3",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 4",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
+
+# GRÁFICO 3: PC5 vs PC6
+plot_ly(paises_df, 
+        x = ~Axis5, 
+        y = ~Axis6, 
+        text = ~Pais,
+        color = ~Distancia,
+        colors = colorRampPalette(c("#27AE60", "#E74C3C"))(100),
+        type = "scatter",
+        mode = "markers",
+        marker = list(size = 10, opacity = 0.95),
+        hovertemplate = paste('<b>%{text}</b><br>',
+                              'PC5: %{x:.2f}<br>',
+                              'PC6: %{y:.2f}<extra></extra>')) %>%
+  layout(
+    title = list(text = "Componentes Principales 5 vs 6",
+                 font = list(size = 16, color = "#2C5F8D")),
+    xaxis = list(title = "Componente Principal 5",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Componente Principal 6",
+                 zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest"
+  )
