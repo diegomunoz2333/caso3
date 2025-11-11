@@ -118,7 +118,7 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   annotate("text", x = 1.8, y = 73,
            label = "70% varianza acumulada", color = "#27AE60", hjust = 0,
            fontface = "bold", size = 3.8) +
-  scale_x_continuous(breaks = 1:length(acp_resultado$eig)) +
+  scale_x_continuous(breaks = 1:length(acp_prcomp$eig)) +
   labs(
     title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
     subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥70%",
@@ -137,7 +137,6 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
-##
 
 
 #/////////////Gráfico de varianza explicada////////////////////////////////////
@@ -264,11 +263,7 @@ clusters <- cutree(arbol, k = k_optimo)
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
-###BASE DE DATOS DIMENSIONES VS VARIABLES
-res.pca <- prcomp(NuevaBase, scale = TRUE) ## tabla de las dimenciones elegidas 
-res.pca
-eig.val <- get_eigenvalue(res.pca)
-eig.val ## tambien deberia 
+
 
 ##FVIZ-PCA-INDIVIUS
 
