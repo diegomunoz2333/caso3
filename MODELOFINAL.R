@@ -101,11 +101,30 @@ varianza_df <- data.frame(
   VarianzaAcum = round(varianza_acum, 2)
 )
 
-# Visualizar tabla con kableExtra
+# Visualizar tabla con kableExtra - MEJORADA
 varianza_df %>%
-  kbl(caption = "Porcentaje de varianza explicada por componente") %>%
-  kable_styling(full_width = FALSE)
-
+  kbl(
+    caption = "Porcentaje de Varianza Explicada por Componente Principal",
+    digits = 2,
+    col.names = c("Componente", "Varianza (%)", "Varianza Acumulada (%)"),
+    align = "c"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  row_spec(1:nrow(varianza_df), background = "#F8F9FA") %>%
+  column_spec(1, bold = TRUE, color = "#1B4965") %>%
+  column_spec(2, color = "#2E86AB") %>%
+  column_spec(3, color = "#4A6FA5") %>%
+  footnote(
+    general = "Tabla de varianza explicada por los componentes principales del ACP",
+    general_title = "Nota:",
+    footnote_as_chunk = TRUE
+  )
 ##############################grafica varianza acumulada
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_col(fill = "#2C5F8D", alpha = 0.9) +
@@ -171,7 +190,7 @@ res.var <- get_pca_var(acp_prcomp)
 res.var$coord
 res.var$contrib        
 res.var$cos2           
-View(res.var$contrib[,1:6])
+View(res.var$contrib[,1:6]) ## tabla porfavor
 
 
 ########################### hasta aqui van las dimensiones
@@ -205,20 +224,18 @@ fviz_nbclust(
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
 
-# Método del codo más simple y confiable
 wss <- sapply(2:10, function(k){
   kmeans(factores, centers = k, nstart = 25)$tot.withinss
 })
 
 df_wss <- data.frame(k = 2:10, WSS = wss)
 
-# Detectar número óptimo (simplificado)
-k_optimo <- which.min(diff(wss)) + 1  # Donde la diferencia de WSS se minimiza
+k_optimo <- which.min(diff(wss)) + 1  
 if (k_optimo > 6) k_optimo <- 5
 if (k_optimo < 2) k_optimo <- 2
 
 cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n") ## verificar 
+cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n") 
 
 # Gráfico del método del codo con estilo profesional
 df_wss <- data.frame(
