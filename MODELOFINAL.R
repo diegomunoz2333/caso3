@@ -12,6 +12,7 @@ library(sf)
 library(leaflet)       
 library(rnaturalearth)
 library(RColorBrewer)  
+##
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
