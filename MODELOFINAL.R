@@ -16,11 +16,9 @@ library(RColorBrewer)
 library(ellipse)
 
 
-# Cargar base
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
-# Selección y limpieza
 Base_2022 <- Base %>%
   select(
     Pais = `Country Name`,
@@ -65,7 +63,7 @@ Base_2022 <- Base_2022 %>%
                       "Early-demographic dividend", "Late-demographic dividend")) %>% 
   filter(Pais != "Luxembourg")
 
-# Preparar datos
+
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
@@ -73,31 +71,27 @@ datos_analisis <- Base_2022 %>%
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
-# -----------------------------------------------------------
-# Análisis de Componentes Principales (ACP) con prcomp()
-# -----------------------------------------------------------
+# ACP
+
 
 acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
 
 
-# Varianza explicada
+
 varianza <- acp_prcomp$sdev^2
 varianza_prop <- varianza / sum(varianza)
 varianza_acum <- cumsum(varianza_prop) * 100
 
-# Número de componentes que explican al menos el 70 %
 n_componentes <- which(varianza_acum >= 70)[1]
 factores <- acp_prcomp$x[, 1:n_componentes]
-cat("Número de componentes necesarios para explicar el 70% de la varianza:", n_componentes, "\n")
+cat("Número de componentes necesarios para explicar más del 70% de la varianza:", n_componentes, "\n")
 
-# Tabla resumen
 varianza_df <- data.frame(
   Componente = 1:length(varianza_prop),
   Varianza = round(varianza_prop * 100, 2),
   VarianzaAcum = round(varianza_acum, 2)
 )
 
-# Visualizar tabla con kableExtra - MEJORADA
 varianza_df %>%
   kbl(
     caption = "Porcentaje de Varianza Explicada por Componente Principal",
@@ -121,7 +115,7 @@ varianza_df %>%
     general_title = "Nota:",
     footnote_as_chunk = TRUE
   )
-##############################grafica varianza acumulada
+#Gráfica de varianza acumulada
 
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_col(fill = "#2C5F8D", alpha = 0.9) +
@@ -194,11 +188,9 @@ as.data.frame(res.var$contrib[, 1:6])  %>%
   row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
   column_spec(1, bold = TRUE, background = "rgba(44, 95, 141, 0.1)")
 
-########################### hasta aqui van las dimensiones
-
 
 #////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
-#=== CLUSTERING: Cálculo del número óptimo de clústeres ===#
+
 
 distancia <- dist(factores)
 arbol <- hclust(distancia, method = "ward.D2")
@@ -260,10 +252,10 @@ ggplot(df_wss, aes(x = k, y = WSS)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
-# ASIGNAR CLUSTERS
+
 clusters <- cutree(arbol, k = k_optimo)
 
-# Nueva base con clusters
+
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
@@ -271,7 +263,7 @@ write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
 ##FVIZ-PCA-INDIVIUS
 
-# Obtener datos de individuos
+
 ind_data <- get_pca_ind(acp_prcomp)
 
 ind_df <- data.frame(
@@ -405,12 +397,11 @@ p3
 
 
 
+#FVIZ-PCA-VARIABLES
 
 
-# Obtener datos de variables
 var_data <- get_pca_var(acp_prcomp)
 
-# Crear dataframe con todos los datos
 var_df <- data.frame(
   Variable = rownames(var_data$coord),
   Dim1 = var_data$coord[, 1],
@@ -552,11 +543,10 @@ p3
 
 ##FVIZ-PCA-BIPLOTS
 
-# Obtener datos
 ind_data <- get_pca_ind(acp_prcomp)
 var_data <- get_pca_var(acp_prcomp)
 
-# Crear dataframes para individuos
+
 ind_df <- data.frame(
   Pais = rownames(ind_data$coord),
   Dim1 = ind_data$coord[, 1],
@@ -573,7 +563,6 @@ ind_df <- data.frame(
   Contrib6 = ind_data$contrib[, 6]
 )
 
-# Crear dataframes para variables (amplificadas para visibilidad)
 var_df <- data.frame(
   Variable = rownames(var_data$coord),
   Dim1 = var_data$coord[, 1] * 3,
@@ -596,7 +585,6 @@ var_df <- data.frame(
 
 p1 <- plot_ly() %>%
   
-  # Líneas de variables (desde origen)
   add_segments(
     data = var_df,
     x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
@@ -604,7 +592,6 @@ p1 <- plot_ly() %>%
     showlegend = FALSE, hoverinfo = "skip"
   ) %>%
   
-  # Puntos de variables (azul)
   add_trace(
     data = var_df,
     x = ~Dim1, y = ~Dim2,
@@ -620,7 +607,6 @@ p1 <- plot_ly() %>%
     name = "Variables"
   ) %>%
   
-  # Puntos de individuos (gris)
   add_trace(
     data = ind_df,
     x = ~Dim1, y = ~Dim2,
@@ -900,13 +886,12 @@ ggplot() +
   )
 
 
-## por pares de componenete 
+
 #////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
 ## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
 
-# Usar las coordenadas del ACP hecho con prcomp()
-##CORREGIRLO
-paises_df <- as.data.frame(acp_prcomp$x[, 1:2])  # Solo las dos primeras componentes
+
+paises_df <- as.data.frame(acp_prcomp$x[, 1:2]) 
 colnames(paises_df) <- c("Axis1", "Axis2")
 paises_df$Pais <- rownames(paises_df)
 
@@ -930,7 +915,7 @@ plot_ly(
   hovertemplate = "%{text}<extra></extra>",
   name = "País"
 ) %>%
-  # Agregar líneas de referencia
+  
   add_segments(
     x = min(paises_df$Axis1), xend = max(paises_df$Axis1),
     y = 0, yend = 0,
@@ -976,12 +961,11 @@ plot_ly(
 
 
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
-# Crear tabla de tamaños de 
+
 tamaños <- as.data.frame(table(clusters))
 colnames(tamaños) <- c("Cluster", "N")
 tamaños <- tamaños %>% arrange(as.numeric(as.character(Cluster)))
 
-# Mostrar tabla con kableExtra
 tamaños %>%
   kbl(
     caption = "Distribución de Países por Clúster",
@@ -1031,7 +1015,6 @@ paises_clusters <- data.frame(
 
 #///////////////////////////GRÁFICO CON CENTROIDES DE CLÚSTERES CORREGIDO////////////////////////
 
-# Preparar datos para gráfico con clusters
 paises_clusters <- data.frame(
   Pais = rownames(factores),
   Comp1 = factores[, 1],
@@ -1039,7 +1022,7 @@ paises_clusters <- data.frame(
   Cluster = as.factor(clusters)
 )
 
-# Calcular centroides para cada cluster
+
 centroides <- paises_clusters %>%
   group_by(Cluster) %>%
   summarise(
@@ -1049,7 +1032,7 @@ centroides <- paises_clusters %>%
 
 
 
-### DENDROGRAMA CORREGIDO
+### DENDROGRAMA 
 # Gráfico del dendrograma con clusters marcados
 plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
 rect.hclust(arbol, k = k_optimo, border = 2:(k_optimo+1))
@@ -1197,8 +1180,6 @@ p
 
 
 
-
-# Crear la tabla manualmente con las dimensiones y variables
 dimensiones_tabla <- tribble(
   ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
   "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
@@ -1293,7 +1274,7 @@ clusters_tabla %>%
 
 NuevaBase <- read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
 if ("...1" %in% names(NuevaBase)) {
-  NuevaBase <- NuevaBase %>% rename(Pais = ...1) ##correcion de un error
+  NuevaBase <- NuevaBase %>% rename(Pais = ...1) 
   print("Columna '...1' renombrada a 'Pais'")
 }
 nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
