@@ -154,7 +154,6 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   
   labs(
     title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
-    subtitle = paste0("Selección de componentes mediante criterio de varianza acumulada ≥", round(varianza_df$VarianzaAcum[6], 2), "%"),
     x = "Componentes Principales",
     y = "% de Varianza Explicada"
   ) +
@@ -220,45 +219,6 @@ fviz_nbclust(
     plot.background = element_rect(fill = "white")
   )
 
-
-#O si lo quieres mostrando el valor de K óptimo
-
-sil_vals <- data.frame()
-for (k in 2:10) {
-  km <- kmeans(datos_analisis, centers = k, nstart = 25)
-  sil <- silhouette(km$cluster, dist(datos_analisis))
-  sil_vals <- rbind(sil_vals, data.frame(k = k, sil = mean(sil[, 3])))
-}
-k_opt <- sil_vals$k[which.max(sil_vals$sil)]
-val_opt <- round(max(sil_vals$sil), 4)
-
-fviz_nbclust(datos_analisis, FUN = kmeans, method = "silhouette") +
-  
-  annotate("point", x = k_opt, y = val_opt,
-           size = 6, color = "#0E47A1", shape = 21, stroke = 2.5, fill = "white") +
-  
-  annotate("label", x = k_opt, y = val_opt + 0.05,
-           label = paste0("Óptimo: ", val_opt),
-           color = "white", fill = "#0E47A1", fontface = "bold", size = 4.2,
-           label.padding = unit(0.4, "lines"), label.r = unit(0.3, "lines")) +
-  
-  labs(
-    title = "Número Óptimo de Clústeres según Silhouette",
-    subtitle = "Método de la silueta aplicado sobre k-means",
-    x = "Número de Clústeres (k)",
-    y = "Ancho promedio de la silueta"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  )
 
 #////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
 # Calcular matriz de distancias sobre los factores (componentes principales)
@@ -874,7 +834,7 @@ ggplot() +
     panel.grid.major = element_line(color = "gray92", size = 0.3),
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
-  )
+  )  #agregar los otros
 
 
 ## por pares de componenete 
@@ -882,6 +842,7 @@ ggplot() +
 ## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
 
 # Usar las coordenadas del ACP hecho con prcomp()
+##CORREGIRLO
 paises_df <- as.data.frame(acp_prcomp$x[, 1:2])  # Solo las dos primeras componentes
 colnames(paises_df) <- c("Axis1", "Axis2")
 paises_df$Pais <- rownames(paises_df)
