@@ -669,8 +669,7 @@ p1 <- plot_ly() %>%
 
 p1
 
-### los graficos relacionados a los mismo como el bitplot se pueden hacer en uno solo
-# con faceta horizontal???'???'?'
+
 # ============================================================================
 # BIPLOT 2: Dim 3 vs 4
 # ============================================================================
@@ -849,41 +848,67 @@ paises_df$Pais <- rownames(paises_df)
 
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
 
-ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
-  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
-  geom_text_repel(
-    aes(label = Pais),
-    size = 3.4,
-    color = "gray20",
-    fontface = "bold",
-    max.overlaps = 20,
-    segment.color = "gray70",
-    segment.size = 0.3
-  ) +
-  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
-  labs(
-    title = "Países en el Espacio Factorial del ACP",
-    subtitle = "Distribución de países según los dos primeros componentes principales",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.position = "right",
-    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
-    legend.text = element_text(size = 10),
-    legend.background = element_rect(fill = "white", color = "gray80")
+plot_ly(
+  data = paises_df,
+  x = ~Axis1,
+  y = ~Axis2,
+  color = ~Distancia,
+  colors = colorRampPalette(c("#A8E6CF", "#1A5490"))(100),
+  type = 'scatter',
+  mode = 'markers',
+  marker = list(size = 10, opacity = 0.95, line = list(width = 1, color = "white")),
+  text = ~paste0(
+    "<b>", Pais, "</b><br>",
+    "Comp. 1: ", round(Axis1, 3), "<br>",
+    "Comp. 2: ", round(Axis2, 3), "<br>",
+    "Distancia: ", round(Distancia, 2)
+  ),
+  hovertemplate = "%{text}<extra></extra>",
+  name = "País"
+) %>%
+  # Agregar líneas de referencia
+  add_segments(
+    x = min(paises_df$Axis1), xend = max(paises_df$Axis1),
+    y = 0, yend = 0,
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    name = "Eje Horizontal",
+    showlegend = FALSE
+  ) %>%
+  add_segments(
+    x = 0, xend = 0,
+    y = min(paises_df$Axis2), yend = max(paises_df$Axis2),
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    name = "Eje Vertical",
+    showlegend = FALSE
+  ) %>%
+  layout(
+    title = list(
+      text = "Países en el Espacio Factorial del ACP<br><sub>Distribución de países según los dos primeros componentes principales</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(
+      title = "Componente Principal 1",
+      zeroline = FALSE,
+      gridcolor = "gray92"
+    ),
+    yaxis = list(
+      title = "Componente Principal 2",
+      zeroline = FALSE,
+      gridcolor = "gray92"
+    ),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(
+      title = list(text = "<b>Distancia al origen</b>", font = list(size = 11, color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray80",
+      borderwidth = 1,
+      traceorder = "reversed",
+      x = 1,
+      y = 1
+    )
   )
+
 ## interactivo mejorar 
 
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
