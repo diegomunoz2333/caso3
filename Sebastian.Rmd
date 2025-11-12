@@ -1298,7 +1298,6 @@ tabla_cor
 
 ```
 
-
 La matriz de correlación entre todas las variables de desarrollo es fundamental porque exhibe patrones predecibles: variables económicas tienden a correlacionarse positivamente entre sí (PIB per cápita, crecimiento del PIB, inversión extranjera), variables de bienestar social correlacionan positivamente (esperanza de vida, acceso a electricidad, uso de internet), y existe una correlación positiva sustancial entre estas dos dimensiones generales (Hastie et al., 2009). Adicionalmente, se observan correlaciones negativas entre indicadores de rezago (mortalidad infantil, tierra cultivable) y variables de desarrollo avanzado, reflejando que países con mayor riqueza y bienestar exhiben menores tasas de mortalidad y menor dependencia agrícola. La presencia de correlaciones altas (superiores a 0.7) entre múltiples pares de variables justifica plenamente la aplicación del ACP: la reducción dimensional elimina redundancia sin perder información esencial (Jolliffe, 2002; Hastie et al., 2009).
 
 ### ACP
@@ -1332,7 +1331,7 @@ $$
 \frac{\sum_{i=1}^{k} \lambda_i}{\sum_{j=1}^{p} \lambda_j} \geq 0.70
 $$
 
-Este umbral del $70\%$ representa un balance metodológicamente establecido entre dos objetivos contrapuestos: maximizar la compresión dimensional (retener información en pocas variables sintéticas) y minimizar la pérdida de información (descartar dimensiones relevantes) \cite{Kaiser1960, Hastie2009}. 
+Este umbral del $70\%$ representa un balance metodológicamente establecido entre dos objetivos contrapuestos: maximizar la compresión dimensional (retener información en pocas variables sintéticas) y minimizar la pérdida de información (descartar dimensiones relevantes) \cite{Kaiser1960, Hastie2009}.
 
 Un umbral más bajo (ej. $60\%$) introduciría pérdida excesiva de estructura; uno más alto (ej. $85\%$) reintroduciría la alta dimensionalidad que se busca evitar \cite{Jolliffe2002}.
 
@@ -1678,7 +1677,7 @@ tabla_pc6
 
 Una vez identificados los componentes principales y cuantificadas las contribuciones de cada variable, es fundamental realizar un análisis multivariado que permita interpretar simultáneamente las relaciones entre países y variables en el espacio reducido de componentes principales. Este análisis se fundamenta en visualizaciones bidimensionales que proyectan tanto países (individuos) como variables sobre los planos definidos por pares de componentes principales, revelando patrones de similitud, agrupamientos naturales y características diferenciadoras entre grupos de países (Jolliffe, 2002; Hastie et al., 2009).
 
-```{r individuos DIM 1 Y DIM 2} 
+```{r individuos DIM 1 Y DIM 2}
 ind_data <- get_pca_ind(res.pca)
 
 
@@ -1736,8 +1735,7 @@ p1 <- plot_ly(ind_df,
 p1
 ```
 
-
-```{r individuos DIM 3 Y DIM 4} 
+```{r individuos DIM 3 Y DIM 4}
 
 p2 <- plot_ly(ind_df,
               x = ~Dim3, 
@@ -1771,7 +1769,7 @@ p2 <- plot_ly(ind_df,
 p2
 ```
 
-```{r individuos DIM 5 Y DIM 6} 
+```{r individuos DIM 5 Y DIM 6}
 p3 <- plot_ly(ind_df,
               x = ~Dim5, 
               y = ~Dim6,
@@ -1802,6 +1800,7 @@ p3 <- plot_ly(ind_df,
 
 p3
 ```
+
 ### Representación de Variables en el Plano de Componentes Principales
 
 El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por PC1 y PC2. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas en PC1-PC2, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
@@ -1871,9 +1870,6 @@ p1 <- plot_ly(var_df,
 p1
 ```
 
-
-
-
 ```{r Variables DIM 3 Y DIM 4}
 p2 <- plot_ly(var_df,
               x = ~Dim3, 
@@ -1911,7 +1907,6 @@ p2 <- plot_ly(var_df,
 p2
 ```
 
-
 ```{r Variables DIM 5 Y DIM 6}
 
 p3 <- plot_ly(var_df,
@@ -1948,6 +1943,348 @@ p3 <- plot_ly(var_df,
   )
 
 p3
+
+```
+
+
+### Análisis Integrado de Variables y Países
+
+El análisis combinado de las variables y los países en el espacio reducido de los componentes principales permite identificar patrones de asociación estructural que trascienden el análisis univariable. La metodología del biplot permite vincular directamente las posiciones espaciales de los países con las magnitudes observadas en las variables originales, estableciendo relaciones interpretativas que evidencian cómo las características multidimensionales de desarrollo se manifiestan diferencialmente en distintos grupos de países (Jolliffe, 2002; Hastie et al., 2009).
+
+Para comprender la lógica interpretativa del biplot, es fundamental reconocer que la posición de un país en relación a la dirección de una flecha de variable indica el valor relativo de ese país en esa variable específica. Países ubicados en la misma dirección que una flecha exhiben valores altos en esa variable; países ubicados en dirección opuesta exhiben valores bajos; países ubicados perpendicularmente (formando ángulos de ~$90°$) exhiben valores cercanos a la media global. Esta propiedad geométrica del biplot permite realizar diagnósticos cuantitativos directamente desde la visualización gráfica, sin necesidad de consultar la base de datos original, siempre que la calidad de representación ($cos²$) sea suficientemente alta (Jolliffe, 2002).
+
+```{r Paises y variables DIM 1 Y DIM 2}
+acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
+ind_data <- get_pca_ind(acp_prcomp)
+var_data <- get_pca_var(acp_prcomp)
+
+
+ind_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Dim1 = ind_data$coord[, 1],
+  Dim2 = ind_data$coord[, 2],
+  Dim3 = ind_data$coord[, 3],
+  Dim4 = ind_data$coord[, 4],
+  Dim5 = ind_data$coord[, 5],
+  Dim6 = ind_data$coord[, 6],
+  Contrib1 = ind_data$contrib[, 1],
+  Contrib2 = ind_data$contrib[, 2],
+  Contrib3 = ind_data$contrib[, 3],
+  Contrib4 = ind_data$contrib[, 4],
+  Contrib5 = ind_data$contrib[, 5],
+  Contrib6 = ind_data$contrib[, 6]
+)
+
+var_df <- data.frame(
+  Variable = rownames(var_data$coord),
+  Dim1 = var_data$coord[, 1] * 3,
+  Dim2 = var_data$coord[, 2] * 3,
+  Dim3 = var_data$coord[, 3] * 3,
+  Dim4 = var_data$coord[, 4] * 3,
+  Dim5 = var_data$coord[, 5] * 3,
+  Dim6 = var_data$coord[, 6] * 3,
+  Contrib1 = var_data$contrib[, 1],
+  Contrib2 = var_data$contrib[, 2],
+  Contrib3 = var_data$contrib[, 3],
+  Contrib4 = var_data$contrib[, 4],
+  Contrib5 = var_data$contrib[, 5],
+  Contrib6 = var_data$contrib[, 6]
+)
+
+p1 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim1, y = ~Dim2,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 1:", round(Dim1/3, 3), "<br>",
+                  "Dim 2:", round(Dim2/3, 3), "<br>",
+                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim1, y = ~Dim2,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 1:", round(Dim1, 3), "<br>",
+                  "Dim 2:", round(Dim2, 3), "<br>",
+                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
+                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 1 vs Dimensión 2<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
+  )
+
+p1
+
+```
+
+```{r Paises y variables DIM 3 Y DIM 4}
+p2 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim3, y = ~Dim4,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 3:", round(Dim3/3, 3), "<br>",
+                  "Dim 4:", round(Dim4/3, 3), "<br>",
+                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim3, y = ~Dim4,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 3:", round(Dim3, 3), "<br>",
+                  "Dim 4:", round(Dim4, 3), "<br>",
+                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
+                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 3 vs Dimensión 4<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
+  )
+
+p2
+```
+
+```{r Paises y variables DIM 5 Y DIM 6}
+p3 <- plot_ly() %>%
+  
+  add_segments(
+    data = var_df,
+    x = 0, xend = ~Dim5, y = 0, yend = ~Dim6,
+    line = list(color = "#2E9FDF", width = 2),
+    showlegend = FALSE, hoverinfo = "skip"
+  ) %>%
+  
+  add_trace(
+    data = var_df,
+    x = ~Dim5, y = ~Dim6,
+    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
+                  "Dim 5:", round(Dim5/3, 3), "<br>",
+                  "Dim 6:", round(Dim6/3, 3), "<br>",
+                  "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                  "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Variables"
+  ) %>%
+  
+  add_trace(
+    data = ind_df,
+    x = ~Dim5, y = ~Dim6,
+    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
+                  "Dim 5:", round(Dim5, 3), "<br>",
+                  "Dim 6:", round(Dim6, 3), "<br>",
+                  "<b>Contribución Dim 5:</b> ", round(Contrib5, 2), "%<br>",
+                  "<b>Contribución Dim 6:</b> ", round(Contrib6, 2), "%"),
+    type = "scatter",
+    mode = "markers",
+    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    hovertemplate = '%{text}<extra></extra>',
+    name = "Países"
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "Biplot: Dimensión 5 vs Dimensión 6<br><sub>Azul = Variables | Gris = Países</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 5", zeroline = TRUE, zerolinecolor = "gray"),
+    yaxis = list(title = "Dimensión 6", zeroline = TRUE, zerolinecolor = "gray"),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(x = 0.02, y = 0.98)
+  )
+
+p3
+```
+
+
+## Segmentación: Clusterización
+
+Sobre la base de los k componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
+
+El método de Ward minimiza específicamente la suma total de cuadrados dentro de clusters (*within-cluster sum of squares*, WCSS), definida matemáticamente como:
+
+$$WCSS = \sum_{c=1}^{C} \sum_{i \in c} ||x_i - \bar{c}||^2$$
+
+donde:
+- $C$ es el número de clusters,
+- $x_i$ es la posición de la observación $i$ en el espacio de componentes principales,
+- $\bar{c}$ es el centroide (promedio) del cluster $c$.
+
+En cada paso del algoritmo, se identifican los dos clusters cuya fusión produce el incremento mínimo en WCSS total, maximizando así la homogeneidad interna de cada cluster mientras se maximiza la disimilaridad entre clusters (Ward, 1963; Hastie et al., 2009).
+
+
+```{r clusters}
+resultado_ACP <- FactoClass(datos_analisis, dudi.pca, nf = 6, scan = FALSE)
+
+
+clusters_asignados <- resultado_ACP$cluster
+cat("Número de países por cluster:\n")
+print(table(clusters_asignados))
+
+NuevaBase <- data.frame(Cluster = clusters_asignados, Base_2022)
+
+```
+
+
+```{r Tabla de distribucion}
+distribucion_clusters <- table(clusters_asignados) %>%
+  as.data.frame() %>%
+  rename(Cluster = clusters_asignados, Frecuencia = Freq) %>%
+  mutate(Porcentaje = round(Frecuencia/sum(Frecuencia)*100, 2))
+
+tabla_distribucion <- distribucion_clusters %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 12**"),
+    subtitle = "Distribución de Países por Cluster"
+  ) %>%
+  cols_label(
+    Cluster = md("**Cluster**"),
+    Frecuencia = md("**N° Países**"),
+    Porcentaje = md("**Porcentaje (%)**")
+  ) %>%
+  fmt_number(
+    columns = Porcentaje,
+    decimals = 1,
+    pattern = "{x}%"
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman"
+  )
+
+tabla_distribucion
+
+```
+
+
+```{r Grafico clusters}
+par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
+
+plot(resultado_ACP$dudi, main = "Análisis Factorial y Clusterización")
+
+s.corcircle((resultado_ACP$dudi)$co, sub = "Círculo de Correlaciones")
+
+Grupo <- as.factor(NuevaBase$Cluster)
+s.class((resultado_ACP$dudi)$li, Grupo, 
+        sub = "Países por Cluster - Componentes 1-2", 
+        col = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"),
+        xax = 1, yax = 2)
+
+s.class((resultado_ACP$dudi)$li, Grupo,
+        sub = "Países por Cluster - Componentes 1-3", 
+        col = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"),
+        xax = 1, yax = 3)
+
+```
+
+
+```{r dendograma}
+# Calcular matriz de distancias y crear dendrograma manualmente
+coordenadas_componentes <- resultado_ACP$dudi$li[, 1:6]
+distancias <- dist(coordenadas_componentes, method = "euclidean")
+
+# Aplicar clusterización jerárquica con método de Ward
+hc <- hclust(distancias, method = "ward.D2")
+
+# Crear dendrograma con colores
+library(dendextend)
+dend <- as.dendrogram(hc)
+
+# Obtener número de clusters del análisis original
+k <- length(unique(resultado_ACP$cluster))
+
+# Colorear las ramas según los clusters
+dend_colored <- color_branches(dend, k = k)
+
+# Configurar márgenes para mejor visualización
+par(mar = c(5, 4, 4, 8) + 0.1)
+
+# Graficar el dendrograma
+plot(dend_colored,
+     main = "Dendrograma - Clusterización Jerárquica (Método Ward)",
+     xlab = "Países",
+     ylab = "Distancia Euclidiana",
+     cex = 0.6,
+     horiz = FALSE)
+
+# Añadir leyenda
+legend("topright", 
+       legend = paste("Cluster", 1:k),
+       fill = unique(get_leaves_branches_col(dend_colored)),
+       cex = 0.8,
+       inset = c(-0.15, 0),
+       xpd = TRUE)
+
+# Añadir líneas que muestran el corte para k clusters
+abline(h = hc$height[length(hc$height) - k + 1], 
+       col = "red", lty = 2, lwd = 2)
+text(x = length(hc$labels) * 0.8, 
+     y = hc$height[length(hc$height) - k + 1],
+     labels = paste("Corte para", k, "clusters"),
+     col = "red", pos = 3)
 
 ```
 

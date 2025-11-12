@@ -752,6 +752,7 @@ p3 <- plot_ly() %>%
 p3
 
 # Círculo de correlaciones
+
 var_data <- get_pca_var(res.pca)
 var_coords <- data.frame(
   Variable = rownames(var_data$coord),
@@ -1355,6 +1356,14 @@ leaflet(Base_con_mapa) %>%
 
 
 
+resultado_ACP <- FactoClass(datos_analisis, dudi.pca, nf = 6, scan = FALSE)
+
+
+clusters_asignados <- resultado_ACP$cluster
+cat("Número de países por cluster:\n")
+print(table(clusters_asignados))
+
+NuevaBase <- data.frame(Cluster = clusters_asignados, Base_2022)
 
 
 
