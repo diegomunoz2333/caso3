@@ -1727,10 +1727,10 @@ p1 <- plot_ly(ind_df,
 
 p1
 ```
-Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11,66%, es algo esperable sabiendo que el país árabe tiene un gran comercio.
-Mientras que San Marino contribuye en la dimensión 2 con un 0%, contrariamente de su aporte en la dimensión 1 el cual es 2.86%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
+Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11.66%, es algo esperable sabiendo que el país árabe tiene un gran comercio.
+Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariamente de su aporte en la dimensión 1 el cual es 3.14%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
 
-Al contrario podemos ver países como Niger el cual tiene un aporte en la dimensión 1 de -5,593% y en la dimensión 2 de -0,867%, lo cual nos da a pensar que este país tiene deficiencia en ambos factores (social/economico)
+Al contrario podemos ver países como Niger el cual la dimensión 2 tiene un aporte de 0,64%, lo cual nos da a pensar que este país tiene deficiencia en lo económico
 
 ```{r individuos DIM 3 Y DIM 4}
 
@@ -1765,9 +1765,9 @@ p2 <- plot_ly(ind_df,
 
 p2
 ```
-Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 8,19% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable.
-Timor-leste tiene un aporte en la dimensión 4 de un 12,88% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa.
-Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 8,47% y en la 4 de 0,24%, lo cual refiere que es uno de los paises que menos exporta y más importa.
+Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 18,65% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable.
+Timor-leste tiene un aporte en la dimensión 4 de un 8.49% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa.
+Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 10.69% y en la 4 de 0,28%, lo cual refiere que es uno de los paises que menos exporta y más importa.
 
 ### Representación de Variables en el Plano de Componentes Principales
 
