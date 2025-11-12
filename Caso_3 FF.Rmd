@@ -2072,9 +2072,10 @@ En síntesis, el modelo integra: (1) estandarización para igualar contribucione
 
 # Análisis Descriptivo
 
-## Explorador Interactivo de Indicadores
+Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica correlaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo—información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?"
+Las cinco dimensiones temáticas—económica, de salud, tecnológica, ambiental y demográfica—se examinan secuencialmente a través de visualizaciones interactivas que revelan líderes y rezagados en cada indicador, patrones de asociación entre variables dentro de dimensiones, y diferencias regionales que anticipan los agrupamientos posteriores. Este enfoque dimensional permite reconocer que el "desarrollo" no es una variable única sino un fenómeno multifacético donde países pueden destacar en algunas áreas mientras quedan rezagados en otras—precisamente la complejidad que justifica un análisis multivariado integrado.
 
-### Análisis por Variable
+## Explorador Interactivo de Indicadores
 
 ```{r preparar-datos-unificados}
 
