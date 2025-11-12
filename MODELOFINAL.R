@@ -14,18 +14,11 @@ library(leaflet)
 library(rnaturalearth)
 library(RColorBrewer)  
 library(ellipse)
-library(tidyverse)
-library(factoextra)
-library(kableExtra)
-library(ggrepel)
-library(ggforce)
-library(plotly)
 
-# Cargar base
+
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
 
-# Selección y limpieza
 Base_2022 <- Base %>%
   select(
     Pais = `Country Name`,
@@ -70,7 +63,7 @@ Base_2022 <- Base_2022 %>%
                       "Early-demographic dividend", "Late-demographic dividend")) %>% 
   filter(Pais != "Luxembourg")
 
-# Preparar datos
+
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
@@ -78,30 +71,27 @@ datos_analisis <- Base_2022 %>%
 cat("Países:", nrow(datos_analisis), "\n")
 cat("Variables:", ncol(datos_analisis), "\n\n")
 
-# -----------------------------------------------------------
-# Análisis de Componentes Principales (ACP) con prcomp()
-# -----------------------------------------------------------
+# ACP
+
 
 acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
-factores <- acp_prcomp$x[, 1:n_componentes]
 
-# Varianza explicada
+
+
 varianza <- acp_prcomp$sdev^2
 varianza_prop <- varianza / sum(varianza)
 varianza_acum <- cumsum(varianza_prop) * 100
 
-# Número de componentes que explican al menos el 70 %
 n_componentes <- which(varianza_acum >= 70)[1]
-cat("Número de componentes necesarios para explicar el 70% de la varianza:", n_componentes, "\n")
+factores <- acp_prcomp$x[, 1:n_componentes]
+cat("Número de componentes necesarios para explicar más del 70% de la varianza:", n_componentes, "\n")
 
-# Tabla resumen
 varianza_df <- data.frame(
   Componente = 1:length(varianza_prop),
   Varianza = round(varianza_prop * 100, 2),
   VarianzaAcum = round(varianza_acum, 2)
 )
 
-# Visualizar tabla con kableExtra - MEJORADA
 varianza_df %>%
   kbl(
     caption = "Porcentaje de Varianza Explicada por Componente Principal",
@@ -125,23 +115,39 @@ varianza_df %>%
     general_title = "Nota:",
     footnote_as_chunk = TRUE
   )
-##############################grafica varianza acumulada
+#Gráfica de varianza acumulada
+
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_col(fill = "#2C5F8D", alpha = 0.9) +
+  
+  
+  geom_text(aes(label = round(Varianza, 1)), 
+            vjust = -0.5, 
+            color = "gray20",  
+            fontface = "bold", 
+            size = 3.5) +
+  
   geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
   geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
-  geom_hline(yintercept = 70, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  
+  geom_hline(yintercept = varianza_df$VarianzaAcum[6], linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  
   geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
   annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
            label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0,
            fontface = "bold", size = 3.8) +
-  annotate("text", x = 1.8, y = 73,
-           label = "70% varianza acumulada", color = "#27AE60", hjust = 0,
+  
+  annotate("text", x = 1.8, y = varianza_df$VarianzaAcum[6] + 3,
+           label = paste0(round(varianza_df$VarianzaAcum[6], 2), "% varianza acumulada"), 
+           color = "#27AE60", hjust = 0,
            fontface = "bold", size = 3.8) +
-  scale_x_continuous(breaks = 1:length(acp_prcomp$eig)) +
+  
+  scale_x_continuous(breaks = 1:length(varianza_df$Componente)) +
+  
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  
   labs(
     title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
-    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥70%",
     x = "Componentes Principales",
     y = "% de Varianza Explicada"
   ) +
@@ -158,44 +164,45 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
-
-#/////////////Gráfico de varianza explicada////////////////////////////////////
-
-fviz_eig(acp_prcomp,
-         addlabels = TRUE,
-         ylim = c(0, max(get_eigenvalue(acp_prcomp)[, 2]) + 5),
-         choice = "variance") +
-  labs(
-    title = "Varianza Explicada por Componente Principal",
-    subtitle = "Autovalores del análisis de componentes principales",
-    x = "Componentes Principales",
-    y = "Porcentaje de Varianza Explicada (%)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  ) +
-  scale_fill_manual(values = "#2C5F8D") +
-  scale_color_manual(values = "#2C5F8D")
 eig.val <- get_eigenvalue(acp_prcomp)
 eig.val 
 res.var <- get_pca_var(acp_prcomp)
 res.var$coord
 res.var$contrib        
 res.var$cos2           
-View(res.var$contrib[,1:6]) ## tabla porfavor
+View(res.var$contrib[,1:6]) 
+
+as.data.frame(res.var$contrib[, 1:6])  %>%
+  knitr::kable(
+    col.names = c("Dim 1", "Dim 2", "Dim 3", "Dim 4", "Dim 5", "Dim 6"),
+    digits = 2,
+    align = "c",
+    format = "html"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, background = "rgba(44, 95, 141, 0.1)")
 
 
-########################### hasta aqui van las dimensiones
+#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
+
+
+distancia <- dist(factores)
+arbol <- hclust(distancia, method = "ward.D2")
+wss <- sapply(2:10, function(k) {
+  kmeans(factores, centers = k, nstart = 25)$tot.withinss
+})
+k_optimo <- which.max(diff(diff(wss))) + 2
+k_optimo <- max(2, min(k_optimo, 6))
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clústeres según el método del codo:", k_optimo, "\n\n")
+
 #///////////////////////// Gráfico de silhouette /////////////////////////////
-
 fviz_nbclust(
   datos_analisis, 
   FUN = kmeans, 
@@ -219,41 +226,7 @@ fviz_nbclust(
     plot.background = element_rect(fill = "white")
   )
 
-
-#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
-distancia <- dist(factores)
-arbol <- hclust(distancia, method = "ward.D2")
-
-wss <- sapply(2:10, function(k){
-  kmeans(factores, centers = k, nstart = 25)$tot.withinss
-})
-
-df_wss <- data.frame(k = 2:10, WSS = wss)
-
-k_optimo <- which.min(diff(wss)) + 1  
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n") 
-
 # Gráfico del método del codo con estilo profesional
-df_wss <- data.frame(
-  k = 2:10,
-  WSS = wss
-) ## <correccion wss ??
-
-# Detectar número óptimo
-diff_wss <- diff(wss)
-diff_diff <- diff(diff_wss)
-k_optimo <- which.max(diff_diff) + 2 ## Por que mas dos??
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
-
-
 ggplot(df_wss, aes(x = k, y = WSS)) +
   geom_line(color = "#2C5F8D", linewidth = 1.1) +
   geom_point(size = 3, color = "#2C5F8D") +
@@ -280,10 +253,9 @@ ggplot(df_wss, aes(x = k, y = WSS)) +
     plot.background = element_rect(fill = "white")
   )
 
-# ASIGNAR CLUSTERS
 clusters <- cutree(arbol, k = k_optimo)
 
-# Nueva base con clusters
+
 NuevaBase <- data.frame(Cluster = clusters, datos_analisis)
 write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
@@ -291,10 +263,9 @@ write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 
 ##FVIZ-PCA-INDIVIUS
 
-# Obtener datos de individuos
+
 ind_data <- get_pca_ind(acp_prcomp)
 
-# Crear dataframe con todos los datos
 ind_df <- data.frame(
   Pais = rownames(ind_data$coord),
   Dim1 = ind_data$coord[, 1],
@@ -426,12 +397,11 @@ p3
 
 
 
+#FVIZ-PCA-VARIABLES
 
 
-# Obtener datos de variables
 var_data <- get_pca_var(acp_prcomp)
 
-# Crear dataframe con todos los datos
 var_df <- data.frame(
   Variable = rownames(var_data$coord),
   Dim1 = var_data$coord[, 1],
@@ -573,11 +543,10 @@ p3
 
 ##FVIZ-PCA-BIPLOTS
 
-# Obtener datos
 ind_data <- get_pca_ind(acp_prcomp)
 var_data <- get_pca_var(acp_prcomp)
 
-# Crear dataframes para individuos
+
 ind_df <- data.frame(
   Pais = rownames(ind_data$coord),
   Dim1 = ind_data$coord[, 1],
@@ -594,7 +563,6 @@ ind_df <- data.frame(
   Contrib6 = ind_data$contrib[, 6]
 )
 
-# Crear dataframes para variables (amplificadas para visibilidad)
 var_df <- data.frame(
   Variable = rownames(var_data$coord),
   Dim1 = var_data$coord[, 1] * 3,
@@ -617,7 +585,6 @@ var_df <- data.frame(
 
 p1 <- plot_ly() %>%
   
-  # Líneas de variables (desde origen)
   add_segments(
     data = var_df,
     x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
@@ -625,7 +592,6 @@ p1 <- plot_ly() %>%
     showlegend = FALSE, hoverinfo = "skip"
   ) %>%
   
-  # Puntos de variables (azul)
   add_trace(
     data = var_df,
     x = ~Dim1, y = ~Dim2,
@@ -641,7 +607,6 @@ p1 <- plot_ly() %>%
     name = "Variables"
   ) %>%
   
-  # Puntos de individuos (gris)
   add_trace(
     data = ind_df,
     x = ~Dim1, y = ~Dim2,
@@ -672,8 +637,7 @@ p1 <- plot_ly() %>%
 
 p1
 
-### los graficos relacionados a los mismo como el bitplot se pueden hacer en uno solo
-# con faceta horizontal???'???'?'
+
 # ============================================================================
 # BIPLOT 2: Dim 3 vs 4
 # ============================================================================
@@ -790,22 +754,27 @@ p3 <- plot_ly() %>%
 
 p3
 
-# Obtener las coordenadas de las VARIABLES (no de los individuos)
-var_coords <- as.data.frame(acp_prcomp$rotation[, 1:2])
-var_coords$Variable <- rownames(var_coords)
-
-# Crear el círculo
-theta <- seq(0, 2*pi, length.out = 200)
-circle_df <- data.frame(
-  x = cos(theta),
-  y = sin(theta)
+# Círculo de correlaciones
+var_data <- get_pca_var(res.pca)
+var_coords <- data.frame(
+  Variable = rownames(var_data$coord),
+  PC1 = var_data$coord[, 1],
+  PC2 = var_data$coord[, 2],
+  PC3 = var_data$coord[, 3],
+  PC4 = var_data$coord[, 4],
+  PC5 = var_data$coord[, 5],
+  PC6 = var_data$coord[, 6]
 )
 
-# Calcular los límites del gráfico
-max_coord <- max(1, max(abs(var_coords[,1:2])))
-lims <- c(-max_coord * 1.05, max_coord * 1.05) 
+# Círculo de referencia
+theta <- seq(0, 2 * pi, length.out = 100)
+circle_df <- data.frame(x = cos(theta), y = sin(theta))
+lims <- c(-1.1, 1.1)
 
-# Gráfico del círculo de correlaciones CORREGIDO
+# ============================================================================
+# GRÁFICO 1: Círculo PC1 vs PC2
+# ============================================================================
+
 ggplot() +
   geom_path(data = circle_df, aes(x = x, y = y), 
             color = "gray60", linetype = "dashed", size = 0.6) +
@@ -840,37 +809,31 @@ ggplot() +
     plot.background = element_rect(fill = "white")
   )
 
+# ============================================================================
+# GRÁFICO 2: Círculo PC3 vs PC4
+# ============================================================================
 
-## por pares de componenete 
-#////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
-## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
-
-# Usar las coordenadas del ACP hecho con prcomp()
-paises_df <- as.data.frame(acp_prcomp$x[, 1:2])  # Solo las dos primeras componentes
-colnames(paises_df) <- c("Axis1", "Axis2")
-paises_df$Pais <- rownames(paises_df)
-
-paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
-
-ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
-  geom_point(aes(color = Distancia), size = 3.5, alpha = 0.95) +
-  geom_text_repel(
-    aes(label = Pais),
-    size = 3.4,
-    color = "gray20",
-    fontface = "bold",
-    max.overlaps = 20,
-    segment.color = "gray70",
-    segment.size = 0.3
-  ) +
-  geom_hline(yintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  geom_vline(xintercept = 0, color = "gray75", linetype = "dashed", linewidth = 0.5) +
-  scale_color_gradient(low = "#A8E6CF", high = "#1A5490", name = "Distancia\nal origen") +
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = var_coords,
+               aes(x = 0, y = 0, xend = PC3, yend = PC4),
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = var_coords, aes(x = PC3, y = PC4), 
+             color = "#8E44AD", size = 3) +
+  geom_text_repel(data = var_coords, aes(x = PC3, y = PC4, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims, ylim = lims) +
   labs(
-    title = "Países en el Espacio Factorial del ACP",
-    subtitle = "Distribución de países según los dos primeros componentes principales",
-    x = "Componente Principal 1",
-    y = "Componente Principal 2"
+    title = "Círculo de Correlaciones de Variables en el Plano Factorial",
+    x = "Componente Principal 3",
+    y = "Componente Principal 4",
+    subtitle = "Vectores indican la correlación de cada variable con los componentes 3 y 4"
   ) +
   theme_minimal(base_size = 13) +
   theme(
@@ -881,21 +844,128 @@ ggplot(paises_df, aes(x = Axis1, y = Axis2)) +
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = "gray92", size = 0.3),
     panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    legend.position = "right",
-    legend.title = element_text(face = "bold", size = 11, color = "#2C5F8D"),
-    legend.text = element_text(size = 10),
-    legend.background = element_rect(fill = "white", color = "gray80")
+    plot.background = element_rect(fill = "white")
   )
-## interactivo mejorar 
+
+# ============================================================================
+# GRÁFICO 3: Círculo PC5 vs PC6
+# ============================================================================
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = var_coords,
+               aes(x = 0, y = 0, xend = PC5, yend = PC6),
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = var_coords, aes(x = PC5, y = PC6), 
+             color = "#8E44AD", size = 3) +
+  geom_text_repel(data = var_coords, aes(x = PC5, y = PC6, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims, ylim = lims) +
+  labs(
+    title = "Círculo de Correlaciones de Variables en el Plano Factorial",
+    x = "Componente Principal 5",
+    y = "Componente Principal 6",
+    subtitle = "Vectores indican la correlación de cada variable con los componentes 5 y 6"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+
+
+#////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
+## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
+
+
+paises_df <- as.data.frame(acp_prcomp$x[, 1:2]) 
+colnames(paises_df) <- c("Axis1", "Axis2")
+paises_df$Pais <- rownames(paises_df)
+
+paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
+
+plot_ly(
+  data = paises_df,
+  x = ~Axis1,
+  y = ~Axis2,
+  color = ~Distancia,
+  colors = colorRampPalette(c("#A8E6CF", "#1A5490"))(100),
+  type = 'scatter',
+  mode = 'markers',
+  marker = list(size = 10, opacity = 0.95, line = list(width = 1, color = "white")),
+  text = ~paste0(
+    "<b>", Pais, "</b><br>",
+    "Comp. 1: ", round(Axis1, 3), "<br>",
+    "Comp. 2: ", round(Axis2, 3), "<br>",
+    "Distancia: ", round(Distancia, 2)
+  ),
+  hovertemplate = "%{text}<extra></extra>",
+  name = "País"
+) %>%
+  
+  add_segments(
+    x = min(paises_df$Axis1), xend = max(paises_df$Axis1),
+    y = 0, yend = 0,
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    name = "Eje Horizontal",
+    showlegend = FALSE
+  ) %>%
+  add_segments(
+    x = 0, xend = 0,
+    y = min(paises_df$Axis2), yend = max(paises_df$Axis2),
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    name = "Eje Vertical",
+    showlegend = FALSE
+  ) %>%
+  layout(
+    title = list(
+      text = "Países en el Espacio Factorial del ACP<br><sub>Distribución de países según los dos primeros componentes principales</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(
+      title = "Componente Principal 1",
+      zeroline = FALSE,
+      gridcolor = "gray92"
+    ),
+    yaxis = list(
+      title = "Componente Principal 2",
+      zeroline = FALSE,
+      gridcolor = "gray92"
+    ),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(
+      title = list(text = "<b>Distancia al origen</b>", font = list(size = 11, color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray80",
+      borderwidth = 1,
+      traceorder = "reversed",
+      x = 1,
+      y = 1
+    )
+  )
+
+
 
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
-# Crear tabla de tamaños de 
+
 tamaños <- as.data.frame(table(clusters))
 colnames(tamaños) <- c("Cluster", "N")
 tamaños <- tamaños %>% arrange(as.numeric(as.character(Cluster)))
 
-# Mostrar tabla con kableExtra
 tamaños %>%
   kbl(
     caption = "Distribución de Países por Clúster",
@@ -945,7 +1015,6 @@ paises_clusters <- data.frame(
 
 #///////////////////////////GRÁFICO CON CENTROIDES DE CLÚSTERES CORREGIDO////////////////////////
 
-# Preparar datos para gráfico con clusters
 paises_clusters <- data.frame(
   Pais = rownames(factores),
   Comp1 = factores[, 1],
@@ -953,7 +1022,7 @@ paises_clusters <- data.frame(
   Cluster = as.factor(clusters)
 )
 
-# Calcular centroides para cada cluster
+
 centroides <- paises_clusters %>%
   group_by(Cluster) %>%
   summarise(
@@ -963,7 +1032,7 @@ centroides <- paises_clusters %>%
 
 
 
-### DENDROGRAMA CORREGIDO
+### DENDROGRAMA 
 # Gráfico del dendrograma con clusters marcados
 plot(arbol, labels = FALSE, main = "Dendrograma (método de Ward)", xlab = "", sub = "")
 rect.hclust(arbol, k = k_optimo, border = 2:(k_optimo+1))
@@ -1111,8 +1180,6 @@ p
 
 
 
-
-# Crear la tabla manualmente con las dimensiones y variables
 dimensiones_tabla <- tribble(
   ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
   "Dimensión 1", "Nivel de desarrollo humano, acceso a servicios básicos y tecnología, salud y conectividad digital", 
@@ -1207,7 +1274,7 @@ clusters_tabla %>%
 
 NuevaBase <- read_csv("NuevaBase_clusters.csv", show_col_types = FALSE)
 if ("...1" %in% names(NuevaBase)) {
-  NuevaBase <- NuevaBase %>% rename(Pais = ...1) ##correcion de un error
+  NuevaBase <- NuevaBase %>% rename(Pais = ...1) 
   print("Columna '...1' renombrada a 'Pais'")
 }
 nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
