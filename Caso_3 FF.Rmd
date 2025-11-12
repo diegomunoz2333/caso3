@@ -1799,13 +1799,6 @@ p
 
 ### Dimensión Tecnológica y de Conectividad
 ```{r scatter-facetado-tecnologia, fig.height=10, fig.width=14, out.width="90%"}
-# Instalar ggtext si es necesario
-if (!require(ggtext)) install.packages("ggtext")
-library(ggtext)
-library(ggplot2)
-library(plotly)
-library(dplyr)
-library(ggrepel)
 
 datos_scatter_gg <- Base_2022 %>%
   asignar_continentes() %>%
@@ -2106,7 +2099,6 @@ plotly_plot <- ggplotly(p_gg, tooltip = "text") %>%
     )
   )
 
-# Ocultar la leyenda de tamaño automática de ggplotly
 plotly_plot <- plotly_plot %>%
   style(showlegend = FALSE, traces = c(2:6))  # Ocultar leyendas de tamaño
 
@@ -2522,7 +2514,6 @@ asignar_continentes <- function(data) {
                                 continentes_map[Pais], NA))
 }
 
-# ====== PREPARAR DATOS - ESTRUCTURA SIMPLE COMO TU EJEMPLO ======
 datos_riesgos <- Base_2022 %>%
   asignar_continentes() %>%
   filter(
@@ -2568,27 +2559,23 @@ datos_riesgos <- Base_2022 %>%
     )
   )
 
-# Verificar datos
-cat("Países procesados:", nrow(datos_riesgos), "\n")
-
-# ====== CREAR TREEMAP SIMPLE - SIN JERARQUÍA COMPLEJA ======
 fig_treemap <- plot_ly(
   data = datos_riesgos,
   type = "treemap",
   labels = ~Pais,
-  parents = ~"",  # TODOS los países bajo el mismo padre - como tu ejemplo exitoso
+  parents = ~"",
   values = ~Poblacion,
   branchvalues = "total",
   marker = list(
     colors = ~`Crecimiento poblacion`,
     colorscale = list(
-      c(0, "#ff1744"),    # Rojo para declive
-      c(0.3, "#ff6b00"),  # Naranja
-      c(0.5, "#fdd835"),  # Amarillo para transición  
-      c(0.7, "#76ff03"),  # Verde claro
-      c(1, "#00e676")     # Verde para alto crecimiento
+      c(0, "#ff1744"),    
+      c(0.3, "#ff6b00"),  
+      c(0.5, "#fdd835"),    
+      c(0.7, "#76ff03"),  
+      c(1, "#00e676")      crecimiento
     ),
-    cmin = -2,  # Rango más realista para crecimiento poblacional
+    cmin = -2,
     cmax = 4,
     showscale = TRUE,
     colorbar = list(
@@ -2620,7 +2607,6 @@ fig_treemap <- plot_ly(
   showlegend = FALSE
 )
 
-# ====== LAYOUT OPTIMIZADO ======
 fig_treemap <- fig_treemap %>%
   layout(
     title = list(
@@ -2633,11 +2619,7 @@ fig_treemap <- fig_treemap %>%
     plot_bgcolor = '#000000',
     paper_bgcolor = '#0a0e1a',
     font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
-    
-    # Márgenes optimizados para evitar invasión del toc
     margin = list(l = 10, r = 150, b = 100, t = 120),
-    
-    # Anotaciones explicativas
     annotations = list(
       list(
         x = 0.5, 
@@ -2667,7 +2649,6 @@ fig_treemap <- fig_treemap %>%
     )
   )
 
-# Mostrar el gráfico
 fig_treemap
 ```
 
