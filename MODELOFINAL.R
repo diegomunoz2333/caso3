@@ -43,7 +43,7 @@ Base_2022 <- Base %>%
   )
 
 Base_2022[Base_2022 == ".."] <- NA
-
+view(Base_2022)
 Base_2022 <- Base_2022 %>%
   mutate(across(-c(Pais, Codigo), as.numeric)) %>%
   drop_na() %>%
@@ -62,7 +62,7 @@ Base_2022 <- Base_2022 %>%
                       "Pre-demographic dividend", "Post-demographic dividend", 
                       "Early-demographic dividend", "Late-demographic dividend")) %>% 
   filter(Pais != "Luxembourg")
-
+View(Base_2022)
 
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
@@ -168,8 +168,14 @@ res.var <- get_pca_var(acp_prcomp)
 res.var$coord
 res.var$contrib        
 res.var$cos2           
+View(res.var$contrib[,1:4])
 
-as.data.frame(res.var$contrib[, 1:6])  %>%
+res.ind <- get_pca_ind(res.pca)
+res.ind$coord          # Coordinates
+res.ind$contrib        # Contributions to the PCs
+res.ind$cos2           # Quality of representation 
+View(res.ind$contrib[,1:4])
+as.data.frame(res.var$contrib[, 1:4])  %>%
   knitr::kable(
     col.names = c("Dim 1", "Dim 2", "Dim 3", "Dim 4", "Dim 5", "Dim 6"),
     digits = 2,
@@ -1212,15 +1218,6 @@ dimensiones_tabla <- tribble(
   "Dimensión 4", "Presión demográfica y uso del suelo", 
   "Área.boscosa, Tierra.cultivable, Población", 
   "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
-  
-  "Dimensión 5", "Uso de tierra agrícola y remesas, agricultura y dependencia externa, crecimiento económico agrícola", 
-  "Tierra.cultivable, Remesas, Crecimiento.PIB", 
-  "China (Mucha, Poca, Poca); Fiji (Poca, Mucha, Mucha); Ghana (Media, Media, Media)",
-  
-  "Dimensión 6", "Inversión en salud y economía, gasto en salud per cápita, atracción de inversión extranjera", 
-  "Gasto.salud, PIB_per, Inversión.Extranjera", 
-  "Australia (Mucha, Mucha, Mucha); Djibouti (Poca, Poca, Poca); Botswana (Media, Media, Media)",
-  
 )
 dimensiones_tabla %>%
   knitr::kable(
