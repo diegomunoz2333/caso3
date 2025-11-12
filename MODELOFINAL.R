@@ -887,22 +887,28 @@ ggplot() +
 #////////Gráfico de Dispersión de Individuos en el Espacio Factorial///////////
 ## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
 
-##rojo
+## rojo intenso
 paises_df <- as.data.frame(acp_prcomp$x[, 1:2]) 
 colnames(paises_df) <- c("Axis1", "Axis2")
 paises_df$Pais <- rownames(paises_df)
 
+# Calcular la distancia al origen
 paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
 
+# Gráfico rojo intenso y estético
 plot_ly(
   data = paises_df,
   x = ~Axis1,
   y = ~Axis2,
   color = ~Distancia,
-  colors = colorRampPalette(c("#A8E6CF", "#1A5490"))(100),
+  colors = colorRampPalette(c("#FF9999", "#B00020", "#8B0000"))(100),
   type = 'scatter',
   mode = 'markers',
-  marker = list(size = 10, opacity = 0.95, line = list(width = 1, color = "white")),
+  marker = list(
+    size = 11, 
+    opacity = 0.95, 
+    line = list(width = 1.5, color = "white")
+  ),
   text = ~paste0(
     "<b>", Pais, "</b><br>",
     "Comp. 1: ", round(Axis1, 3), "<br>",
@@ -913,47 +919,58 @@ plot_ly(
   name = "País"
 ) %>%
   
+  # Ejes de referencia en gris oscuro (para resaltar el rojo)
   add_segments(
     x = min(paises_df$Axis1), xend = max(paises_df$Axis1),
     y = 0, yend = 0,
-    line = list(color = "gray75", width = 2, dash = "dash"),
-    name = "Eje Horizontal",
-    showlegend = FALSE
+    line = list(color = "gray60", width = 2, dash = "dot"),
+    showlegend = FALSE,
+    mode = 'lines'
   ) %>%
   add_segments(
     x = 0, xend = 0,
     y = min(paises_df$Axis2), yend = max(paises_df$Axis2),
-    line = list(color = "gray75", width = 2, dash = "dash"),
-    name = "Eje Vertical",
-    showlegend = FALSE
+    line = list(color = "gray60", width = 2, dash = "dot"),
+    showlegend = FALSE,
+    mode = 'lines'
   ) %>%
+  
+  # Diseño general
   layout(
     title = list(
-      text = "Países en el Espacio Factorial del ACP<br><sub>Distribución de países según los dos primeros componentes principales</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "Países en el Espacio Factorial del ACP<br><sub>Escala de distancia en tonos rojos intensos</sub>",
+      font = list(size = 20, color = "#8B0000")
     ),
     xaxis = list(
       title = "Componente Principal 1",
       zeroline = FALSE,
-      gridcolor = "gray92"
+      gridcolor = "gray90",
+      titlefont = list(color = "#8B0000"),
+      tickfont = list(color = "#4A0000")
     ),
     yaxis = list(
       title = "Componente Principal 2",
       zeroline = FALSE,
-      gridcolor = "gray92"
+      gridcolor = "gray90",
+      titlefont = list(color = "#8B0000"),
+      tickfont = list(color = "#4A0000")
     ),
     plot_bgcolor = "white",
     paper_bgcolor = "white",
     legend = list(
-      title = list(text = "<b>Distancia al origen</b>", font = list(size = 11, color = "#2C5F8D")),
-      bgcolor = "rgba(255,255,255,0.9)",
-      bordercolor = "gray80",
-      borderwidth = 1,
+      title = list(
+        text = "<b>Distancia al origen</b>",
+        font = list(size = 13, color = "#8B0000")
+      ),
+      bgcolor = "rgba(255,255,255,0.95)",
+      bordercolor = "gray70",
+      borderwidth = 1.2,
       traceorder = "reversed",
       x = 1,
       y = 1
     )
   )
+
 
 
 
