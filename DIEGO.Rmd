@@ -2045,25 +2045,29 @@ p2
 ```
 
 ```{r caracterizacion dimensiones}
+library(tibble)
+library(knitr)
+library(kableExtra)
 
 dimensiones_tabla <- tribble(
   ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
-  "Dimensión 1", "Nivel de desarrollo humano y tecnológico ", 
-  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
-  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  "Dimensión 1", "Desarrollo humano y modernización tecnológica", 
+  "Esperanza.vida, Uso.internet, Acceso.electricidad, PIB.per.capita, Mortalidad.infantil", 
+  "Noruega (Alta, Alta, Alta, Alta, Baja); Chad (Baja, Baja, Baja, Baja, Alta); Colombia (Media, Media, Media, Media, Media)",
   
-  "Dimensión 2", "Industrialización y crecimiento demográfico", 
-  "Industria, Crecimiento.poblacion, Remesas", 
-  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  "Dimensión 2", "Ruralidad y dependencia de remesas vs industrialización", 
+  "Remesas, Tierra.cultivable, Industria, Crecimiento.poblacion, PIB.per.capita", 
+  "Honduras (Alta, Alta, Baja, Baja, Baja); Alemania (Baja, Baja, Alta, Alta, Alta); Ecuador (Media, Media, Media, Media, Media)",
   
-  "Dimensión 3", "Comercio internacional", 
-  "Importaciones, Exportaciones, Inversión.Extranjera", 
-  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  "Dimensión 3", "Apertura comercial e inversión extranjera", 
+  "Importaciones, Exportaciones, Inversion.extranjera, Area.boscosa, Poblacion", 
+  "Singapur (Alta, Alta, Alta, Baja, Baja); Bután (Baja, Baja, Baja, Alta, Baja); Costa Rica (Media, Media, Media, Media, Media)",
   
-  "Dimensión 4", "Uso del suelo y demografía ", 
-  "Área.boscosa, Tierra.cultivable, Población", 
-  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+  "Dimensión 4", "Uso del suelo: intensificación agrícola y presión poblacional", 
+  "Tierra.cultivable, Area.boscosa, Poblacion, Crecimiento.PIB", 
+  "India (Alta, Baja, Alta, Media); Finlandia (Baja, Alta, Baja, Baja); Argentina (Media, Media, Media, Media)"
 )
+
 dimensiones_tabla %>%
   knitr::kable(
     caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
@@ -2083,8 +2087,6 @@ dimensiones_tabla %>%
   column_spec(2, width = "22em") %>%
   column_spec(3, width = "16em") %>%
   column_spec(4, width = "18em")
-
-
 ```
 ## Segmentación: Clusterización
 
