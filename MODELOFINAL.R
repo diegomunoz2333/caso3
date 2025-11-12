@@ -195,6 +195,21 @@ as.data.frame(res.var$contrib[, 1:6])  %>%
   column_spec(1, bold = TRUE, background = "rgba(44, 95, 141, 0.1)")
 
 ########################### hasta aqui van las dimensiones
+
+
+#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
+#=== CLUSTERING: Cálculo del número óptimo de clústeres ===#
+
+distancia <- dist(factores)
+arbol <- hclust(distancia, method = "ward.D2")
+wss <- sapply(2:10, function(k) {
+  kmeans(factores, centers = k, nstart = 25)$tot.withinss
+})
+k_optimo <- which.max(diff(diff(wss))) + 2
+k_optimo <- max(2, min(k_optimo, 6))
+cat("=== CLUSTERING ===\n")
+cat("Número óptimo de clústeres según el método del codo:", k_optimo, "\n\n")
+
 #///////////////////////// Gráfico de silhouette /////////////////////////////
 fviz_nbclust(
   datos_analisis, 
@@ -218,25 +233,6 @@ fviz_nbclust(
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
-
-
-#////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
-# Calcular matriz de distancias sobre los factores (componentes principales)
-distancia <- dist(factores)
-
-arbol <- hclust(distancia, method = "ward.D2")
-wss <- sapply(2:10, function(k){
-  kmeans(factores, centers = k, nstart = 25)$tot.withinss
-})
-df_wss <- data.frame(k = 2:10, WSS = wss)
-diff_wss <- diff(wss)
-diff_diff <- diff(diff_wss)
-k_optimo <- which.max(diff_diff) + 2
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
 
 # Gráfico del método del codo con estilo profesional
 ggplot(df_wss, aes(x = k, y = WSS)) +
