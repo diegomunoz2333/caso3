@@ -773,19 +773,25 @@ p3 <- plot_ly() %>%
 p3
 
 # Círculo de correlaciones
-var_coords <- as.data.frame(acp_prcomp$rotation[, 1:2])
-var_coords$Variable <- rownames(var_coords)
-
-
-theta <- seq(0, 2*pi, length.out = 200)
-circle_df <- data.frame(
-  x = cos(theta),
-  y = sin(theta)
+var_data <- get_pca_var(res.pca)
+var_coords <- data.frame(
+  Variable = rownames(var_data$coord),
+  PC1 = var_data$coord[, 1],
+  PC2 = var_data$coord[, 2],
+  PC3 = var_data$coord[, 3],
+  PC4 = var_data$coord[, 4],
+  PC5 = var_data$coord[, 5],
+  PC6 = var_data$coord[, 6]
 )
 
-max_coord <- max(1, max(abs(var_coords[,1:2])))
-lims <- c(-max_coord * 1.05, max_coord * 1.05) 
+# Círculo de referencia
+theta <- seq(0, 2 * pi, length.out = 100)
+circle_df <- data.frame(x = cos(theta), y = sin(theta))
+lims <- c(-1.1, 1.1)
 
+# ============================================================================
+# GRÁFICO 1: Círculo PC1 vs PC2
+# ============================================================================
 
 ggplot() +
   geom_path(data = circle_df, aes(x = x, y = y), 
@@ -819,7 +825,83 @@ ggplot() +
     panel.grid.major = element_line(color = "gray92", size = 0.3),
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
-  )  #agregar los otros
+  )
+
+# ============================================================================
+# GRÁFICO 2: Círculo PC3 vs PC4
+# ============================================================================
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = var_coords,
+               aes(x = 0, y = 0, xend = PC3, yend = PC4),
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = var_coords, aes(x = PC3, y = PC4), 
+             color = "#8E44AD", size = 3) +
+  geom_text_repel(data = var_coords, aes(x = PC3, y = PC4, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims, ylim = lims) +
+  labs(
+    title = "Círculo de Correlaciones de Variables en el Plano Factorial",
+    x = "Componente Principal 3",
+    y = "Componente Principal 4",
+    subtitle = "Vectores indican la correlación de cada variable con los componentes 3 y 4"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
+# ============================================================================
+# GRÁFICO 3: Círculo PC5 vs PC6
+# ============================================================================
+
+ggplot() +
+  geom_path(data = circle_df, aes(x = x, y = y), 
+            color = "gray60", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "gray85", size = 0.4) +
+  geom_vline(xintercept = 0, color = "gray85", size = 0.4) +
+  geom_segment(data = var_coords,
+               aes(x = 0, y = 0, xend = PC5, yend = PC6),
+               color = "#2C5F8D", alpha = 0.85,
+               arrow = grid::arrow(length = unit(0.20, "cm"), type = "closed"),
+               size = 0.9) +
+  geom_point(data = var_coords, aes(x = PC5, y = PC6), 
+             color = "#8E44AD", size = 3) +
+  geom_text_repel(data = var_coords, aes(x = PC5, y = PC6, label = Variable),
+                  size = 3.8, max.overlaps = 30, segment.alpha = 0.5,
+                  fontface = "bold", color = "gray20") +
+  coord_equal(xlim = lims, ylim = lims) +
+  labs(
+    title = "Círculo de Correlaciones de Variables en el Plano Factorial",
+    x = "Componente Principal 5",
+    y = "Componente Principal 6",
+    subtitle = "Vectores indican la correlación de cada variable con los componentes 5 y 6"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
 
 
 ## por pares de componenete 
