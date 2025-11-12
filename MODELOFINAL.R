@@ -14,12 +14,7 @@ library(leaflet)
 library(rnaturalearth)
 library(RColorBrewer)  
 library(ellipse)
-library(tidyverse)
-library(factoextra)
-library(kableExtra)
-library(ggrepel)
-library(ggforce)
-library(plotly)
+
 
 # Cargar base
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
@@ -83,7 +78,7 @@ cat("Variables:", ncol(datos_analisis), "\n\n")
 # -----------------------------------------------------------
 
 acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
-factores <- acp_prcomp$x[, 1:n_componentes]
+
 
 # Varianza explicada
 varianza <- acp_prcomp$sdev^2
@@ -92,6 +87,7 @@ varianza_acum <- cumsum(varianza_prop) * 100
 
 # Número de componentes que explican al menos el 70 %
 n_componentes <- which(varianza_acum >= 70)[1]
+factores <- acp_prcomp$x[, 1:n_componentes]
 cat("Número de componentes necesarios para explicar el 70% de la varianza:", n_componentes, "\n")
 
 # Tabla resumen
@@ -126,22 +122,39 @@ varianza_df %>%
     footnote_as_chunk = TRUE
   )
 ##############################grafica varianza acumulada
+
 ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
   geom_col(fill = "#2C5F8D", alpha = 0.9) +
+  
+  
+  geom_text(aes(label = round(Varianza, 1)), 
+            vjust = -0.5, 
+            color = "gray20",  
+            fontface = "bold", 
+            size = 3.5) +
+  
   geom_line(aes(y = VarianzaAcum, group = 1), color = "#8E44AD", linewidth = 1.4) +
   geom_point(aes(y = VarianzaAcum), color = "#8E44AD", size = 3.5) +
-  geom_hline(yintercept = 70, linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  
+  geom_hline(yintercept = varianza_df$VarianzaAcum[6], linetype = "dashed", color = "#27AE60", linewidth = 1.1) +
+  
   geom_vline(xintercept = 6, linetype = "dotted", color = "#5DADE2", linewidth = 1.1) +
   annotate("text", x = 6.3, y = max(varianza_df$Varianza) * 0.9,
            label = "6 componentes", color = "#5DADE2", angle = 90, hjust = 0,
            fontface = "bold", size = 3.8) +
-  annotate("text", x = 1.8, y = 73,
-           label = "70% varianza acumulada", color = "#27AE60", hjust = 0,
+  
+  annotate("text", x = 1.8, y = varianza_df$VarianzaAcum[6] + 3,
+           label = paste0(round(varianza_df$VarianzaAcum[6], 2), "% varianza acumulada"), 
+           color = "#27AE60", hjust = 0,
            fontface = "bold", size = 3.8) +
-  scale_x_continuous(breaks = 1:length(acp_prcomp$eig)) +
+  
+  scale_x_continuous(breaks = 1:length(varianza_df$Componente)) +
+  
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  
   labs(
     title = "Gráfico de Sedimentación: Varianza Explicada por Componente Principal",
-    subtitle = "Selección de componentes mediante criterio de varianza acumulada ≥70%",
+    subtitle = paste0("Selección de componentes mediante criterio de varianza acumulada ≥", round(varianza_df$VarianzaAcum[6], 2), "%"),
     x = "Componentes Principales",
     y = "% de Varianza Explicada"
   ) +
@@ -158,44 +171,32 @@ ggplot(varianza_df, aes(x = as.numeric(Componente), y = Varianza)) +
     plot.background = element_rect(fill = "white")
   )
 
-
-#/////////////Gráfico de varianza explicada////////////////////////////////////
-
-fviz_eig(acp_prcomp,
-         addlabels = TRUE,
-         ylim = c(0, max(get_eigenvalue(acp_prcomp)[, 2]) + 5),
-         choice = "variance") +
-  labs(
-    title = "Varianza Explicada por Componente Principal",
-    subtitle = "Autovalores del análisis de componentes principales",
-    x = "Componentes Principales",
-    y = "Porcentaje de Varianza Explicada (%)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
-  ) +
-  scale_fill_manual(values = "#2C5F8D") +
-  scale_color_manual(values = "#2C5F8D")
 eig.val <- get_eigenvalue(acp_prcomp)
 eig.val 
 res.var <- get_pca_var(acp_prcomp)
 res.var$coord
 res.var$contrib        
 res.var$cos2           
-View(res.var$contrib[,1:6]) ## tabla porfavor
+View(res.var$contrib[,1:6]) 
 
+as.data.frame(res.var$contrib[, 1:6])  %>%
+  knitr::kable(
+    col.names = c("Dim 1", "Dim 2", "Dim 3", "Dim 4", "Dim 5", "Dim 6"),
+    digits = 2,
+    align = "c",
+    format = "html"
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, background = "rgba(44, 95, 141, 0.1)")
 
 ########################### hasta aqui van las dimensiones
 #///////////////////////// Gráfico de silhouette /////////////////////////////
-
 fviz_nbclust(
   datos_analisis, 
   FUN = kmeans, 
@@ -220,40 +221,78 @@ fviz_nbclust(
   )
 
 
+#O si lo quieres mostrando el valor de K óptimo
+
+sil_vals <- data.frame()
+for (k in 2:10) {
+  km <- kmeans(datos_analisis, centers = k, nstart = 25)
+  sil <- silhouette(km$cluster, dist(datos_analisis))
+  sil_vals <- rbind(sil_vals, data.frame(k = k, sil = mean(sil[, 3])))
+}
+k_opt <- sil_vals$k[which.max(sil_vals$sil)]
+val_opt <- round(max(sil_vals$sil), 4)
+
+fviz_nbclust(datos_analisis, FUN = kmeans, method = "silhouette") +
+  
+  annotate("point", x = k_opt, y = val_opt,
+           size = 6, color = "#0E47A1", shape = 21, stroke = 2.5, fill = "white") +
+  
+  annotate("label", x = k_opt, y = val_opt + 0.05,
+           label = paste0("Óptimo: ", val_opt),
+           color = "white", fill = "#0E47A1", fontface = "bold", size = 4.2,
+           label.padding = unit(0.4, "lines"), label.r = unit(0.3, "lines")) +
+  
+  labs(
+    title = "Número Óptimo de Clústeres según Silhouette",
+    subtitle = "Método de la silueta aplicado sobre k-means",
+    x = "Número de Clústeres (k)",
+    y = "Ancho promedio de la silueta"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
+    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
+    axis.text = element_text(size = 10, color = "gray30"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", size = 0.3),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
+
 #////////////////////// CLUSTERING SOBRE LOS FACTORES //////////////////////////
+# Calcular matriz de distancias sobre los factores (componentes principales)
 distancia <- dist(factores)
+
+# Realizar clustering jerárquico con enlace de Ward
 arbol <- hclust(distancia, method = "ward.D2")
 
+# Calcular WSS (Within-Cluster Sum of Squares) para k = 2 a 10
 wss <- sapply(2:10, function(k){
   kmeans(factores, centers = k, nstart = 25)$tot.withinss
 })
 
+# Crear dataframe con los valores de WSS
 df_wss <- data.frame(k = 2:10, WSS = wss)
 
-k_optimo <- which.min(diff(wss)) + 1  
-if (k_optimo > 6) k_optimo <- 5
-if (k_optimo < 2) k_optimo <- 2
-
-cat("=== CLUSTERING ===\n")
-cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n") 
-
-# Gráfico del método del codo con estilo profesional
-df_wss <- data.frame(
-  k = 2:10,
-  WSS = wss
-) ## <correccion wss ??
-
-# Detectar número óptimo
+# Calcular primera derivada: cambio en WSS
 diff_wss <- diff(wss)
+
+# Calcular segunda derivada: cambio en la tasa de cambio
 diff_diff <- diff(diff_wss)
-k_optimo <- which.max(diff_diff) + 2 ## Por que mas dos??
+
+# Encontrar donde la segunda derivada es máxima
+# Se suma 2 porque: diff_diff es de length n-2, necesitamos convertir índice a k real
+k_optimo <- which.max(diff_diff) + 2
+
+# Protecciones: Limitar k_optimo entre 2 y 6
 if (k_optimo > 6) k_optimo <- 5
 if (k_optimo < 2) k_optimo <- 2
 
 cat("=== CLUSTERING ===\n")
 cat("Número óptimo de clusters según el método del codo:", k_optimo, "\n\n")
 
-
+# Gráfico del método del codo con estilo profesional
 ggplot(df_wss, aes(x = k, y = WSS)) +
   geom_line(color = "#2C5F8D", linewidth = 1.1) +
   geom_point(size = 3, color = "#2C5F8D") +
@@ -279,7 +318,6 @@ ggplot(df_wss, aes(x = k, y = WSS)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white")
   )
-
 # ASIGNAR CLUSTERS
 clusters <- cutree(arbol, k = k_optimo)
 
@@ -294,7 +332,6 @@ write.csv(NuevaBase, "NuevaBase_clusters.csv", row.names = TRUE)
 # Obtener datos de individuos
 ind_data <- get_pca_ind(acp_prcomp)
 
-# Crear dataframe con todos los datos
 ind_df <- data.frame(
   Pais = rownames(ind_data$coord),
   Dim1 = ind_data$coord[, 1],
@@ -790,22 +827,21 @@ p3 <- plot_ly() %>%
 
 p3
 
-# Obtener las coordenadas de las VARIABLES (no de los individuos)
+# Círculo de correlaciones
 var_coords <- as.data.frame(acp_prcomp$rotation[, 1:2])
 var_coords$Variable <- rownames(var_coords)
 
-# Crear el círculo
+
 theta <- seq(0, 2*pi, length.out = 200)
 circle_df <- data.frame(
   x = cos(theta),
   y = sin(theta)
 )
 
-# Calcular los límites del gráfico
 max_coord <- max(1, max(abs(var_coords[,1:2])))
 lims <- c(-max_coord * 1.05, max_coord * 1.05) 
 
-# Gráfico del círculo de correlaciones CORREGIDO
+
 ggplot() +
   geom_path(data = circle_df, aes(x = x, y = y), 
             color = "gray60", linetype = "dashed", size = 0.6) +
