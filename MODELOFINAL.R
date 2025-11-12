@@ -14,7 +14,8 @@ library(leaflet)
 library(rnaturalearth)
 library(RColorBrewer)  
 library(ellipse)
-
+rm(list = ls())
+graphics.off()
 
 Base <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE)
@@ -891,12 +892,19 @@ ggplot() +
 ## Gráfico de Dispersión de Individuos en el Espacio Factorial CORREGIDO
 
 
-paises_df <- as.data.frame(acp_prcomp$x[, 1:2]) 
-colnames(paises_df) <- c("Axis1", "Axis2")
-paises_df$Pais <- rownames(paises_df)
 
-paises_df$Distancia <- sqrt(paises_df$Axis1^2 + paises_df$Axis2^2)
+ind_data <- get_pca_ind(res.pca)
 
+paises_df <- data.frame(
+  Pais = rownames(ind_data$coord),
+  Axis1 = ind_data$coord[, 1],
+  Axis2 = ind_data$coord[, 2],
+  Axis3 = ind_data$coord[, 3],
+  Axis4 = ind_data$coord[, 4],
+  Axis5 = ind_data$coord[, 5],
+  Axis6 = ind_data$coord[, 6],
+  Distancia = sqrt(ind_data$coord[, 1]^2 + ind_data$coord[, 2]^2)
+)
 plot_ly(
   data = paises_df,
   x = ~Axis1,
@@ -960,6 +968,161 @@ plot_ly(
 
 
 
+# ============================================================================
+# GRÁFICO 1: Componente 1 vs 2
+# ============================================================================
+
+plot_ly(
+  data = paises_df,
+  x = ~Axis1,
+  y = ~Axis2,
+  color = ~Distancia,
+  colors = colorRampPalette(c("#A8E6CF", "#1A5490"))(100),
+  type = 'scatter',
+  mode = 'markers',
+  marker = list(size = 10, opacity = 0.95, line = list(width = 1, color = "white")),
+  text = ~paste0(
+    "<b>", Pais, "</b><br>",
+    "Comp. 1: ", round(Axis1, 3), "<br>",
+    "Comp. 2: ", round(Axis2, 3), "<br>",
+    "Distancia: ", round(Distancia, 2)
+  ),
+  hovertemplate = "%{text}<extra></extra>",
+  name = "País"
+) %>%
+  add_segments(
+    x = min(paises_df$Axis1), xend = max(paises_df$Axis1),
+    y = 0, yend = 0,
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    showlegend = FALSE
+  ) %>%
+  add_segments(
+    x = 0, xend = 0,
+    y = min(paises_df$Axis2), yend = max(paises_df$Axis2),
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    showlegend = FALSE
+  ) %>%
+  layout(
+    title = list(
+      text = "Países en el Espacio Factorial del ACP<br><sub>Distribución según los componentes 1 y 2</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Componente Principal 1", zeroline = FALSE, gridcolor = "gray92"),
+    yaxis = list(title = "Componente Principal 2", zeroline = FALSE, gridcolor = "gray92"),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(
+      title = list(text = "<b>Distancia al origen</b>", font = list(size = 11, color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray80",
+      borderwidth = 1,
+      x = 1, y = 1
+    )
+  )
+
+# ============================================================================
+# GRÁFICO 2: Componente 3 vs 4
+# ============================================================================
+
+plot_ly(
+  data = paises_df,
+  x = ~Axis3,
+  y = ~Axis4,
+  color = ~Distancia,
+  colors = colorRampPalette(c("#A8E6CF", "#1A5490"))(100),
+  type = 'scatter',
+  mode = 'markers',
+  marker = list(size = 10, opacity = 0.95, line = list(width = 1, color = "white")),
+  text = ~paste0(
+    "<b>", Pais, "</b><br>",
+    "Comp. 3: ", round(Axis3, 3), "<br>",
+    "Comp. 4: ", round(Axis4, 3), "<br>",
+    "Distancia: ", round(Distancia, 2)
+  ),
+  hovertemplate = "%{text}<extra></extra>",
+  name = "País"
+) %>%
+  add_segments(
+    x = min(paises_df$Axis3), xend = max(paises_df$Axis3),
+    y = 0, yend = 0,
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    showlegend = FALSE
+  ) %>%
+  add_segments(
+    x = 0, xend = 0,
+    y = min(paises_df$Axis4), yend = max(paises_df$Axis4),
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    showlegend = FALSE
+  ) %>%
+  layout(
+    title = list(
+      text = "Países en el Espacio Factorial del ACP<br><sub>Distribución según los componentes 3 y 4</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Componente Principal 3", zeroline = FALSE, gridcolor = "gray92"),
+    yaxis = list(title = "Componente Principal 4", zeroline = FALSE, gridcolor = "gray92"),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(
+      title = list(text = "<b>Distancia al origen</b>", font = list(size = 11, color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray80",
+      borderwidth = 1,
+      x = 1, y = 1
+    )
+  )
+
+# ============================================================================
+# GRÁFICO 3: Componente 5 vs 6
+# ============================================================================
+
+plot_ly(
+  data = paises_df,
+  x = ~Axis5,
+  y = ~Axis6,
+  color = ~Distancia,
+  colors = colorRampPalette(c("#A8E6CF", "#1A5490"))(100),
+  type = 'scatter',
+  mode = 'markers',
+  marker = list(size = 10, opacity = 0.95, line = list(width = 1, color = "white")),
+  text = ~paste0(
+    "<b>", Pais, "</b><br>",
+    "Comp. 5: ", round(Axis5, 3), "<br>",
+    "Comp. 6: ", round(Axis6, 3), "<br>",
+    "Distancia: ", round(Distancia, 2)
+  ),
+  hovertemplate = "%{text}<extra></extra>",
+  name = "País"
+) %>%
+  add_segments(
+    x = min(paises_df$Axis5), xend = max(paises_df$Axis5),
+    y = 0, yend = 0,
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    showlegend = FALSE
+  ) %>%
+  add_segments(
+    x = 0, xend = 0,
+    y = min(paises_df$Axis6), yend = max(paises_df$Axis6),
+    line = list(color = "gray75", width = 2, dash = "dash"),
+    showlegend = FALSE
+  ) %>%
+  layout(
+    title = list(
+      text = "Países en el Espacio Factorial del ACP<br><sub>Distribución según los componentes 5 y 6</sub>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Componente Principal 5", zeroline = FALSE, gridcolor = "gray92"),
+    yaxis = list(title = "Componente Principal 6", zeroline = FALSE, gridcolor = "gray92"),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    legend = list(
+      title = list(text = "<b>Distancia al origen</b>", font = list(size = 11, color = "#2C5F8D")),
+      bgcolor = "rgba(255,255,255,0.9)",
+      bordercolor = "gray80",
+      borderwidth = 1,
+      x = 1, y = 1
+    )
+  )
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
 
 tamaños <- as.data.frame(table(clusters))
