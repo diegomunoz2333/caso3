@@ -2077,6 +2077,9 @@ Las cinco dimensiones temáticas—económica, de salud, tecnológica, ambiental
 
 ## Explorador Interactivo de Indicadores
 
+Con el propósito de facilitar el análisis exploratorio de cada una de las 17 variables de desarrollo de forma individual, se ha desarrollado un explorador interactivo que permite examinar dinámicamente la distribución, dispersión y rankings de cada indicador. Esta herramienta opera sobre todo el dataset y proporciona tres niveles de información complementarios: (1) estadísticas globales que resumen la concentración y dispersión de cada variable (media, mediana, desviación estándar, percentiles), (2) ranking de los 10 países líderes en cada indicador, y (3) variabilidad porcentual respecto a la media, que cuantifica cuánto cada país se desvía del patrón global.
+
+El explorador funciona mediante un sistema de pestañas interactivas: selecciona cualquier variable haciendo click en sus botonespara visualizar simultáneamente las estadísticas agregadas y el top 10 de desempeño. Esta estructura permite identificar patrones preliminares de concentración, identificar outliers extremos, y reconocer diferenciaciones regionales antes de proceder al análisis multidimensional integrado. A continuación se presentan dos ejemplos ilustrativos que ejemplifican la heterogeneidad fundamental del desarrollo global.
 ```{r preparar-datos-unificados}
 
 variables_numericas <- names(Base_2022)[3:ncol(Base_2022)]
@@ -2299,9 +2302,16 @@ for (variable in variables_numericas) {
 }
 ```
 
+El análisis del conjunto de 17 indicadores revela una característica fundamental: la desigualdad internacional no es uniforme sino específica a cada dimensión de desarrollo. Mientras que el PIB per cápita muestra una concentración extrema (media $17,045.36 vs. mediana $6,705.15, indicando que el 50% de países está por debajo de apenas $6,705), la población exhibe un patrón radicalmente distinto de concentración geográfica en gigantes asiáticos (media 49.6 millones vs. mediana 10.4 millones).
+Esta variabilidad específica a cada variable es precisamente lo que genera la complejidad multidimensional del desarrollo: países pueden sobresalir en algunas áreas (por ejemplo, esperanza de vida alta pero PIB bajo, como Costa Rica) mientras quedan rezagados en otras (por ejemplo, PIB alto pero vulnerabilidad ambiental, como algunos productores de petróleo). El explorador revela estas heterogeneidades al visualizar que en algunas variables existe concentración extrema (desv. est. > 3x la media), mientras que en otras la dispersión es más moderada, anticipando que el ACP identificará dimensiones donde la varianza es máxima y donde se concentra realmente la diferencia internacional.
+
 ## Análisis por Dimensiones
 
 ### Dimensión Económica
+
+A continuación se examinan siete indicadores económicos complementarios mediante un explorador interactivo que permite visualizar dinámicamente los top 15 países en cada métrica. Haz click en cualquier botón de variable (PIB per cápita, Crecimiento PIB, Inversión Extranjera, Remesas, Industria, Exportaciones, Importaciones) para cambiar el ranking y observar cómo la composición del liderazgo económico global cambia radicalmente según la dimensión analizada. Esta variabilidad específica a cada variable económica anticipa que el Análisis de Componentes Principales identificará factores latentes que sintetizan estas dimensiones de forma coherente, revelando la verdadera estructura de la diferenciación económica internacional.
+
+Al seleccionar diferentes indicadores mediante los botones de variable, se modifica el orden de los países en el ranking. Este comportamiento evidencia que la posición relativa de cada país varía según la métrica considerada, lo que refleja que el concepto de una “economía fuerte” puede adoptar significados distintos dependiendo del criterio de evaluación utilizado.
 
 ```{r economia-top15-interactivo-MEJORADO, fig.height=7, fig.width=30, out.width="100%"}
 
@@ -2470,7 +2480,13 @@ p %>%
   )
 ```
 
+El análisis de los distintos indicadores revela una marcada heterogeneidad entre países. Aquellos que lideran en una métrica no necesariamente mantienen posiciones similares en otras. Por ejemplo, Noruega encabeza el PIB per cápita, mientras que el crecimiento económico destaca en países distintos; Malta sobresale en inversión extranjera y Nepal en remesas.
+
+La composición del top 15 varía según el indicador: las economías europeas dominan en PIB per cápita, pero en crecimiento, inversión o remesas surgen países de otras regiones. Además, las magnitudes y dispersiones difieren entre variables, lo que sugiere que cada indicador refleja dimensiones particulares del desempeño económico nacional.
+
 ### Dimensión Salud y Bienestar
+
+La relación bidimensional entre esperanza de vida al nacer (EV) y mortalidad infantil (MI) constituye un indicador especialmente revelador del desempeño sanitario de las naciones. Mientras que la primera refleja la acumulación de mejoras en salud pública a lo largo de toda la vida, la segunda es particularmente sensible a la calidad inmediata de la atención materno-infantil, saneamiento e infraestructura básica (WHO, 2020). Ambas variables son utilizadas por organismos internacionales—OMS, Banco Mundial, PNUD—como proxies para evaluar el progreso en los Objetivos de Desarrollo Sostenible, particularmente el ODS 3 (Salud y Bienestar) (PNUD, 2023). El gráfico interactivo permite visualizar simultáneamente cómo se distribuyen 180+ países en estas dos dimensiones, coloreados por continente, revelando tanto agrupaciones coherentes como anomalías que anticipan estructuras latentes en el desarrollo.
 
 ```{r ev-mi-animado, fig.height=8, fig.width=28, out.width="100%"}
 # Asignar continentes
