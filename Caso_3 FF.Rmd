@@ -921,7 +921,7 @@ knitr::opts_chunk$set(
   fig.width = 10,
   fig.height = 6
 )
-
+library(ggtext)
 library(tidyverse)
 library(ggplot2)
 library(plotly)
@@ -944,7 +944,6 @@ library(leaflet)
 library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
-library(dplyr)
 library(htmltools)
 
 cyber_palette <- c(
@@ -1799,8 +1798,323 @@ p
 ```
 
 ### Dimensión Tecnológica y de Conectividad
+```{r scatter-facetado-tecnologia, fig.height=10, fig.width=14, out.width="90%"}
+# Instalar ggtext si es necesario
+if (!require(ggtext)) install.packages("ggtext")
+library(ggtext)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(ggrepel)
 
-```{r tecnologia-treemap, fig.height=9, fig.width=25, out.width="100%"}
+datos_scatter_gg <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(
+    !is.na(`Acceso electricidad`) & 
+    !is.na(`Uso internet`) & 
+    !is.na(`Suscripciones movil`) &
+    !is.na(Continente) &
+    Continente != "Otros"
+  ) %>%
+  mutate(
+    Electricidad = `Acceso electricidad`,
+    Internet = `Uso internet`,
+    Movil = `Suscripciones movil`,
+    Continente = factor(Continente, 
+      levels = c("Africa", "Americas", "Asia", "Europe", "Oceania"))
+  ) %>%
+  arrange(Continente)
+
+p_gg <- ggplot(datos_scatter_gg, aes(x = Electricidad, y = Internet)) +
+  geom_abline(
+    intercept = 0, 
+    slope = 1, 
+    linetype = "dashed",
+    color = "#00e5ff",
+    linewidth = 1,
+    alpha = 0.3
+  ) +
+  geom_point(
+    aes(
+      fill = Continente,
+      size = Movil,
+      text = paste0(
+        "<b style='font-size:14px;'>", Pais, "</b><br>",
+        "<span style='color:#a259ff; font-size:11px;'>", Continente, "</span><br><br>",
+        "<b style='color:#ffd600;'> INDICADORES</b><br>",
+        "├─ 🔌 Electricidad: <b style='color:#00e676;'>", 
+        round(Electricidad, 1), "%</b><br>",
+        "├─ 🌐 Internet: <b style='color:#00e5ff;'>", 
+        round(Internet, 1), "%</b><br>",
+        "└─ 📱 Móviles: <b style='color:#ffd600;'>", 
+        round(Movil, 1), "/100 hab.</b>"
+      )
+    ),
+    alpha = 0.78,
+    shape = 19,
+    color = NA
+  ) +
+  scale_size_continuous(
+    name = "Suscripciones Móviles\n(por 100 hab.)",
+    range = c(2, 10),
+    breaks = c(20, 50, 100, 150),
+    labels = c("20", "50", "100", "150+")
+  ) +
+  geom_text_repel(
+    aes(label = Pais),
+    size = 2.8,
+    color = "#e0e6ed",
+    max.overlaps = 20,
+    segment.color = "#00e5ff",
+    segment.alpha = 0.3,
+    segment.size = 0.3
+  ) +
+  facet_wrap(~Continente, ncol = 3) +
+  scale_fill_manual(
+    name = "Continente",
+    values = c(
+      "Africa" = "#ff1744",
+      "Americas" = "#00e676",
+      "Asia" = "#ffd600",
+      "Europe" = "#0084ff",
+      "Oceania" = "#a259ff"
+    )
+  ) +
+  scale_x_continuous(limits = c(0, 105), breaks = seq(0, 100, 20)) +
+  scale_y_continuous(limits = c(0, 105), breaks = seq(0, 100, 20)) +
+  labs(
+    title = "Infraestructura Digital: Análisis Multidimensional por Región",
+    subtitle = "Año 2022 | Tamaño de burbuja = Suscripciones Móviles (por 100 hab)",
+    x = "Acceso a Electricidad (% población)",
+    y = "Uso de Internet (% población)"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.background = element_rect(fill = "#000000", color = NA),
+    panel.background = element_rect(fill = "#0a0e1a", color = NA),
+    panel.grid.major = element_line(color = "#12161f", linewidth = 0.3),
+    panel.grid.minor = element_line(color = "#12161f", linewidth = 0.2),
+    
+    plot.title = element_text(
+      color = "#00e5ff",
+      face = "bold",
+      size = 16,
+      hjust = 0.5,
+      margin = margin(b = 8)
+    ),
+    plot.subtitle = element_text(
+      color = "#8b92a0",
+      size = 11,
+      hjust = 0.5,
+      margin = margin(b = 15),
+      lineheight = 1.2,
+      face = "italic"
+    ),
+    
+    axis.title = element_text(
+      color = "#e0e6ed",
+      face = "bold",
+      size = 11
+    ),
+    axis.text = element_text(color = "#8b92a0", size = 10),
+    axis.line = element_line(color = "#00e5ff", linewidth = 0.4),
+    
+    strip.text = element_text(
+      color = "#00e5ff",
+      face = "bold",
+      size = 12,
+      margin = margin(b = 8)
+    ),
+    strip.background = element_rect(
+      fill = "#1a1a3e",
+      color = "#00e5ff",
+      linewidth = 1.2
+    ),
+    
+    # LEYENDAS - AMBAS ACTIVAS
+    legend.background = element_rect(
+      fill = "#0a0e1a",
+      color = "#00e5ff",
+      linewidth = 1.2
+    ),
+    legend.text = element_text(color = "#e0e6ed", size = 11),
+    legend.title = element_text(color = "#00e5ff", face = "bold", size = 12),
+    legend.key = element_rect(fill = "#0a0e1a", color = NA),
+    legend.key.size = unit(0.8, "cm"),
+    legend.position = "right",
+    legend.box = "vertical",
+    legend.spacing.y = unit(0.5, "cm"),
+    legend.margin = margin(10, 10, 10, 10),
+    
+    plot.margin = margin(15, 15, 15, 15)
+  )
+
+# Convertir a plotly y AJUSTAR LEYENDAS SEPARADAMENTE
+plotly_plot <- ggplotly(p_gg, tooltip = "text") %>%
+  layout(
+    # Leyenda de continentes (arriba)
+    legend = list(
+      title = list(text = "<b>Continente</b>"),
+      font = list(color = "#e0e6ed", size = 11),
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1,
+      x = 1.05,
+      y = 0.8,
+      traceorder = "normal"
+    ),
+    # Leyenda de tamaño (abajo) - CREAR MANUALMENTE
+    annotations = list(
+      # Título de leyenda de tamaño
+      list(
+        x = 1.05,
+        y = 0.45,
+        xref = "paper",
+        yref = "paper",
+        text = "<b style='color:#00e5ff; font-size:12px;'>Suscripciones Móviles</b>",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle",
+        font = list(size = 12, color = "#00e5ff")
+      ),
+      # Círculo pequeño
+      list(
+        x = 1.02,
+        y = 0.4,
+        xref = "paper",
+        yref = "paper",
+        text = "●",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "middle",
+        font = list(size = 15, color = "#8b92a0")
+      ),
+      # Texto pequeño
+      list(
+        x = 1.08,
+        y = 0.4,
+        xref = "paper",
+        yref = "paper",
+        text = "20",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle",
+        font = list(size = 10, color = "#e0e6ed")
+      ),
+      # Círculo mediano
+      list(
+        x = 1.02,
+        y = 0.35,
+        xref = "paper",
+        yref = "paper",
+        text = "●",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "middle",
+        font = list(size = 20, color = "#8b92a0")
+      ),
+      # Texto mediano
+      list(
+        x = 1.08,
+        y = 0.35,
+        xref = "paper",
+        yref = "paper",
+        text = "50",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle",
+        font = list(size = 10, color = "#e0e6ed")
+      ),
+      # Círculo grande
+      list(
+        x = 1.02,
+        y = 0.3,
+        xref = "paper",
+        yref = "paper",
+        text = "●",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "middle",
+        font = list(size = 25, color = "#8b92a0")
+      ),
+      # Texto grande
+      list(
+        x = 1.08,
+        y = 0.3,
+        xref = "paper",
+        yref = "paper",
+        text = "100",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle",
+        font = list(size = 10, color = "#e0e6ed")
+      ),
+      # Círculo muy grande
+      list(
+        x = 1.02,
+        y = 0.25,
+        xref = "paper",
+        yref = "paper",
+        text = "●",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "middle",
+        font = list(size = 30, color = "#8b92a0")
+      ),
+      # Texto muy grande
+      list(
+        x = 1.08,
+        y = 0.25,
+        xref = "paper",
+        yref = "paper",
+        text = "150+",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle",
+        font = list(size = 10, color = "#e0e6ed")
+      ),
+      # Nota explicativa
+      list(
+        x = 1.05,
+        y = 0.18,
+        xref = "paper",
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:10px;'>(por 100 habitantes)</span>",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "middle"
+      )
+    ),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    font = list(family = "Arial", color = "#e0e6ed"),
+    margin = list(l = 50, r = 200, b = 50, t = 100)
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "infraestructura_digital_final",
+      width = 1200,
+      height = 800
+    )
+  )
+
+# Ocultar la leyenda de tamaño automática de ggplotly
+plotly_plot <- plotly_plot %>%
+  style(showlegend = FALSE, traces = c(2:6))  # Ocultar leyendas de tamaño
+
+plotly_plot
+```
+
+### Dimension ambiental y de recursos
+```{r ambiental-scatter, fig.height=8, fig.width=25, out.width="100%"}
 # Asignar continentes
 asignar_continentes <- function(data) {
   continentes_map <- c(
@@ -1882,92 +2196,420 @@ asignar_continentes <- function(data) {
                                 continentes_map[Pais], NA))
 }
 
-# Preparar datos CON VERIFICACIÓN DE DATOS
-cat("Verificando datos disponibles...\n")
-cat("Total de países en Base_2022:", nrow(Base_2022), "\n")
-cat("Países con datos completos de tecnología:\n")
-
-datos_tree <- Base_2022 %>%
+# Preparar datos con tamaño optimizado
+datos_ambiental <- Base_2022 %>%
   asignar_continentes() %>%
   filter(
-    !is.na(`Acceso electricidad`) & 
-    !is.na(`Uso internet`) & 
-    !is.na(`Suscripciones movil`) &
+    !is.na(`Area boscosa`) & 
+    !is.na(`Tierra cultivable`) & 
     !is.na(Poblacion) &
-    !is.na(Continente) &
-    Poblacion > 0  # Asegurar población positiva
+    !is.na(Continente)
   ) %>%
   select(
-    Pais, Continente, 
-    `Acceso electricidad`, 
-    `Uso internet`, 
-    `Suscripciones movil`, 
+    Pais, Continente,
+    `Area boscosa`,
+    `Tierra cultivable`,
     Poblacion
   ) %>%
-  arrange(desc(Poblacion)) %>%
-  # Limitar a los 60 países más poblados para mejor visualización
-  slice_head(n = 60) %>%
   mutate(
-    Poblacion_millones = Poblacion / 1e6,
-    tooltip = paste0(
+    # Tamaño optimizado - usar raíz cúbica para mejor distribución
+    Tamaño = Poblacion^(1/3),
+    # Escalar el tamaño para un rango más manejable
+    Tamaño_escalado = 10 + (Tamaño - min(Tamaño)) / (max(Tamaño) - min(Tamaño)) * 30,
+    Hover = paste0(
       "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
       "<span style='color:#a259ff; font-size:12px;'>", Continente, "</span><br><br>",
-      "<b style='color:#e0e6ed; font-size:12px;'>INDICADORES TECNOLÓGICOS:</b><br>",
-      "├─ Acceso Electricidad: <b style='color:#ffd600;'>", 
-      round(`Acceso electricidad`, 1), "%</b><br>",
-      "├─ Uso de Internet: <b style='color:#00e676;'>", 
-      round(`Uso internet`, 1), "%</b><br>",
-      "├─ Suscripciones Móvil: <b style='color:#00e5ff;'>", 
-      round(`Suscripciones movil`, 1), "/100 hab.</b><br>",
+      "<b style='color:#e0e6ed; font-size:12px;'>USO DE TIERRA:</b><br>",
+      "├─ Área Boscosa: <b style='color:#00e676;'>", 
+      round(`Area boscosa`, 1), "%</b><br>",
+      "├─ Tierra Cultivable: <b style='color:#ffd600;'>", 
+      round(`Tierra cultivable`, 1), "%</b><br>",
+      "├─ Balance: <b style='color:#00e5ff;'>", 
+      round(`Area boscosa` + `Tierra cultivable`, 1), "% (bosque + cultivo)</b><br>",
       "└─ Población: <b style='color:#ff1744;'>", 
-      format(round(Poblacion_millones, 1), big.mark = ",", decimal.mark = ".", trim = TRUE), " M</b>"
+      format(round(Poblacion/1e6, 1), big.mark = ",", trim = TRUE), " M</b>"
     )
   )
 
-# Verificar que tenemos datos
-cat("Países después del filtrado:", nrow(datos_tree), "\n")
-if (nrow(datos_tree) == 0) {
-  stop("No hay datos suficientes para crear el treemap. Verifica las columnas 'Acceso electricidad', 'Uso internet', 'Suscripciones movil', 'Poblacion'.")
+# Colores por continente
+color_map <- c(
+  "Africa" = "#ff1744",
+  "Americas" = "#00e676",
+  "Asia" = "#ffd600",
+  "Europe" = "#0084ff",
+  "Oceania" = "#a259ff"
+)
+
+# Crear scatter plot con burbujas optimizadas
+p <- plot_ly() %>%
+  add_trace(
+    data = datos_ambiental,
+    x = ~`Area boscosa`,
+    y = ~`Tierra cultivable`,
+    size = ~Tamaño_escalado,  # Usar tamaño escalado
+    color = ~Continente,
+    colors = color_map,
+    type = "scatter",
+    mode = "markers",
+    customdata = ~Hover,
+    hovertemplate = "%{customdata}<extra></extra>",
+    marker = list(
+      sizeref = 0.1,  # Ajuste manual para reducir tamaño general
+      sizemin = 3,    # Tamaño mínimo reducido
+      opacity = 0.7,  # Opacidad ajustada
+      line = list(
+        color = "#ffffff", 
+        width = 1.5   # Borde más definido
+      )
+    ),
+    showlegend = TRUE
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:24px;'>Sostenibilidad Ambiental: Uso de Tierra</b><br>
+               <span style='color:#8b92a0; font-size:14px;'>Año 2022 | Tamaño de burbuja = Población | Balance entre conservación y agricultura</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
+    ),
+    
+    xaxis = list(
+      title = "<b style='font-size:16px;'>Área Boscosa (% de tierra)</b>",
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      zeroline = FALSE,
+      tickfont = list(color = '#8b92a0', size = 13),
+      titlefont = list(color = '#e0e6ed', size = 16),
+      range = c(0, 100)  # Rango empezando en 0
+    ),
+    
+    yaxis = list(
+      title = "<b style='font-size:16px;'>Tierra Cultivable (% de tierra)</b>",
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      zeroline = FALSE,
+      tickfont = list(color = '#8b92a0', size = 13),
+      titlefont = list(color = '#e0e6ed', size = 16),
+      range = c(0, 70)   # Rango empezando en 0
+    ),
+    
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 13),
+    
+    legend = list(
+      title = list(text = "<b style='font-size:14px;'>Continente</b>", font = list(size = 14, color = "#00e5ff")),
+      bgcolor = 'rgba(10,14,26,0.95)',
+      bordercolor = '#00e5ff',
+      borderwidth = 1.5,
+      x = 0.02,
+      y = 0.98,
+      font = list(size = 12, color = "#e0e6ed")
+    ),
+    
+    # Márgenes optimizados
+    margin = list(l = 100, r = 50, b = 120, t = 120),
+    hovermode = 'closest',
+    
+    # ZONAS DE INTERPRETACIÓN CON MEJOR VISIBILIDAD
+    shapes = list(
+      # Zona CONSERVACIÓN
+      list(
+        type = "rect",
+        x0 = 60, x1 = 100,
+        y0 = 0, y1 = 20,
+        xref = "x", yref = "y",
+        fillcolor = "rgba(0, 230, 118, 0.1)",
+        line = list(color = "rgba(0, 230, 118, 0.6)", width = 2, dash = "dot"),
+        layer = "below"
+      ),
+      
+      # Zona AGRÍCOLA
+      list(
+        type = "rect",
+        x0 = 0, x1 = 30,
+        y0 = 40, y1 = 70,
+        xref = "x", yref = "y",
+        fillcolor = "rgba(255, 214, 0, 0.1)",
+        line = list(color = "rgba(255, 214, 0, 0.6)", width = 2, dash = "dot"),
+        layer = "below"
+      ),
+      
+      # Zona BALANCE
+      list(
+        type = "rect",
+        x0 = 30, x1 = 60,
+        y0 = 20, y1 = 40,
+        xref = "x", yref = "y",
+        fillcolor = "rgba(0, 132, 255, 0.1)",
+        line = list(color = "rgba(0, 132, 255, 0.6)", width = 2, dash = "dot"),
+        layer = "below"
+      ),
+      
+      # Zona CRÍTICA
+      list(
+        type = "rect",
+        x0 = 0, x1 = 30,
+        y0 = 0, y1 = 20,
+        xref = "x", yref = "y",
+        fillcolor = "rgba(255, 23, 68, 0.1)",
+        line = list(color = "rgba(255, 23, 68, 0.6)", width = 2, dash = "dot"),
+        layer = "below"
+      )
+    ),
+    
+    annotations = list(
+      # Zona CONSERVACIÓN
+      list(
+        x = 82, y = 10,
+        text = "<b style='color:#00e676; font-size:12px;'>🌲 CONSERVACIÓN</b>",
+        showarrow = FALSE,
+        bgcolor = "rgba(0, 230, 118, 0.2)",
+        bordercolor = "#00e676",
+        borderwidth = 1.5,
+        borderpad = 6,
+        font = list(size = 11)
+      ),
+      
+      # Zona AGRÍCOLA
+      list(
+        x = 25, y = 65,
+        text = "<b style='color:#ffd600; font-size:12px;'>🌾 AGRÍCOLA</b>",
+        showarrow = FALSE,
+        bgcolor = "rgba(255, 214, 0, 0.2)",
+        bordercolor = "#ffd600",
+        borderwidth = 1.5,
+        borderpad = 6,
+        font = list(size = 11)
+      ),
+      
+      # Zona BALANCE
+      list(
+        x = 60, y = 40,
+        text = "<b style='color:#0084ff; font-size:12px;'>⚖️ BALANCE</b>",
+        showarrow = FALSE,
+        bgcolor = "rgba(0, 132, 255, 0.2)",
+        bordercolor = "#0084ff",
+        borderwidth = 1.5,
+        borderpad = 6,
+        font = list(size = 11)
+      ),
+      
+      # Zona CRÍTICA
+      list(
+        x = 15, y = 20,
+        text = "<b style='color:#ff1744; font-size:12px;'>⚠️ CRÍTICA</b>",
+        showarrow = FALSE,
+        bgcolor = "rgba(255, 23, 68, 0.2)",
+        bordercolor = "#ff1744",
+        borderwidth = 1.5,
+        borderpad = 6,
+        font = list(size = 10)
+      ),
+      
+      # Interpretación mejorada
+      list(
+        x = 0.5, y = -0.15,
+        xref = "paper", yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:12px;'><b>🌍 INTERPRETACIÓN:</b> Burbujas más grandes = mayor población. Verde = alta cobertura boscosa. Amarillo = alta agricultura. Equilibrio = desarrollo sostenible.</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "top",
+        font = list(size = 11, color = "#8b92a0")
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "sostenibilidad_ambiental_2022",
+      width = 1600,
+      height = 1000
+    )
+  )
+
+p
+
+```
+
+### Dimensión Demográfica
+
+```{r treemap-oportunidades-riesgos, fig.height=9, fig.width=25, out.width="100%"}
+
+asignar_continentes <- function(data) {
+  continentes_map <- c(
+    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
+    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
+    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
+    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
+    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
+    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
+    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
+    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
+    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
+    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
+    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
+    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
+    
+    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
+    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
+    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
+    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
+    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
+    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
+    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
+    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
+    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
+    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
+    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
+    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
+    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
+    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
+    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
+    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
+    "San Marino" = "Europe",
+    
+    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
+    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
+    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
+    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
+    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
+    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
+    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
+    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
+    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
+    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
+    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
+    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
+    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
+    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
+    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
+    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
+    
+    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
+    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
+    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
+    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
+    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
+    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
+    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
+    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
+    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
+    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
+    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
+    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
+    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
+    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
+    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
+    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
+    "Zimbabwe" = "Africa",
+    
+    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
+    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
+    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
+    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
+  )
+  
+  data %>%
+    mutate(Continente = ifelse(Pais %in% names(continentes_map),
+                                continentes_map[Pais], NA))
 }
 
-# Crear treemap CORREGIDO
-fig <- plot_ly(
-  data = datos_tree,
+# ====== PREPARAR DATOS - ESTRUCTURA SIMPLE COMO TU EJEMPLO ======
+datos_riesgos <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(
+    !is.na(`Crecimiento poblacion`) & 
+    !is.na(Poblacion) &
+    !is.na(Continente) &
+    Poblacion > 0
+  ) %>%
+  select(
+    Pais, Continente, 
+    Poblacion, 
+    `Crecimiento poblacion`,
+    `Mortalidad infantil`,
+    `Esperanza vida`,
+    PIB_per
+  ) %>%
+  arrange(desc(Poblacion)) %>%
+  slice_head(n = 60) %>%
+  mutate(
+    Poblacion_millones = Poblacion / 1e6,
+    # Clasificación simplificada
+    Clasificacion = case_when(
+      `Crecimiento poblacion` > 2 ~ "Dividendo Demográfico",
+      `Crecimiento poblacion` >= 0.5 & `Crecimiento poblacion` <= 2 ~ "Madurez Estable", 
+      `Crecimiento poblacion` < 0.5 ~ "Declive Poblacional",
+      TRUE ~ "Sin Clasificar"
+    ),
+    tooltip = paste0(
+      "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
+      "<span style='color:#a259ff; font-size:12px;'>", Continente, "</span><br><br>",
+      "<b style='color:#e0e6ed; font-size:12px;'>INDICADORES DEMOGRÁFICOS:</b><br>",
+      "├─ Población: <b style='color:#ffd600;'>", 
+      format(round(Poblacion_millones, 1), big.mark = ",", decimal.mark = ".", trim = TRUE), " M</b><br>",
+      "├─ Crecimiento: <b style='color:#00e676;'>", 
+      round(`Crecimiento poblacion`, 2), "%</b><br>",
+      "├─ Esperanza Vida: <b style='color:#00e5ff;'>", 
+      round(`Esperanza vida`, 1), " años</b><br>",
+      "├─ Mortalidad Infantil: <b style='color:#ff1744;'>", 
+      round(`Mortalidad infantil`, 1), "/1000</b><br>",
+      "└─ PIB per cápita: <b style='color:#a259ff;'>$", 
+      format(round(PIB_per), big.mark = ","), "</b><br>",
+      "<br><b>Clasificación:</b> <span style='color:#00e676;'>", Clasificacion, "</span>"
+    )
+  )
+
+# Verificar datos
+cat("Países procesados:", nrow(datos_riesgos), "\n")
+
+# ====== CREAR TREEMAP SIMPLE - SIN JERARQUÍA COMPLEJA ======
+fig_treemap <- plot_ly(
+  data = datos_riesgos,
   type = "treemap",
   labels = ~Pais,
-  parents = ~"",  # Todos los países son hijos del nodo raíz
+  parents = ~"",  # TODOS los países bajo el mismo padre - como tu ejemplo exitoso
   values = ~Poblacion,
   branchvalues = "total",
   marker = list(
-    colors = ~`Uso internet`,
+    colors = ~`Crecimiento poblacion`,
     colorscale = list(
-      c(0, "#ff1744"),    # Rojo para bajo uso
+      c(0, "#ff1744"),    # Rojo para declive
       c(0.3, "#ff6b00"),  # Naranja
-      c(0.6, "#ffd600"),  # Amarillo
-      c(0.8, "#00e676"),  # Verde
-      c(1, "#00e5ff")     # Cyan para alto uso
+      c(0.5, "#fdd835"),  # Amarillo para transición  
+      c(0.7, "#76ff03"),  # Verde claro
+      c(1, "#00e676")     # Verde para alto crecimiento
     ),
-    cmin = 0,
-    cmax = 100,
+    cmin = -2,  # Rango más realista para crecimiento poblacional
+    cmax = 4,
     showscale = TRUE,
     colorbar = list(
       title = list(
-        text = "<b>Uso de<br>Internet (%)</b>",
+        text = "<b>Crecimiento<br>Anual (%)</b>",
         font = list(size = 12, color = "#e0e6ed")
       ),
-      tickvals = c(0, 25, 50, 75, 100),
-      ticktext = c("0%", "25%", "50%", "75%", "100%"),
+      tickvals = c(-2, -1, 0, 1, 2, 3, 4),
+      ticktext = c("-2%", "-1%", "0%", "1%", "2%", "3%", "4%"),
       thickness = 20,
       len = 0.8,
-      x = 1.05,
+      x = 1.05,  # Posición ajustada
       y = 0.5,
       tickfont = list(size = 11, color = "#8b92a0")
     ),
-    line = list(color = "#0a0e1a", width = 2)
+    line = list(color = "#0a0e1a", width = 2),
+    opacity = 0.9
   ),
   textinfo = "label+value",
-  texttemplate = "<b>%{label}</b><br>%{value:.0f} hab.",
-  textposition = "middle center",
+  texttemplate = "<b>%{label}</b><br>%{value:.0f}M",
+  textposition = "middle center", 
   textfont = list(
     size = 14,
     color = "white",
@@ -1978,22 +2620,22 @@ fig <- plot_ly(
   showlegend = FALSE
 )
 
-# Layout MEJORADO
-fig <- fig %>%
+# ====== LAYOUT OPTIMIZADO ======
+fig_treemap <- fig_treemap %>%
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:24px;'>Conectividad Digital Global</b><br>
-               <span style='color:#8b92a0; font-size:14px;'>Año 2022 | Tamaño = Población | Color = Uso de Internet</span>",
+      text = "<b style='color:#00e5ff; font-size:24px;'>Oportunidades y Riesgos Demográficos Globales</b><br>
+             <span style='color:#8b92a0; font-size:14px;'>Top 60 países | Tamaño = Población | Color = Crecimiento Anual (2022)</span>",
       x = 0.5,
-      xanchor = 'center',
+      xanchor = 'center', 
       y = 0.95
     ),
     plot_bgcolor = '#000000',
     paper_bgcolor = '#0a0e1a',
     font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
     
-    # Márgenes optimizados
-    margin = list(l = 10, r = 200, b = 100, t = 120),
+    # Márgenes optimizados para evitar invasión del toc
+    margin = list(l = 10, r = 150, b = 100, t = 120),
     
     # Anotaciones explicativas
     annotations = list(
@@ -2002,24 +2644,13 @@ fig <- fig %>%
         y = -0.08,
         xref = "paper", 
         yref = "paper",
-        text = "<span style='color:#8b92a0; font-size:12px;'><b>📊 INTERPRETACIÓN:</b> Rectángulos grandes = poblaciones numerosas. Colores verde/cyan = alta conectividad digital. Rojo/naranja = brecha digital.</span>",
+        text = "<span style='color:#e0e6ed; font-size:12px;'><b>📊 LECTURA:</b> 
+               <span style='color:#00e676;'>Verde (alto crecimiento) = Oportunidades demográficas</span> | 
+               <span style='color:#ff1744;'>Rojo (bajo/negativo) = Riesgos de declive</span> | 
+               <span style='color:#fdd835;'>Amarillo = Transición estable</span></span>",
         showarrow = FALSE,
         xanchor = "center",
         align = "center"
-      ),
-      list(
-        x = 1.15,
-        y = 0.9,
-        xref = "paper",
-        yref = "paper",
-        text = "<span style='color:#00e5ff; font-size:13px;'><b>💡 INFORMACIÓN</b></span><br><span style='color:#8b92a0; font-size:11px;'>• Tamaño = Población<br>• Color = % Uso Internet<br>• Click para detalles<br>• Top 60 países</span>",
-        showarrow = FALSE,
-        xanchor = "left",
-        align = "left",
-        bgcolor = "rgba(10, 14, 26, 0.8)",
-        bordercolor = "#00e5ff",
-        borderwidth = 1,
-        borderpad = 10
       )
     )
   ) %>%
@@ -2029,15 +2660,15 @@ fig <- fig %>%
     displaylogo = FALSE,
     modeBarButtonsToRemove = list('lasso2d', 'select2d'),
     toImageButtonOptions = list(
-      format = "png",
-      filename = "conectividad_digital_global",
+      format = "png", 
+      filename = "oportunidades_riesgos_demograficos",
       width = 1600,
       height = 1000
     )
   )
 
 # Mostrar el gráfico
-fig
+fig_treemap
 ```
 
 ## Visualización Geoespacial
