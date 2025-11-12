@@ -1470,7 +1470,7 @@ fviz_eig(res.pca,
          ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
          choice = "variance") +
   labs(
-    title = "Varianza Explicada por Componente Principal",
+    title = "Varianza Explicada por Componente Principal",-
     subtitle = "Autovalores del análisis de componentes principales",
     x = "Componentes Principales",
     y = "Porcentaje de Varianza Explicada (%)"
@@ -1677,6 +1677,7 @@ tabla_pc6
 
 Una vez identificados los componentes principales y cuantificadas las contribuciones de cada variable, es fundamental realizar un análisis multivariado que permita interpretar simultáneamente las relaciones entre países y variables en el espacio reducido de componentes principales. Este análisis se fundamenta en visualizaciones bidimensionales que proyectan tanto países (individuos) como variables sobre los planos definidos por pares de componentes principales, revelando patrones de similitud, agrupamientos naturales y características diferenciadoras entre grupos de países (Jolliffe, 2002; Hastie et al., 2009).
 
+
 ```{r individuos DIM 1 Y DIM 2}
 ind_data <- get_pca_ind(res.pca)
 
@@ -1735,6 +1736,10 @@ p1 <- plot_ly(ind_df,
 p1
 ```
 
+Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11,66%, es algo esperable sabiendo que el país árabe tiene un gran comercio.
+Mientras que San Marino contribuye en la dimensión 2 con un 0%, contrariamente de su aporte en la dimensión 1 el cual es 2.86%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
+
+Al contrario podemos ver países como Niger el cual tiene un aporte en la dimensión 1 de -5,593% y en la dimensión 2 de -0,867%, lo cual nos da a pensar que este país tiene deficiencia en ambos factores (social/economico)
 ```{r individuos DIM 3 Y DIM 4}
 
 p2 <- plot_ly(ind_df,
@@ -1768,6 +1773,10 @@ p2 <- plot_ly(ind_df,
 
 p2
 ```
+
+Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 8,19% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable.
+Timor-leste tiene un aporte en la dimensión 4 de un 12,88% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa.
+Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 8,47% y en la 4 de 0,24%, lo cual refiere que es uno de los paises que menos exporta y más importa.
 
 
 ### Representación de Variables en el Plano de Componentes Principales
@@ -2035,8 +2044,48 @@ p2 <- plot_ly() %>%
 p2
 ```
 
+```{r caracterizacion dimensiones}
+
+dimensiones_tabla <- tribble(
+  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
+  "Dimensión 1", "Nivel de desarrollo humano y tecnológico ", 
+  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
+  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  
+  "Dimensión 2", "Industrialización y crecimiento demográfico", 
+  "Industria, Crecimiento.poblacion, Remesas", 
+  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  
+  "Dimensión 3", "Comercio internacional", 
+  "Importaciones, Exportaciones, Inversión.Extranjera", 
+  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  
+  "Dimensión 4", "Uso del suelo y demografía ", 
+  "Área.boscosa, Tierra.cultivable, Población", 
+  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+)
+dimensiones_tabla %>%
+  knitr::kable(
+    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
+    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
+    align = c("c", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "8em") %>%
+  column_spec(2, width = "22em") %>%
+  column_spec(3, width = "16em") %>%
+  column_spec(4, width = "18em")
 
 
+```
 ## Segmentación: Clusterización
 
 Sobre la base de los k componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
