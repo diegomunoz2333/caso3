@@ -1331,15 +1331,6 @@ factores <- acp_resultado$li
 
 ```
 
-El criterio de selección del número de componentes a retener se basó en el criterio de varianza acumulada $\geq 70\%$, identificando el número mínimo de componentes $k$ que satisface:
-
-$$
-\frac{\sum_{i=1}^{k} \lambda_i}{\sum_{j=1}^{p} \lambda_j} \geq 0.70
-$$
-
-Este umbral del $70\%$ representa un balance metodológicamente establecido entre dos objetivos contrapuestos: maximizar la compresión dimensional (retener información en pocas variables sintéticas) y minimizar la pérdida de información (descartar dimensiones relevantes) \cite{Kaiser1960, Hastie2009}.
-
-Un umbral más bajo (ej. $60\%$) introduciría pérdida excesiva de estructura; uno más alto (ej. $85\%$) reintroduciría la alta dimensionalidad que se busca evitar \cite{Jolliffe2002}.
 
 ```{r Tabla varianza}
 
@@ -1468,13 +1459,9 @@ En este análisis, el primer componente (**PC1**) capturó un **`r pc1_var`%** d
 
 El gráfico de sedimentación visualiza el concepto del "codo" (elbow) introducido por Kaiser (1960). La curva de los eigenvalores (representada como barras) exhibe un descenso pronunciado en los primeros componentes, indicando que capturan varianza sustancial. A partir de cierto componente, la pendiente se aplana significativamente, entrando en un régimen donde componentes posteriores explican proporciones cada vez menores de varianza residual (Hastie et al., 2009).
 
-```{r sedimentacion}
+```{r sedimentacion, message =FALSE}
 res.pca <- prcomp(datos_analisis, scale = TRUE)
-res.var <- get_pca_var(res.pca)
-res.pca$coord          # Coordinates
-res.var$contrib        # Contributions to the PCs
-res.var$cos2  
-View(res.var$contrib[,1:7])
+
 
 eig.val <- get_eigenvalue(res.pca)
 fviz_eig(res.pca,
@@ -1501,6 +1488,14 @@ fviz_eig(res.pca,
   scale_fill_manual(values = "#2C5F8D") +
   scale_color_manual(values = "#2C5F8D")
 ```
+
+```{r, include=FALSE}
+res.var <- get_pca_var(res.pca)
+res.pca$coord          
+res.var$contrib        
+res.var$cos2  
+```
+
 
 El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). En este análisis, la línea verde punteada marca el umbral del 70%, y la intersección de la línea morada acumulada con este umbral define el número final de componentes 6 que será utilizado para la clusterización posterior.
 
@@ -1732,6 +1727,10 @@ p1 <- plot_ly(ind_df,
 
 p1
 ```
+Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11,66%, es algo esperable sabiendo que el país árabe tiene un gran comercio.
+Mientras que San Marino contribuye en la dimensión 2 con un 0%, contrariamente de su aporte en la dimensión 1 el cual es 2.86%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
+
+Al contrario podemos ver países como Niger el cual tiene un aporte en la dimensión 1 de -5,593% y en la dimensión 2 de -0,867%, lo cual nos da a pensar que este país tiene deficiencia en ambos factores (social/economico)
 
 ```{r individuos DIM 3 Y DIM 4}
 
@@ -1766,6 +1765,9 @@ p2 <- plot_ly(ind_df,
 
 p2
 ```
+Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 8,19% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable.
+Timor-leste tiene un aporte en la dimensión 4 de un 12,88% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa.
+Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 8,47% y en la 4 de 0,24%, lo cual refiere que es uno de los paises que menos exporta y más importa.
 
 ### Representación de Variables en el Plano de Componentes Principales
 
@@ -1970,23 +1972,9 @@ p1 <- plot_ly() %>%
 p1
 
 ```
-El país Senegal y Burkina Faso van en la misma dirección que la mortalidad infantil.
-El país egipto va en la misma dirección que la variable crecimiento poblacional.
-El país Botswana va en la misma dirección que la variable población
-El país Argelia e Iraq van en la misma dirección que la variable Crecimiento PIB.
-El país federeción Rusa y Australia van en la misma dirección de la variable Suscripciones móvil.
-El país Vietnam va en la misma dirección que la variable PIB_per.
-No hay país que vaya en la misma dirección que la vairable uso de internet.
-El país Korea, Rep y New Zealand va en la misma dirección que la variable Exportaciones.
-El país Switzerland va en la misma dirección que la variable Esperanza de vida.
-El país Swiden y United Kingdom va en la misma dirección que la variable Acceso electricidad.
-El país Mauritius y Tunisia va en la misma dirección que la variable Inversión estranjera.
-El país Bulgaria y North Macedonia va en la misma dirección que la variable Gasto Salud.
-El país Bosnia y Serbia and Herzegovina va en la misma dirección que la variable Importaciones.
-El país Moldoba va en la misma dirección que la variable Area boscosa.
-El país Switzerland va en la misma dirección que la variable Tierra Esperanza vida
-El país Kyrgiz Republic y Honduras va en la misma dirección que la variable Remesas.
-El país Marshall Islands va en la misma dirección que la variable Tierra cultivable.
+ Senegal y Burkina Faso se alinean con la flecha de mortalidad infantil, confirmando valores altos en esa variable. Egipto se alinea con crecimiento poblacional, indicando tasa de crecimiento demográfico elevada. Corea del Sur y Nueva Zelanda se alinean con exportaciones, indicando economías muy orientadas a comercio externo. Suiza se alinea con esperanza de vida, confirmando longevidad excepcional.
+
+En dirección opuesta: países desarrollados europeos se oponen a flechas de mortalidad y rezago, reflejando valores bajos en estos indicadores negativos. Honduras y República Kirguisa se alinean con remesas, indicando dependencia crítica de transferencias de migrantes.
 ```{r Paises y variables DIM 3 Y DIM 4}
 p2 <- plot_ly() %>%
   
@@ -2042,11 +2030,8 @@ p2 <- plot_ly() %>%
 
 p2
 ```
-El país Guinea va en la misma dirección que la variable Crecimiento poblacional.
-El país Kuwait y Djibouti va en la misma dirección que la variable Importaciones.
-El país Senegal y Ireland va en la misma dirección que la variable Exportaciones.
-El país Burkina Faso y Qatar va en la misma dirección que la variable Mortalidad infantil.
-El país North Macedonia va en la misma dirección que la variable PIB_per
+Guinea se posiciona en la dirección de crecimiento poblacional, indicando valores altos en esta variable. Kuwait y Djibouti se alinean con importaciones, indicando ratios elevados. Senegal e Irlanda se alinean con exportaciones, indicando orientación exportadora. Burkina Faso y Qatar se alinean con mortalidad infantil, indicando valores en esta variable. Macedonia del Norte se alinea con PIB per cápita, indicando ingreso por habitante en esa dirección.
+
 ## Segmentación: Clusterización
 
 Sobre la base de los k componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
