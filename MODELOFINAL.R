@@ -224,28 +224,14 @@ fviz_nbclust(
 # Calcular matriz de distancias sobre los factores (componentes principales)
 distancia <- dist(factores)
 
-# Realizar clustering jerárquico con enlace de Ward
 arbol <- hclust(distancia, method = "ward.D2")
-
-# Calcular WSS (Within-Cluster Sum of Squares) para k = 2 a 10
 wss <- sapply(2:10, function(k){
   kmeans(factores, centers = k, nstart = 25)$tot.withinss
 })
-
-# Crear dataframe con los valores de WSS
 df_wss <- data.frame(k = 2:10, WSS = wss)
-
-# Calcular primera derivada: cambio en WSS
 diff_wss <- diff(wss)
-
-# Calcular segunda derivada: cambio en la tasa de cambio
 diff_diff <- diff(diff_wss)
-
-# Encontrar donde la segunda derivada es máxima
-# Se suma 2 porque: diff_diff es de length n-2, necesitamos convertir índice a k real
 k_optimo <- which.max(diff_diff) + 2
-
-# Protecciones: Limitar k_optimo entre 2 y 6
 if (k_optimo > 6) k_optimo <- 5
 if (k_optimo < 2) k_optimo <- 2
 
@@ -909,7 +895,7 @@ plot_ly(
     )
   )
 
-## interactivo mejorar 
+
 
 #/////////////Tabla de Distribución de Frecuencias de Clústeres/////////////////
 # Crear tabla de tamaños de 
