@@ -2072,7 +2072,7 @@ En síntesis, el modelo integra: (1) estandarización para igualar contribucione
 
 # Análisis Descriptivo
 
-Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica correlaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo—información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?"
+Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica relaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo—información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?"
 Las cinco dimensiones temáticas—económica, de salud, tecnológica, ambiental y demográfica—se examinan secuencialmente a través de visualizaciones interactivas que revelan líderes y rezagados en cada indicador, patrones de asociación entre variables dentro de dimensiones, y diferencias regionales que anticipan los agrupamientos posteriores. Este enfoque dimensional permite reconocer que el "desarrollo" no es una variable única sino un fenómeno multifacético donde países pueden destacar en algunas áreas mientras quedan rezagados en otras—precisamente la complejidad que justifica un análisis multivariado integrado.
 
 ## Explorador Interactivo de Indicadores
@@ -2302,8 +2302,8 @@ for (variable in variables_numericas) {
 }
 ```
 
-El análisis del conjunto de 17 indicadores revela una característica fundamental: la desigualdad internacional no es uniforme sino específica a cada dimensión de desarrollo. Mientras que el PIB per cápita muestra una concentración extrema (media $17,045.36 vs. mediana $6,705.15, indicando que el 50% de países está por debajo de apenas $6,705), la población exhibe un patrón radicalmente distinto de concentración geográfica en gigantes asiáticos (media 49.6 millones vs. mediana 10.4 millones).
-Esta variabilidad específica a cada variable es precisamente lo que genera la complejidad multidimensional del desarrollo: países pueden sobresalir en algunas áreas (por ejemplo, esperanza de vida alta pero PIB bajo, como Costa Rica) mientras quedan rezagados en otras (por ejemplo, PIB alto pero vulnerabilidad ambiental, como algunos productores de petróleo). El explorador revela estas heterogeneidades al visualizar que en algunas variables existe concentración extrema (desv. est. > 3x la media), mientras que en otras la dispersión es más moderada, anticipando que el ACP identificará dimensiones donde la varianza es máxima y donde se concentra realmente la diferencia internacional.
+El análisis del conjunto de los indicadores revela una característica fundamental: la desigualdad internacional no es uniforme sino específica a cada dimensión de desarrollo. Mientras que el PIB per cápita muestra una concentración extrema (media $17,045.36 vs. mediana $6,705.15, indicando que el 50% de países está por debajo de apenas $6,705), la población exhibe un patrón radicalmente distinto de concentración geográfica en gigantes asiáticos (media 49.6 millones vs. mediana 10.4 millones).
+Esta variabilidad específica a cada variable es precisamente lo que genera la complejidad multidimensional del desarrollo: países pueden sobresalir en algunas áreas (por ejemplo, esperanza de vida alta pero PIB bajo, como Costa Rica) mientras quedan rezagados en otras (por ejemplo, PIB alto pero vulnerabilidad ambiental, como algunos productores de petróleo). El explorador revela estas heterogeneidades al visualizar que en algunas variables existe concentración extrema (desv. est. > 3x la media), mientras que en otras la dispersión es más moderada, lo que puede indicar que el ACP identificará dimensiones donde la varianza es máxima y donde se concentra realmente la diferencia internacional.
 
 ## Análisis por Dimensiones
 
@@ -2486,7 +2486,9 @@ La composición del top 15 varía según el indicador: las economías europeas d
 
 ### Dimensión Salud y Bienestar
 
-La relación bidimensional entre esperanza de vida al nacer (EV) y mortalidad infantil (MI) constituye un indicador especialmente revelador del desempeño sanitario de las naciones. Mientras que la primera refleja la acumulación de mejoras en salud pública a lo largo de toda la vida, la segunda es particularmente sensible a la calidad inmediata de la atención materno-infantil, saneamiento e infraestructura básica (WHO, 2020). Ambas variables son utilizadas por organismos internacionales—OMS, Banco Mundial, PNUD—como proxies para evaluar el progreso en los Objetivos de Desarrollo Sostenible, particularmente el ODS 3 (Salud y Bienestar) (PNUD, 2023). El gráfico interactivo permite visualizar simultáneamente cómo se distribuyen 180+ países en estas dos dimensiones, coloreados por continente, revelando tanto agrupaciones coherentes como anomalías que anticipan estructuras latentes en el desarrollo.
+La Figura XX presenta la relación bidimensional entre esperanza de vida al nacer y mortalidad infantil, dos indicadores fundamentales del desempeño sanitario global. Estos indicadores capturan realidades complementarias: mientras la esperanza de vida refleja el resultado acumulado de mejoras en salud a lo largo de toda la vida, la mortalidad infantil es particularmente sensible a la calidad inmediata de la atención materno-infantil, acceso a saneamiento e infraestructura básica (WHO, 2020).
+
+El gráfico interactivo es especialmente informativo: al pasar el cursor sobre cada punto (país), se despliegan simultáneamente tres dimensiones de salud—esperanza de vida, mortalidad infantil y gasto público en salud—permitiendo identificar si los países con mejor desempeño en longevidad genuinamente invierten recursos en su sistema de salud o si tienen patrones anómalos.
 
 ```{r ev-mi-animado, fig.height=8, fig.width=28, out.width="100%"}
 # Asignar continentes
@@ -2554,7 +2556,7 @@ asignar_continentes <- function(data) {
     "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
     "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
     "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
-    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Somnia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
     "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
     "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
     "Zimbabwe" = "Africa",
@@ -2579,10 +2581,11 @@ datos_ev_mi <- Base_2022 %>%
          !is.na(Continente)) %>%
   select(Pais, Continente, `Esperanza vida`, `Mortalidad infantil`, `Gasto salud`) %>%
   mutate(
+    # ✅ TOOLTIP CON EL MISMO DISEÑO QUE EL GRÁFICO DE CONECTIVIDAD
     tooltip = paste0(
       "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
       "<span style='color:#a259ff; font-size:11px;'>", Continente, "</span><br><br>",
-      "<b style='color:#e0e6ed; font-size:11px;'>INDICADORES DE SALUD:</b><br>",
+      "<b style='color:#ffd600;'> INDICADORES DE SALUD:</b><br>",
       "├─ Esperanza de vida: <b style='color:#00e676;'>", 
       round(`Esperanza vida`, 1), " años</b><br>",
       "├─ Mortalidad infantil: <b style='color:#ff1744;'>", 
@@ -2649,6 +2652,12 @@ p <- plot_ly(
     paper_bgcolor = '#0a0e1a',
     font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 13),
     
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    
     legend = list(
       title = list(text = "<b style='font-size:14px;'>Continente</b>", font = list(size = 14, color = "#00e5ff")),
       bgcolor = 'rgba(10,14,26,0.95)',
@@ -2661,14 +2670,13 @@ p <- plot_ly(
       font = list(size = 13, color = "#e0e6ed")
     ),
     
-    # MÁRGENES MUY COMPACTOS
     margin = list(l = 80, r = 120, b = 60, t = 100),  # Margen derecho reducido
     
     hovermode = 'closest',
     
-    # ZONAS DE INTERPRETACIÓN MÁS VISIBLES
+
     shapes = list(
-      # Zona ÓPTIMA
+
       list(
         type = "rect",
         x0 = 75, x1 = 90,
@@ -2759,6 +2767,11 @@ p <- plot_ly(
 
 p
 ```
+
+La gráfica evidencia una segregación geográfica pronunciada: los paises Europa y Oceanía se concentran casi completamente en la zona óptima, formando un grupo de alta longevidad y baja mortalidad infantil. En contraste,  muchos paises de África ocupan predominantemente la zona crítica, con esperanza de vida entre 50-65 años y mortalidad infantil superior a 30 por mil nacidos vivos. Los paises de América  exhiben una distribución intermedia con variabilidad interna significativa: mientras algunos países rondan los 75 años de EV, otros permanecen por debajo de 70.
+Los Asiaticos destacan por su extrema heterogeneidad: naciones desarrolladas se ubican en la zona óptima, mientras casos como Pakistan ilustran cómo países asiáticos pueden enfrentar desafíos sanitarios comparables a contextos africanos, a pesar de perfiles económicos distintos.
+
+La marcada relación inversa evidencia que los sistemas de salud más robustos logran simultáneamente aumentar longevidad y reducir mortalidad infantil, señalando que ambas variables capturan la misma realidad subyacente: la calidad y accesibilidad de servicios sanitarios fundamentales.
 
 ### Dimensión Tecnológica y de Conectividad
 ```{r scatter-facetado-tecnologia, fig.height=10, fig.width=14, out.width="90%"}
