@@ -1169,7 +1169,7 @@ tabla_1 <- variables_economicas %>%
     locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -1302,7 +1302,7 @@ tabla_2 <- variables_salud %>%
     locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -1435,7 +1435,7 @@ tabla_3 <- variables_tecnologia %>%
     locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -1572,7 +1572,7 @@ tabla_4 <- variables_ambientales %>%
     locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -1717,7 +1717,7 @@ tabla_5 <- variables_demograficas %>%
     locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -3971,7 +3971,9 @@ mapa <- mapa %>%
 mapa
 ```
 
+
 En crecimiento PIB, se observa segregación clara: Europa y América del Norte tienden a tonos amarillo-verde (crecimiento moderado), mientras muchas naciones africanas muestran tonos negros o rojo oscuro (estancamiento). Asia exhibe máxima variabilidad: gigantes como India y Bangladesh en verde (crecimiento dinámico), mientras Japón mantiene tonos amarillos (crecimiento moderado). En acceso a electricidad, la brecha digital-energética es evidente: Europa, América del Norte y gran parte de Asia en amarillo (acceso universal), mientras amplias regiones de África central permanecen en azul oscuro. América Latina exhibe transición: colores intermedios reflejando acceso extendido pero no universal. En crecimiento poblacional, se observa un patrón opuesto al desarrollo económico: Europa y Japón dominan tonos azules (declive demográfico), mientras África muestra naranjas y rojos intensos (presión poblacional extrema), y América Latina ocupa posiciones intermedias. Esta disociación geográfica entre prosperidad económica, acceso de servicios básicos y dinámica demográfica anticipa que el análisis multivariado revelará si estas dimensiones operan de forma integrada o representan trayectorias divergentes del desarrollo.
+
 ------------------------------------------------------------------------
 
 ## Visualizaciones Exploratorias
@@ -3985,21 +3987,6 @@ En crecimiento PIB, se observa segregación clara: Europa y América del Norte t
 Antes de aplicar el Análisis de Componentes Principales, es fundamental examinar la estructura de correlaciones entre las 17 variables para identificar redundancias potenciales y validar la pertinencia de la reducción de dimensionalidad. La matriz de correlación de Pearson revela las asociaciones lineales entre pares de variables, proporcionando una visión exploratoria de cómo las dimensiones del desarrollo se interrelacionan. (Jolliffe, 2002).
 
 ```{r Matriz de correlaciones}
-library(tidyverse)     
-library(FactoClass)    
-library(ade4)          
-library(factoextra)    
-library(cluster)       
-library(dendextend)    
-library(ggrepel)      
-library(kableExtra)    
-library(ggforce)    
-library(plotly)        
-library(sf)            
-library(leaflet)       
-library(rnaturalearth)
-library(RColorBrewer)  
-library(ellipse)
 
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
@@ -4193,7 +4180,7 @@ tabla_cor <- cor_significativas %>%
     )
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(80),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -4317,7 +4304,7 @@ varianza_df <- data.frame(
     locations = cells_body(columns = c(Varianza, VarianzaAcum))
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
@@ -4545,7 +4532,7 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
       locations = cells_body(columns = c(Descripcion, Interpretacion))
     ) %>%
     tab_options(
-      table.font.names = "Times New Roman",
+      table.font.names = "Arial",
       table.width = pct(100),
       table.border.top.style = "none",
       table.border.bottom.style = "none",
