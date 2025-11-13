@@ -4652,9 +4652,8 @@ tabla_pc4
 
 Una vez identificados los componentes principales y cuantificadas las contribuciones de cada variable, es fundamental realizar un análisis multivariado que permita interpretar simultáneamente las relaciones entre países y variables en el espacio reducido de componentes principales. Este análisis se fundamenta en visualizaciones bidimensionales que proyectan tanto países (individuos) como variables sobre los planos definidos por pares de componentes principales, revelando patrones de similitud, agrupamientos naturales y características diferenciadoras entre grupos de países (Jolliffe, 2002; Hastie et al., 2009).
 
-```{r individuos DIM 1 Y DIM 2}
+```{r individuos DIM 1 Y DIM 2, fig.height=8, fig.width=14, out.width="100%"}
 ind_data <- get_pca_ind(res.pca)
-
 
 ind_df <- data.frame(
   Pais = rownames(ind_data$coord),
@@ -4672,33 +4671,108 @@ ind_df <- data.frame(
   Cos2_4 = ind_data$cos2[, 4]
 )
 
+# Crear paleta cyber para las contribuciones
+cyber_color_scale <- colorRampPalette(c("#0084ff", "#00e5ff", "#a259ff", "#ff1744"))(100)
+
 p1 <- plot_ly(ind_df,
               x = ~Dim1, 
               y = ~Dim2,
               color = ~Contrib1,
-              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
-              text = ~paste("<b>", Pais, "</b><br>",
-                            "Dim 1:", round(Dim1, 3), "<br>",
-                            "Dim 2:", round(Dim2, 3), "<br>",
-                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
-                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
-                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
-                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              colors = cyber_color_scale,
+              text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Pais, "</b><br>",
+                            "<span style='color:#8b92a0;'>COORDENADAS PCA:</span><br>",
+                            "├─ Dim 1: <b style='color:#00e676;'>", round(Dim1, 3), "</b><br>",
+                            "├─ Dim 2: <b style='color:#00e5ff;'>", round(Dim2, 3), "</b><br>",
+                            "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                            "├─ Dim 1: <b style='color:#ffd600;'>", round(Contrib1, 2), "%</b><br>",
+                            "├─ Dim 2: <b style='color:#a259ff;'>", round(Contrib2, 2), "%</b><br>",
+                            "<br><span style='color:#8b92a0;'>CALIDAD REPRESENTACIÓN (Cos²):</span><br>",
+                            "├─ Dim 1: <b style='color:#00e676;'>", round(Cos2_1, 3), "</b><br>",
+                            "└─ Dim 2: <b style='color:#0084ff;'>", round(Cos2_2, 3), "</b>"),
               type = "scatter",
               mode = "markers",
-              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              marker = list(
+                size = 12, 
+                opacity = 0.85, 
+                line = list(width = 1.5, color = "#ffffff"),
+                symbol = 'circle'
+              ),
               hovertemplate = '%{text}<extra></extra>') %>%
   
   layout(
     title = list(
-      text = "Individuos: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:20px;'>Análisis de Componentes Principales</b><br>
+             <span style='color:#8b92a0; font-size:14px;'>Individuos: Dimensión 1 vs Dimensión 2 | Coloreado por Contribución a Dim 1</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
     ),
-    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    xaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 1</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
+    yaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 2</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white"
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 80, r = 50, b = 80, t = 100),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    coloraxis = list(
+      colorbar = list(
+        title = list(
+          text = "<b>Contribución<br>Dim 1 (%)</b>",
+          font = list(size = 12, color = "#e0e6ed")
+        ),
+        tickfont = list(color = '#8b92a0', size = 11),
+        thickness = 20,
+        len = 0.75
+      )
+    ),
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.12,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>Cada punto representa un país. Colores indican contribución a la Dimensión 1. Hover para detalles.</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "pca_individuos_dim1_dim2",
+      width = 1200,
+      height = 800
+    )
   )
 
 p1
@@ -4708,35 +4782,106 @@ Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariament
 
 Al contrario podemos ver países como Niger el cual la dimensión 2 tiene un aporte de 0,64%, lo cual nos da a pensar que este país tiene deficiencia en lo económico
 
-```{r individuos DIM 3 Y DIM 4}
-
+```{r individuos DIM 3 Y DIM 4, fig.height=8, fig.width=14, out.width="100%"}
 p2 <- plot_ly(ind_df,
               x = ~Dim3, 
               y = ~Dim4,
               color = ~Contrib3,
-              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
-              text = ~paste("<b>", Pais, "</b><br>",
-                            "Dim 3:", round(Dim3, 3), "<br>",
-                            "Dim 4:", round(Dim4, 3), "<br>",
-                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
-                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
-                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
-                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              colors = cyber_color_scale,
+              text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Pais, "</b><br>",
+                            "<span style='color:#8b92a0;'>COORDENADAS PCA:</span><br>",
+                            "├─ Dim 3: <b style='color:#00e676;'>", round(Dim3, 3), "</b><br>",
+                            "├─ Dim 4: <b style='color:#00e5ff;'>", round(Dim4, 3), "</b><br>",
+                            "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                            "├─ Dim 3: <b style='color:#ffd600;'>", round(Contrib3, 2), "%</b><br>",
+                            "├─ Dim 4: <b style='color:#a259ff;'>", round(Contrib4, 2), "%</b><br>",
+                            "<br><span style='color:#8b92a0;'>CALIDAD REPRESENTACIÓN (Cos²):</span><br>",
+                            "├─ Dim 3: <b style='color:#00e676;'>", round(Cos2_3, 3), "</b><br>",
+                            "└─ Dim 4: <b style='color:#0084ff;'>", round(Cos2_4, 3), "</b>"),
               type = "scatter",
               mode = "markers",
-              marker = list(size = 10, opacity = 0.8, line = list(width = 1, color = "white")),
+              marker = list(
+                size = 12, 
+                opacity = 0.85, 
+                line = list(width = 1.5, color = "#ffffff"),
+                symbol = 'circle'
+              ),
               hovertemplate = '%{text}<extra></extra>') %>%
   
   layout(
     title = list(
-      text = "Individuos: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:20px;'>Análisis de Componentes Principales</b><br>
+             <span style='color:#8b92a0; font-size:14px;'>Individuos: Dimensión 3 vs Dimensión 4 | Coloreado por Contribución a Dim 3</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
     ),
-    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    xaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 3</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
+    yaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 4</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white"
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 80, r = 50, b = 80, t = 100),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    coloraxis = list(
+      colorbar = list(
+        title = list(
+          text = "<b>Contribución<br>Dim 3 (%)</b>",
+          font = list(size = 12, color = "#e0e6ed")
+        ),
+        tickfont = list(color = '#8b92a0', size = 11),
+        thickness = 20,
+        len = 0.75
+      )
+    ),
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.12,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>Cada punto representa un país. Colores indican contribución a la Dimensión 3. Hover para detalles.</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "pca_individuos_dim3_dim4",
+      width = 1200,
+      height = 800
+    )
   )
 
 p2
