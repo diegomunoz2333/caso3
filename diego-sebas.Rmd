@@ -2305,7 +2305,7 @@ shapes_list <- lapply(seq_len(nrow(cluster_rectangles)), function(i) {
 })
 dend_interactive <- dend_interactive %>%
   layout(
-    title = list(text = "<b>Dendrograma interactivo - K = 3</b>", x = 0.01),
+    title = list(text = "<b>Dendrograma interactivo</b>", x = 0.01),
     shapes = shapes_list,
     xaxis = list(title = "", showticklabels = FALSE, zeroline = FALSE, showgrid = FALSE),
     yaxis = list(title = "Distancia", zeroline = FALSE, showgrid = TRUE),
