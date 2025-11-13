@@ -2070,6 +2070,9 @@ El algoritmo se ejecuta recursivamente hasta que todos los países quedan englob
 
 En síntesis, el modelo integra: (1) estandarización para igualar contribuciones relativas, (2) reducción de dimensionalidad mediante ACP para simplificar sin perder información, (3) cálculo de distancias euclidianas para cuantificar disimilaridad, y (4) clusterización jerárquica Ward para crear una taxonomía multidimensional de desarrollo. Esta arquitectura metodológica asegura que los agrupamientos emergentes sean producto exclusivamente de los datos y no de imposiciones externas, permitiendo descubrimientos genuinos sobre la estructura del desarrollo internacional (Jolliffe, 2002; Charrad et al., 2014).
 
+### Prediccion
+
+Con el objetivo de validar la robustez del modelo de clusterización y demostrar su capacidad predictiva, se procedió a proyectar cinco países adicionales no incluidos en el conjunto de entrenamiento original sobre el espacio factorial de componentes principales. Estos países fueron: Luxemburgo, Uruguay, Belice, Jordania y Angola. La proyección de nuevas observaciones sobre el espacio factorial permite evaluar cómo cada país se posiciona relativamente respecto a los clusters identificados, prediciendo su asignación más probable basada en similitud multidimensional (Hastie et al., 2009; Jolliffe, 2002).
 ------------------------------------------------------------------------
 
 # Análisis Descriptivo
@@ -3089,6 +3092,10 @@ plotly_plot
 En África, países como Níger y Mali se concentran en el cuadrante inferior izquierdo (20-40% electricidad, 10-30% internet), aunque Marruecos emerge como outlier con 100% acceso eléctrico y 89.9% internet, demostrando que la universalización es viable. En Europa, Suecia y Noruega ocupan la esquina superior derecha con universalización eléctrica, internet penetrante (95-100%) y saturación móvil (100+ suscripciones/100 hab.). América presenta electricidad generalizada (80-95%) pero internet variable (50-80%), indicando que infraestructura energética no garantiza automáticamente adopción digital sin inversión específica en telecomunicaciones. Asia destaca por su extrema heterogeneidad: mientras Japón y Singapur se alinean con economías desarrolladas, Bangladesh y Pakistán enfrentan limitaciones más severas. Notablemente, países asiáticos como India y Filipinas exhiben penetración móvil extraordinaria (120-140 suscripciones/100 hab.) a pesar de acceso eléctrico limitado, evidenciando que la telefonía móvil ha permitido saltos tecnológicos sin requerir infraestructura fija completa.
 
 ### Dimension ambiental y de recursos
+
+La Figura XX muestra cómo los países distribuyen su territorio entre bosques y tierras cultivables, dos recursos fundamentales para conservación ambiental y seguridad alimentaria. El eje horizontal mide cobertura boscosa, el eje vertical tierra cultivable, y el gráfico divide el espacio en cuatro zonas: conservación (muchos bosques, poca agricultura), agrícola (mucha agricultura, pocos bosques), balance (ambas moderadas), y crítica (ambas limitadas).
+Al pasar el cursor sobre cada punto, aparece información del país: porcentaje de cobertura boscosa, porcentaje de tierra cultivable, el balance total entre ambas, y tamaño de población. Esto permite ver cómo el uso de tierra varía según demografía: India concentra alta agricultura (51.8% tierra cultivable) y baja cobertura boscosa, reflejando presión por alimentar su enorme población. Brasil y Bolivia se ubican en zona de balance con mayor cobertura forestal. Mauritania y Eritrea ocupan la zona crítica, con recursos limitados tanto para bosques como para agricultura.
+En la leyenda al hacer clic en un continente, el gráfico se filtra mostrando solo los países de esa región, permitiendo comparar patrones ambientales dentro de cada geografía. Esta visualización anticipa si la conservación ambiental es un lujo de países ricos o una estrategia viable en todos los contextos.
 
 ```{r ambiental-scatter, fig.height=8, fig.width=25, out.width="100%"}
 
