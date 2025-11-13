@@ -11,7 +11,7 @@ output:
     toc_depth: 3
     number_sections: true
     fig_width: 10
-    fig_height: 6    
+    fig_height: 6
     css: styles.css
     code_folding: hide
 ---
@@ -1016,7 +1016,7 @@ Con las 17 variables estandarizadas, se aplica el Análisis de Componentes Princ
 
 Matemáticamente, el ACP comienza construyendo la matriz de covarianza $C$ de las variables estandarizadas, cuyas entradas representan cómo varían conjuntamente pares de variables (KeepCoding, 2025). Los vectores propios de esta matriz de covarianza definen las direcciones principales (componentes), ordenados según sus correspondientes valores propios, que representan la cantidad de varianza explicada en cada dirección (Jolliffe, 2002). El primer componente principal captura la máxima varianza; el segundo, la máxima varianza restante sujeto a ortogonalidad respecto al primero; y así sucesivamente (Jolliffe, 2002).
 
-El criterio para determinar el número óptimo de componentes se basó en el principio de parsimonia, buscando maximizar la reducción dimensional manteniendo una representación significativa de la estructura original de los datos.
+El criterio para determinar el número óptimo de componentes se basó en el principio de parsimonia, buscando maximizar la reducción dimensional manteniendo una representación significativa de la estructura original de los datos. 
 
 ### Cálculo de Distancias Euclidianas
 
@@ -1067,7 +1067,6 @@ library(dendextend)
 library(ggrepel)      
 library(kableExtra)    
 library(ggforce)    
-library(dendextend)
 library(plotly)        
 library(sf)            
 library(leaflet)       
@@ -1311,17 +1310,32 @@ La matriz de correlación entre todas las variables de desarrollo es fundamental
 El Análisis de Componentes Principales fue aplicado al conjunto de 17 variables estandarizadas para identificar las dimensiones latentes subyacentes de variabilidad en el desarrollo internacional. El procedimiento consiste en la descomposición espectral de la matriz de covarianza estandarizada, identificando vectores propios (componentes) ordenados según sus valores propios (autovalores) en orden descendente. Cada componente principal es una combinación lineal ortogonal de las variables originales, diseñada para capturar la máxima varianza posible de manera sucesiva (Jolliffe, 2002; Hastie et al., 2009).
 
 ```{r ACP}
-res.pca <- prcomp(datos_analisis, scale = TRUE)
+
+
 acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
+
 varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
-factores <- acp_temp$li
+
+n_componentes <- which(varianza_acum >= 70)[1]
+
+acp_resultado <- dudi.pca(
+  df = datos_analisis,
+  center = TRUE,
+  scale = TRUE,
+  scannf = FALSE,
+  nf = n_componentes
+)
+
+factores <- acp_resultado$li
+
 ```
+
 
 ```{r Tabla varianza}
 
 varianza_df <- data.frame(
-  Componente = factor(1:length(acp_temp$eig)),
-  Varianza = acp_temp$eig / sum(acp_temp$eig) * 100,
+  Componente = factor(1:length(acp_resultado$eig)),
+  Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
   VarianzaAcum = varianza_acum
 ) %>%  gt() %>%
   tab_header(
@@ -1416,8 +1430,8 @@ varianza_df <- data.frame(
 varianza_df 
 
 varianza_df <- data.frame(
-  Componente = paste0("PC", 1:length(acp_temp$eig)),
-  Varianza = acp_temp$eig / sum(acp_temp$eig) * 100,
+  Componente = paste0("PC", 1:length(acp_resultado$eig)),
+  Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
   VarianzaAcum = varianza_acum
 )
 
@@ -1425,13 +1439,15 @@ pc1_var <- round(varianza_df$Varianza[1], 1)
 pc2_var <- round(varianza_df$Varianza[2], 1)
 pc3_var <- round(varianza_df$Varianza[3], 1)
 pc4_var <- round(varianza_df$Varianza[4], 1)
-
+pc5_var <- round(varianza_df$Varianza[5], 1)
+pc6_var <- round(varianza_df$Varianza[6], 1)
 
 pc1_acum <- round(varianza_df$VarianzaAcum[1], 1)
 pc2_acum <- round(varianza_df$VarianzaAcum[2], 1)
 pc3_acum <- round(varianza_df$VarianzaAcum[3], 1)
 pc4_acum <- round(varianza_df$VarianzaAcum[4], 1)
-
+pc5_acum <- round(varianza_df$VarianzaAcum[5], 1)
+pc6_acum <- round(varianza_df$VarianzaAcum[6], 1)
 
 
 ```
@@ -1474,12 +1490,13 @@ fviz_eig(res.pca,
 
 ```{r, include=FALSE}
 res.var <- get_pca_var(res.pca)
-res.var$coord          
+res.pca$coord          
 res.var$contrib        
 res.var$cos2  
 ```
 
-El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002).
+
+El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). En este análisis, la línea verde punteada marca el umbral del 70%, y la intersección de la línea morada acumulada con este umbral define el número final de componentes 6 que será utilizado para la clusterización posterior.
 
 ### Contribución de Variables a Componentes Principales
 
@@ -1487,23 +1504,22 @@ La comprensión de cómo cada variable original contribuye a la definición de l
 
 Adicionalmente, la calidad de representación (cos²) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un cos² cercano a 1 significa que la variable está casi completamente explicada por ese componente; un cos² cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
 
-```{r contribucion, message=FALSE}
-contribuciones <- as.data.frame(res.pca$rotation)  
+```{r contribucion}
+
+contribuciones <- as.data.frame(acp_resultado$co)
 contribuciones$Variable <- rownames(contribuciones)
 
-cos2_df <- as.data.frame(res.pca$rotation^2)  
+cos2_df <- as.data.frame(acp_resultado$co^2)
 cos2_df$Variable <- rownames(cos2_df)
 
 crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo, tabla_num) {
-  comp_col <- paste0("PC", componente_num)
-  
   comp_data <- contrib_df %>%
-    select(Variable, all_of(comp_col)) %>%
-    rename(Loading = all_of(comp_col))
+    select(Variable, paste0("Comp", componente_num)) %>%
+    rename(Loading = paste0("Comp", componente_num))
   
   cos2_data <- cos2_df %>%
-    select(Variable, all_of(comp_col)) %>%
-    rename(Cos2 = all_of(comp_col))
+    select(Variable, paste0("Comp", componente_num)) %>%
+    rename(Cos2 = paste0("Comp", componente_num))
   
   comp_data <- comp_data %>%
     left_join(cos2_data, by = "Variable") %>%
@@ -1514,32 +1530,22 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
       Loading = round(Loading, 4),
       Cos2 = round(Cos2, 4)
     )
+  
   descripciones <- c(
     "PIB_per" = "PIB per cápita (US$)",
     "Poblacion" = "Población total",
-    "Esperanza.vida" = "Esperanza de vida al nacer (años)",  # Posiblemente con punto
-    "Esperanza vida" = "Esperanza de vida al nacer (años)",  # O con espacio
-    "Acceso.electricidad" = "Acceso a electricidad (% población)",
+    "Esperanza vida" = "Esperanza de vida al nacer (años)",
     "Acceso electricidad" = "Acceso a electricidad (% población)",
-    "Area.boscosa" = "Área boscosa (% territorio)",
     "Area boscosa" = "Área boscosa (% territorio)",
-    "Suscripciones.movil" = "Suscripciones móviles (cada 100 hab.)",
     "Suscripciones movil" = "Suscripciones móviles (cada 100 hab.)",
-    "Crecimiento.PIB" = "Crecimiento del PIB (% anual)",
     "Crecimiento PIB" = "Crecimiento del PIB (% anual)",
-    "Mortalidad.infantil" = "Mortalidad infantil (cada 1,000 nac.)",
     "Mortalidad infantil" = "Mortalidad infantil (cada 1,000 nac.)",
-    "Inversion.extranjera" = "Inversión extranjera (% PIB)",
     "Inversion extranjera" = "Inversión extranjera (% PIB)",
-    "Gasto.salud" = "Gasto en salud (% PIB)",
     "Gasto salud" = "Gasto en salud (% PIB)",
-    "Uso.internet" = "Uso de internet (% población)",
     "Uso internet" = "Uso de internet (% población)",
     "Importaciones" = "Importaciones (% PIB)",
     "Exportaciones" = "Exportaciones (% PIB)",
-    "Tierra.cultivable" = "Tierra cultivable (% territorio)",
     "Tierra cultivable" = "Tierra cultivable (% territorio)",
-    "Crecimiento.poblacion" = "Crecimiento poblacional (% anual)",
     "Crecimiento poblacion" = "Crecimiento poblacional (% anual)",
     "Industria" = "Industria (% PIB)",
     "Remesas" = "Remesas recibidas (% PIB)"
@@ -1547,19 +1553,15 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
   
   comp_data <- comp_data %>%
     mutate(
-      Descripcion = ifelse(
-        Variable %in% names(descripciones), 
-        descripciones[Variable], 
-        Variable  
-      ),
+      Descripcion = descripciones[Variable],
       Interpretacion = paste0(
         "Loading: ", Loading, 
         " | Cos²: ", Cos2,
         case_when(
-          abs(Loading) >= 0.8 ~ " (Contribución muy fuerte)",
-          abs(Loading) >= 0.6 ~ " (Contribución fuerte)", 
-          abs(Loading) >= 0.4 ~ " (Contribución moderada)",
-          abs(Loading) >= 0.2 ~ " (Contribución débil)",
+          abs(Loading) >= 0.3 ~ " (Contribución muy fuerte)",
+          abs(Loading) >= 0.2 ~ " (Contribución fuerte)", 
+          abs(Loading) >= 0.1 ~ " (Contribución moderada)",
+          abs(Loading) >= 0.05 ~ " (Contribución débil)",
           TRUE ~ " (Contribución muy débil)"
         )
       )
@@ -1632,10 +1634,10 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
       footnotes.padding = px(4)
     ) %>%
     tab_source_note(
-      source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP (prcomp)")
+      source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP")
     ) %>%
     tab_footnote(
-      footnote = "Loading: contribución de la variable al componente (valores absolutos >0.6 indican contribución fuerte)",
+      footnote = "Loading: contribución de la variable al componente (valores absolutos >0.3 indican contribución fuerte)",
       locations = cells_title(groups = "subtitle")
     ) %>%
     tab_footnote(
@@ -1649,21 +1651,20 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
   return(tabla)
 }
 
+
 tabla_pc1 <- crear_tabla_contribucion(1, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 1 (24.3% de varianza)",
                                      6)
-
 tabla_pc2 <- crear_tabla_contribucion(2, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 2 (13.5% de varianza)", 
                                      7)
-
 tabla_pc3 <- crear_tabla_contribucion(3, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 3 (9.1% de varianza)",
                                      8)
-
 tabla_pc4 <- crear_tabla_contribucion(4, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 4 (7.5% de varianza)",
                                      9)
+
 tabla_pc1
 tabla_pc2
 tabla_pc3
@@ -1724,11 +1725,9 @@ p1 <- plot_ly(ind_df,
   )
 
 p1
-
-
 ```
-
-Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11.66%, es algo esperable sabiendo que el país árabe tiene un gran comercio. Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariamente de su aporte en la dimensión 1 el cual es 3.14%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
+Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11.66%, es algo esperable sabiendo que el país árabe tiene un gran comercio.
+Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariamente de su aporte en la dimensión 1 el cual es 3.14%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
 
 Al contrario podemos ver países como Niger el cual la dimensión 2 tiene un aporte de 0,64%, lo cual nos da a pensar que este país tiene deficiencia en lo económico
 
@@ -1765,150 +1764,9 @@ p2 <- plot_ly(ind_df,
 
 p2
 ```
-
-Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 18,65% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable. Timor-leste tiene un aporte en la dimensión 4 de un 8.49% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa. Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 10.69% y en la 4 de 0,28%, lo cual refiere que es uno de los paises que menos exporta y más importa.
-
-```{r Contrubuciones paises}
-coordenadas_paises <- as.data.frame(ind_data$coord)
-coordenadas_paises$Pais <- rownames(coordenadas_paises)
-
-crear_tabla_bidireccional <- function(componente_num, titulo, tabla_num) {
-  col_coord <- paste0("Dim.", componente_num)
-  top_positivo <- coordenadas_paises %>%
-    select(Pais, Coordenada = all_of(col_coord)) %>%
-    arrange(desc(Coordenada)) %>%
-    slice(1:5) %>%
-    mutate(
-      Coordenada = round(Coordenada, 3),
-      Direccion = "Positiva",
-      Posicion = 1:5
-    )
-  top_negativo <- coordenadas_paises %>%
-    select(Pais, Coordenada = all_of(col_coord)) %>%
-    arrange(Coordenada) %>%
-    slice(1:5) %>%
-    mutate(
-      Coordenada = round(Coordenada, 3),
-      Direccion = "Negativa",
-      Posicion = 1:5
-    )
-  tabla_combinada <- bind_rows(top_positivo, top_negativo) %>%
-    select(Posicion, Pais, Coordenada, Direccion)
-  tabla <- tabla_combinada %>%
-    gt(groupname_col = "Direccion") %>%
-    tab_header(
-      title = md(paste0("**Tabla ", tabla_num, "**")),
-      subtitle = titulo
-    ) %>%
-    cols_label(
-      Posicion = md("**Posición**"),
-      Pais = md("**País**"),
-      Coordenada = md("**Coordenada**")
-    ) %>%
-    cols_align(
-      align = "center",
-      columns = everything()
-    ) %>%
-    fmt_number(
-      columns = Coordenada,
-      decimals = 3
-    ) %>%
-    tab_style(
-      style = list(
-        cell_text(weight = "bold", size = "medium"),
-        cell_fill(color = "white")
-      ),
-      locations = cells_column_labels()
-    ) %>%
-    tab_style(
-      style = cell_borders(
-        sides = c("top", "bottom"),
-        color = "black",
-        weight = px(1)
-      ),
-      locations = list(
-        cells_column_labels(),
-        cells_body()
-      )
-    ) %>%
-    tab_style(
-      style = cell_borders(
-        sides = "right",
-        color = "gray80",
-        weight = px(1)
-      ),
-      locations = cells_body(columns = c(Posicion, Pais))
-    ) %>%
-    tab_style(
-      style = cell_text(weight = "bold"),
-      locations = cells_body(columns = c(Posicion, Pais))
-    ) %>%
-    tab_style(
-      style = cell_fill(color = "#E8F5E8"),
-      locations = cells_body(
-        rows = Direccion == "Positiva"
-      )
-    ) %>%
-    tab_style(
-      style = cell_fill(color = "#FFE6E6"),
-      locations = cells_body(
-        rows = Direccion == "Negativa"
-      )
-    ) %>%
-    tab_options(
-      table.font.names = "Times New Roman",
-      table.width = pct(80),
-      table.border.top.style = "none",
-      table.border.bottom.style = "none",
-      column_labels.border.top.style = "none",
-      column_labels.border.bottom.width = px(2),
-      column_labels.border.bottom.color = "black",
-      table_body.border.bottom.style = "none",
-      table_body.border.top.style = "none",
-      data_row.padding = px(8),
-      heading.title.font.size = 14,
-      heading.subtitle.font.size = 12,
-      heading.padding = px(4),
-      footnotes.padding = px(4)
-    ) %>%
-    tab_source_note(
-      source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP")
-    ) %>%
-    tab_footnote(
-      footnote = "Coordenadas positivas indican valores altos en las variables que definen este componente",
-      locations = cells_row_groups(groups = "Positiva")
-    ) %>%
-    tab_footnote(
-      footnote = "Coordenadas negativas indican valores bajos en las variables que definen este componente",
-      locations = cells_row_groups(groups = "Negativa")
-    )
-  
-  return(tabla)
-}
-
-
-tabla_pc1_bidireccional <- crear_tabla_bidireccional(1, 
-  "Países con Mayor Influencia en el Componente Principal 1 (24.3% de varianza)", 
-  "13")
-
-tabla_pc2_bidireccional <- crear_tabla_bidireccional(2, 
-  "Países con Mayor Influencia en el Componente Principal 2 (13.5% de varianza)", 
-  "14")
-
-tabla_pc3_bidireccional <- crear_tabla_bidireccional(3, 
-  "Países con Mayor Influencia en el Componente Principal 3 (9.1% de varianza)", 
-  "15")
-
-tabla_pc4_bidireccional <- crear_tabla_bidireccional(4, 
-  "Países con Mayor Influencia en el Componente Principal 4 (7.5% de varianza)", 
-  "16")
-
-
-tabla_pc1_bidireccional
-tabla_pc2_bidireccional
-tabla_pc3_bidireccional
-tabla_pc4_bidireccional
-```
+Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 18,65% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable.
+Timor-leste tiene un aporte en la dimensión 4 de un 8.49% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa.
+Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 10.69% y en la 4 de 0,28%, lo cual refiere que es uno de los paises que menos exporta y más importa.
 
 ### Representación de Variables en el Plano de Componentes Principales
 
@@ -1926,14 +1784,20 @@ var_df <- data.frame(
   Dim2 = var_data$coord[, 2],
   Dim3 = var_data$coord[, 3],
   Dim4 = var_data$coord[, 4],
+  Dim5 = var_data$coord[, 5],
+  Dim6 = var_data$coord[, 6],
   Contrib1 = var_data$contrib[, 1],
   Contrib2 = var_data$contrib[, 2],
   Contrib3 = var_data$contrib[, 3],
   Contrib4 = var_data$contrib[, 4],
+  Contrib5 = var_data$contrib[, 5],
+  Contrib6 = var_data$contrib[, 6],
   Cos2_1 = var_data$cos2[, 1],
   Cos2_2 = var_data$cos2[, 2],
   Cos2_3 = var_data$cos2[, 3],
-  Cos2_4 = var_data$cos2[, 4]
+  Cos2_4 = var_data$cos2[, 4],
+  Cos2_5 = var_data$cos2[, 5],
+  Cos2_6 = var_data$cos2[, 6]
 )
 
 
@@ -1972,8 +1836,9 @@ p1 <- plot_ly(var_df,
 
 p1
 ```
+Observamos en el gráfico que las variables que más contribuyen a la dimensión 1 son esperanza de vida positivamente (17.03%), uso de internet positivamente (16.88%) y mortalidad infantil negativamente (16.63%)
+A la dimensión 2 son la indutria negativamente (27.37%), el crecimiento poblacional negativamente (18.23%) y las remesas positivamente (13.15%)
 
-Observamos en el gráfico que las variables que más contribuyen a la dimensión 1 son esperanza de vida positivamente (17.03%), uso de internet positivamente (16.88%) y mortalidad infantil negativamente (16.63%) A la dimensión 2 son la indutria negativamente (27.37%), el crecimiento poblacional negativamente (18.23%) y las remesas positivamente (13.15%)
 
 ```{r Variables DIM 3 Y DIM 4}
 p2 <- plot_ly(var_df,
@@ -2011,8 +1876,9 @@ p2 <- plot_ly(var_df,
 
 p2
 ```
+A la dimensión 3 las variables que más contribuyen son las importaciones negativamente (26.78%), las exportaciones negativamente (26.43%) y la inversión extranjera negativamente (13.2%).
+En la dimensión 4 las variables que más contribuyen son el area boscosa negativamente (29.47%), la tierra cultivable positivamente (26.32%)y la población positivamente (19.51%).
 
-A la dimensión 3 las variables que más contribuyen son las importaciones negativamente (26.78%), las exportaciones negativamente (26.43%) y la inversión extranjera negativamente (13.2%). En la dimensión 4 las variables que más contribuyen son el area boscosa negativamente (29.47%), la tierra cultivable positivamente (26.32%)y la población positivamente (19.51%).
 
 ### Análisis Integrado de Variables y Países
 
@@ -2021,8 +1887,9 @@ El análisis combinado de las variables y los países en el espacio reducido de 
 Para comprender la lógica interpretativa del biplot, es fundamental reconocer que la posición de un país en relación a la dirección de una flecha de variable indica el valor relativo de ese país en esa variable específica. Países ubicados en la misma dirección que una flecha exhiben valores altos en esa variable; países ubicados en dirección opuesta exhiben valores bajos; países ubicados perpendicularmente (formando ángulos de \~$90°$) exhiben valores cercanos a la media global. Esta propiedad geométrica del biplot permite realizar diagnósticos cuantitativos directamente desde la visualización gráfica, sin necesidad de consultar la base de datos original, siempre que la calidad de representación ($cos²$) sea suficientemente alta (Jolliffe, 2002).
 
 ```{r Paises y variables DIM 1 Y DIM 2}
-ind_data <- get_pca_ind(res.pca)
-var_data <- get_pca_var(res.pca)
+acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
+ind_data <- get_pca_ind(acp_prcomp)
+var_data <- get_pca_var(acp_prcomp)
 
 
 ind_df <- data.frame(
@@ -2108,7 +1975,6 @@ p1
 Senegal y Burkina Faso se alinean con la flecha de mortalidad infantil, confirmando valores altos en esa variable. Egipto se alinea con crecimiento poblacional, indicando tasa de crecimiento demográfico elevada. Corea del Sur y Nueva Zelanda se alinean con exportaciones, indicando economías muy orientadas a comercio externo. Suiza se alinea con esperanza de vida, confirmando longevidad excepcional.
 
 En dirección opuesta: países desarrollados europeos se oponen a flechas de mortalidad y rezago, reflejando valores bajos en estos indicadores negativos. Honduras y República Kirguisa se alinean con remesas, indicando dependencia crítica de transferencias de migrantes.
-
 ```{r Paises y variables DIM 3 Y DIM 4}
 p2 <- plot_ly() %>%
   
@@ -2164,14 +2030,57 @@ p2 <- plot_ly() %>%
 
 p2
 ```
-
 Guinea se posiciona en la dirección de crecimiento poblacional, indicando valores altos en esta variable. Kuwait y Djibouti se alinean con importaciones, indicando ratios elevados. Senegal e Irlanda se alinean con exportaciones, indicando orientación exportadora. Burkina Faso y Qatar se alinean con mortalidad infantil, indicando valores en esta variable. Macedonia del Norte se alinea con PIB per cápita, indicando ingreso por habitante en esa dirección.
 
+### Caracterizacion de los componentes principales
+
+```{r caracterizacion dimensiones}
+
+dimensiones_tabla <- tribble(
+  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
+  "Dimensión 1", "Nivel de desarrollo humano y tecnológico ", 
+  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
+  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
+  
+  "Dimensión 2", "Industrialización y crecimiento demográfico", 
+  "Industria, Crecimiento.poblacion, Remesas", 
+  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
+  
+  "Dimensión 3", "Comercio internacional", 
+  "Importaciones, Exportaciones, Inversión.Extranjera", 
+  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
+  
+  "Dimensión 4", "Uso del suelo y demografía ", 
+  "Área.boscosa, Tierra.cultivable, Población", 
+  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
+)
+dimensiones_tabla %>%
+  knitr::kable(
+    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
+    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
+    align = c("c", "l", "l", "l"),
+    format = "html",
+    escape = FALSE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 13
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
+  column_spec(1, bold = TRUE, width = "8em") %>%
+  column_spec(2, width = "22em") %>%
+  column_spec(3, width = "16em") %>%
+  column_spec(4, width = "18em")
+
+
+```
 
 
 ## Segmentación: Clusterización
 
-Sobre la base de los 4 componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
+Sobre la base de los k componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
 
 El método de Ward minimiza específicamente la suma total de cuadrados dentro de clusters (*within-cluster sum of squares*, WCSS), definida matemáticamente como:
 
@@ -2181,476 +2090,17 @@ donde: - $C$ es el número de clusters, - $x_i$ es la posición de la observaci�
 
 En cada paso del algoritmo, se identifican los dos clusters cuya fusión produce el incremento mínimo en WCSS total, maximizando así la homogeneidad interna de cada cluster mientras se maximiza la disimilaridad entre clusters (Ward, 1963; Hastie et al., 2009).
 
-```{r clusters, message=FALSE,warning=FALSE}
-library(FactoClass)
-library(ade4)
+```{r clusters}
+resultado_ACP <- FactoClass(datos_analisis, dudi.pca, nf = 3, scan = FALSE)
 
-resultado_ACP <- FactoClass(
-  datos_analisis,  
-  dudi.pca,       
-  nf = 4,           
-  k.clust = 3,      
-  scan = FALSE     
-)
 
 clusters_asignados <- resultado_ACP$cluster
+cat("Número de países por cluster:\n")
+print(table(clusters_asignados))
 
-NuevaBase <- data.frame(Cluster = clusters_asignados, datos_analisis)
-```
-
-### Numero optimo de clusters
-
-La selección del número óptimo de clusters k se realizó mediante la evaluación conjunta de tres criterios complementarios: análisis del dendrograma, método del codo, y coherencia interpretativa. El dendrograma revela visualmente la estructura jerárquica de fusiones: se identifican alturas donde las fusiones producen incrementos dramáticos en disimilaridad, sugiriendo que clusters diferenciados se están uniendo. Un corte horizontal del dendrograma a altura intermedia permite definir el número de clusters finales.
-
-El método del codo examina cómo disminuye WCSS (suma de cuadrados dentro de clusters) conforme aumenta el número de clusters desde $k=2$ hasta $k=10$ Inicialmente, incrementar $k$ reduce WCSS rápidamente porque se reduce heterogeneidad interna; sin embargo, a partir de cierto $k$ (el "codo"), la reducción adicional se vuelve marginal, sugiriendo que clusters posteriores no capturan estructura genuina sino que simplemente subdividen artificialmente. Típicamente, el codo se identifica en $k=3$ a $k=4$ para análisis de desarrollo internacional.
-
-```{r dendograma-corregido, message=FALSE, warning=FALSE}
-library(plotly)
-library(factoextra)
-library(FactoMineR)
-library(cluster)
-library(ggplot2)
-library(dendextend)
-library(plotly)
-library(ggdendro)
-
-acp_result <- resultado_ACP$dudi
-
-p1 <- fviz_eig(acp_result, 
-               addlabels = TRUE, 
-               ylim = c(0, 30),
-               barfill = "#2E9FDF",
-               barcolor = "#2E9FDF",
-               linecolor = "#FC4E07",
-               main = "Varianza Explicada por Componentes Principales",
-               xlab = "Componentes Principales",
-               ylab = "Porcentaje de Varianza Explicada") +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
-    axis.title = element_text(face = "bold")
-  )
-
-p1_interactive <- ggplotly(p1) %>%
-  layout(
-    title = list(
-      text = "<b>Varianza Explicada por Componentes Principales</b>",
-      x = 0.05
-    )
-  )
-p1_interactive
-
-
-coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
-distancias <- dist(coordenadas_pca)
-hc <- hclust(distancias, method = "ward.D2")
-
-
-par(mar = c(5, 4, 4, 8)) 
-plot(hc, 
-     main = "Dendrograma - Clustering Jerárquico",
-     xlab = "Países", 
-     ylab = "Distancia",
-     cex = 0.6,
-     hang = -1)
-dend <- as.dendrogram(hc)
-dend_colored <- color_branches(dend, k = 3, col = c("#2E9FDF", "#00AFBB", "#E7B800"))
-
-
-
-
-dend_data <- dendro_data(dend_colored)
-rect.hclust(hc, k = 3, border = c("#2E9FDF", "#00AFBB", "#E7B800"))
-
-
-
-
-
-
-
-
-
+NuevaBase <- data.frame(Cluster = clusters_asignados, Base_2022)
 
 ```
-
-La coherencia interpretativa valida que los clusters identificados tienen significado económico y social claro. En este análisis, se seleccionó $k=3$ clusters porque esta segmentación produce tres grupos conceptualmente diferenciados.
-
-### Graficos clusters
-
-
-
-
-### Gráficas Interactivas Profesionales con Centroides y Elipses
-### Gráficas Interactivas Profesionales Corregidas
-### Gráficas Animadas Interactivas - Dimensiones 1-2 y 1-3
-```{r graficas-animadas-mejoradas, message=FALSE, warning=FALSE}
-library(plotly)
-library(dplyr)
-
-# Preparar datos base
-coordenadas_paises <- as.data.frame(resultado_ACP$dudi$li)
-coordenadas_paises$Pais <- rownames(coordenadas_paises)
-coordenadas_paises$Cluster <- as.factor(NuevaBase$Cluster)
-
-# Definir colores y nombres de clusters
-colores_clusters <- c("1" = "#2C5F8D", "2" = "#27AE60", "3" = "#8E44AD")
-nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "En Desarrollo")
-
-# ========== GRÁFICA 1: DIMENSIONES 1-2 ==========
-
-# Preparar datos para 1-2
-datos_12 <- data.frame(
-  Pais = coordenadas_paises$Pais,
-  Comp1 = coordenadas_paises$Axis1,
-  Comp2 = coordenadas_paises$Axis2,
-  Cluster = coordenadas_paises$Cluster
-)
-
-# Calcular centroides para 1-2
-centroides_12 <- datos_12 %>%
-  group_by(Cluster) %>%
-  summarise(
-    Centroid1 = mean(Comp1),
-    Centroid2 = mean(Comp2),
-    .groups = 'drop'
-  )
-
-# Crear gráfica animada para 1-2
-p_12_animado <- plot_ly() %>%
-  
-  # Añadir países con animación
-  add_trace(
-    data = datos_12,
-    x = ~Comp1,
-    y = ~Comp2,
-    color = ~Cluster,
-    colors = colores_clusters,
-    text = ~paste("<b>", Pais, "</b><br>",
-                  "<b>Cluster:</b> ", nombres_clusters[as.character(Cluster)], "<br>",
-                  "<b>Dimensión 1:</b> ", round(Comp1, 3), "<br>",
-                  "<b>Dimensión 2:</b> ", round(Comp2, 3)),
-    type = "scatter",
-    mode = "markers",
-    marker = list(
-      size = 12,
-      opacity = 0.8,
-      line = list(width = 2, color = "white")
-    ),
-    hovertemplate = '%{text}<extra></extra>',
-    name = ~nombres_clusters[as.character(Cluster)],
-    showlegend = TRUE,
-    # Efectos de animación
-    hoverlabel = list(bgcolor = "white", font = list(color = "black")),
-    hoveron = "points"
-  ) %>%
-  
-  # Añadir centroides con símbolos especiales
-  add_trace(
-    data = centroides_12,
-    x = ~Centroid1,
-    y = ~Centroid2,
-    color = ~Cluster,
-    colors = colores_clusters,
-    type = "scatter",
-    mode = "markers",
-    marker = list(
-      size = 25,
-      symbol = "star",
-      line = list(width = 3, color = "white"),
-      opacity = 1
-    ),
-    text = ~paste("<b>Centroide Cluster ", Cluster, "</b><br>",
-                  nombres_clusters[as.character(Cluster)], "<br>",
-                  "<b>Posición promedio del grupo</b>"),
-    hovertemplate = '%{text}<extra></extra>',
-    name = ~paste("Centroide ", nombres_clusters[as.character(Cluster)]),
-    showlegend = TRUE
-  ) %>%
-  
-  # Layout profesional para 1-2
-  layout(
-    title = list(
-      text = "<b>ANÁLISIS DE CLUSTERS - DIMENSIONES 1 Y 2</b><br>",
-      font = list(size = 20, color = "#2C5F8D", family = "Arial"),
-      x = 0.05
-    ),
-    xaxis = list(
-      title = paste0("<b>DIMENSIÓN 1</b><br>",
-                    "Desarrollo Humano y Tecnológico<br>",
-                    "(", round(resultado_ACP$dudi$eig[1]/sum(resultado_ACP$dudi$eig)*100, 1), "% varianza)"),
-      zeroline = TRUE,
-      zerolinecolor = "lightgray",
-      gridcolor = "lightgray",
-      showgrid = TRUE,
-      titlefont = list(size = 14)
-    ),
-    yaxis = list(
-      title = paste0("<b>DIMENSIÓN 2</b><br>",
-                    "Modelo Económico-Institucional<br>",
-                    "(", round(resultado_ACP$dudi$eig[2]/sum(resultado_ACP$dudi$eig)*100, 1), "% varianza)"),
-      zeroline = TRUE,
-      zerolinecolor = "lightgray",
-      gridcolor = "lightgray",
-      showgrid = TRUE,
-      titlefont = list(size = 14)
-    ),
-    legend = list(
-      title = list(text = "<b>CLUSTERS IDENTIFICADOS</b>", 
-                  font = list(size = 14, color = "#2C5F8D")),
-      bgcolor = "rgba(255,255,255,0.95)",
-      bordercolor = "#2C5F8D",
-      borderwidth = 2,
-      x = 1.05,
-      y = 0.5,
-      xanchor = "left",
-      yanchor = "middle",
-      font = list(size = 12)
-    ),
-    hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    margin = list(l = 80, r = 200, b = 80, t = 100),
-    # Añadir anotaciones explicativas
-    annotations = list(
-      list(
-        x = 0.02, y = 0.98, xref = "paper", yref = "paper",
-        text = "💡 Pasa el cursor sobre los puntos para ver detalles",
-        showarrow = FALSE,
-        font = list(size = 12, color = "gray"),
-        bgcolor = "rgba(255,255,255,0.8)",
-        bordercolor = "gray"
-      )
-    )
-  ) %>%
-  
-  # Añadir botones de animación
-  layout(
-    updatemenus = list(
-      list(
-        type = "buttons",
-        direction = "right",
-        x = 0.1,
-        y = 1.15,
-        buttons = list(
-          list(
-            method = "restyle",
-            args = list("marker.size", 8),
-            label = "Tamaño Pequeño"
-          ),
-          list(
-            method = "restyle",
-            args = list("marker.size", 12),
-            label = "Tamaño Normal"
-          ),
-          list(
-            method = "restyle",
-            args = list("marker.size", 16),
-            label = "Tamaño Grande"
-          )
-        )
-      )
-    )
-  )
-
-# ========== GRÁFICA 2: DIMENSIONES 1-3 ==========
-
-# Preparar datos para 1-3
-datos_13 <- data.frame(
-  Pais = coordenadas_paises$Pais,
-  Comp1 = coordenadas_paises$Axis1,
-  Comp2 = coordenadas_paises$Axis3,  # Cambiar a dimensión 3
-  Cluster = coordenadas_paises$Cluster
-)
-
-# Calcular centroides para 1-3
-centroides_13 <- datos_13 %>%
-  group_by(Cluster) %>%
-  summarise(
-    Centroid1 = mean(Comp1),
-    Centroid2 = mean(Comp2),
-    .groups = 'drop'
-  )
-
-# Crear gráfica animada para 1-3
-p_13_animado <- plot_ly() %>%
-  
-  # Añadir países con animación
-  add_trace(
-    data = datos_13,
-    x = ~Comp1,
-    y = ~Comp2,
-    color = ~Cluster,
-    colors = colores_clusters,
-    text = ~paste("<b>", Pais, "</b><br>",
-                  "<b>Cluster:</b> ", nombres_clusters[as.character(Cluster)], "<br>",
-                  "<b>Dimensión 1:</b> ", round(Comp1, 3), "<br>",
-                  "<b>Dimensión 3:</b> ", round(Comp2, 3)),
-    type = "scatter",
-    mode = "markers",
-    marker = list(
-      size = 12,
-      opacity = 0.8,
-      line = list(width = 2, color = "white")
-    ),
-    hovertemplate = '%{text}<extra></extra>',
-    name = ~nombres_clusters[as.character(Cluster)],
-    showlegend = TRUE
-  ) %>%
-  
-  # Añadir centroides
-  add_trace(
-    data = centroides_13,
-    x = ~Centroid1,
-    y = ~Centroid2,
-    color = ~Cluster,
-    colors = colores_clusters,
-    type = "scatter",
-    mode = "markers",
-    marker = list(
-      size = 25,
-      symbol = "diamond",
-      line = list(width = 3, color = "white"),
-      opacity = 1
-    ),
-    text = ~paste("<b>Centroide Cluster ", Cluster, "</b><br>",
-                  nombres_clusters[as.character(Cluster)], "<br>",
-                  "<b>Posición promedio del grupo</b>"),
-    hovertemplate = '%{text}<extra></extra>',
-    name = ~paste("Centroide ", nombres_clusters[as.character(Cluster)]),
-    showlegend = TRUE
-  ) %>%
-  
-  # Layout profesional para 1-3
-  layout(
-    title = list(
-      text = "<b>ANÁLISIS DE CLUSTERS - DIMENSIONES 1 Y 3</b><br>",
-      font = list(size = 20, color = "#2C5F8D", family = "Arial"),
-      x = 0.05
-    ),
-    xaxis = list(
-      title = paste0("<b>DIMENSIÓN 1</b><br>",
-                    "Desarrollo Humano y Tecnológico<br>",
-                    "(", round(resultado_ACP$dudi$eig[1]/sum(resultado_ACP$dudi$eig)*100, 1), "% varianza)"),
-      zeroline = TRUE,
-      zerolinecolor = "lightgray",
-      gridcolor = "lightgray",
-      showgrid = TRUE,
-      titlefont = list(size = 14)
-    ),
-    yaxis = list(
-      title = paste0("<b>DIMENSIÓN 3</b><br>",
-                    "Integración Comercial Global<br>",
-                    "(", round(resultado_ACP$dudi$eig[3]/sum(resultado_ACP$dudi$eig)*100, 1), "% varianza)"),
-      zeroline = TRUE,
-      zerolinecolor = "lightgray",
-      gridcolor = "lightgray",
-      showgrid = TRUE,
-      titlefont = list(size = 14)
-    ),
-    legend = list(
-      title = list(text = "<b>CLUSTERS IDENTIFICADOS</b>", 
-                  font = list(size = 14, color = "#2C5F8D")),
-      bgcolor = "rgba(255,255,255,0.95)",
-      bordercolor = "#2C5F8D",
-      borderwidth = 2,
-      x = 1.05,
-      y = 0.5,
-      xanchor = "left",
-      yanchor = "middle",
-      font = list(size = 12)
-    ),
-    hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    margin = list(l = 80, r = 200, b = 80, t = 100),
-    annotations = list(
-      list(
-        x = 0.02, y = 0.98, xref = "paper", yref = "paper",
-        text = "💡 Pasa el cursor sobre los puntos para ver detalles",
-        showarrow = FALSE,
-        font = list(size = 12, color = "gray"),
-        bgcolor = "rgba(255,255,255,0.8)",
-        bordercolor = "gray"
-      )
-    )
-  )
-
-# Mostrar ambas gráficas
-p_12_animado
-p_13_animado
-```
-
-```{r Grafico clusters}
-
-# 2. Círculo de Correlaciones Interactivo
-p2 <- fviz_pca_var(acp_result,
-                   col.var = "contrib",
-                   gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-                   repel = TRUE,
-                   title = "Círculo de Correlaciones - Contribución de Variables") +
-  theme_minimal()
-
-p2_interactive <- ggplotly(p2) %>%
-  layout(
-    title = list(
-      text = "<b>Círculo de Correlaciones - Contribución de Variables</b>",
-      x = 0.05
-    )
-  )
-
-# 3. Países por Cluster - Componentes 1-2
-p3 <- fviz_pca_ind(acp_result,
-                   axes = c(1, 2),
-                   geom.ind = "point",
-                   col.ind = as.factor(NuevaBase$Cluster),
-                   palette = c("#1f77b4", "#ff7f0e", "#2ca02c"),
-                   addEllipses = TRUE,
-                   ellipse.type = "convex",
-                   ellipse.level = 0.95,
-                   legend.title = "Cluster",
-                   title = "Países por Cluster - Componentes 1-2") +
-  theme_minimal()
-
-p3_interactive <- ggplotly(p3) %>%
-  layout(
-    title = list(
-      text = "<b>Países por Cluster - Componentes 1-2</b>",
-      x = 0.05
-    )
-  )
-
-# 4. Países por Cluster - Componentes 1-3
-p4 <- fviz_pca_ind(acp_result,
-                   axes = c(1, 3),
-                   geom.ind = "point",
-                   col.ind = as.factor(NuevaBase$Cluster),
-                   palette = c("#1f77b4", "#ff7f0e", "#2ca02c"),
-                   addEllipses = TRUE,
-                   ellipse.type = "convex",
-                   ellipse.level = 0.95,
-                   legend.title = "Cluster",
-                   title = "Países por Cluster - Componentes 1-3") +
-  theme_minimal()
-
-p4_interactive <- ggplotly(p4) %>%
-  layout(
-    title = list(
-      text = "<b>Países por Cluster - Componentes 1-3</b>",
-      x = 0.05
-    )
-  )
-
-# Mostrar todas las gráficas
-p1_interactive
-p2_interactive
-p3_interactive
-p4_interactive
-
-```
-
-
-### Caracterizacion de los clusters
-
 
 ```{r Tabla de distribucion}
 distribucion_clusters <- table(clusters_asignados) %>%
@@ -2682,667 +2132,71 @@ tabla_distribucion
 
 ```
 
+```{r Grafico clusters}
+par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
 
-```{r descriptivas clusters}
-estadisticas_clusters <- NuevaBase %>%
-  group_by(Cluster) %>%
-  summarise(across(
-    where(is.numeric),
-    list(
-      Media = ~round(mean(., na.rm = TRUE), 2),
-      DE = ~round(sd(., na.rm = TRUE), 2),
-      Min = ~round(min(., na.rm = TRUE), 2),
-      Max = ~round(max(., na.rm = TRUE), 2),
-      Rango = ~round(max(., na.rm = TRUE) - min(., na.rm = TRUE), 2)
-    )
-  )) %>%
-  pivot_longer(
-    cols = -Cluster,
-    names_to = "Variable_Estadistica",
-    values_to = "Valor"
-  ) %>%
-  separate(Variable_Estadistica, into = c("Variable", "Estadistica"), sep = "_") %>%
-  pivot_wider(
-    names_from = Estadistica,
-    values_from = Valor
-  )
+plot(resultado_ACP$dudi, main = "Análisis Factorial y Clusterización")
 
-nombres_variables <- c(
-  "PIB_per" = "PIB per cápita (US$)",
-  "Poblacion" = "Población total",
-  "Esperanza.vida" = "Esperanza de vida (años)",
-  "Acceso.electricidad" = "Acceso electricidad (%)",
-  "Area.boscosa" = "Área boscosa (%)",
-  "Suscripciones.movil" = "Suscripciones móviles",
-  "Crecimiento.PIB" = "Crecimiento PIB (%)",
-  "Mortalidad.infantil" = "Mortalidad infantil",
-  "Inversion.extranjera" = "Inversión extranjera (%)",
-  "Gasto.salud" = "Gasto en salud (%)",
-  "Uso.internet" = "Uso de internet (%)",
-  "Importaciones" = "Importaciones (%)",
-  "Exportaciones" = "Exportaciones (%)",
-  "Tierra.cultivable" = "Tierra cultivable (%)",
-  "Crecimiento.poblacion" = "Crecimiento población (%)",
-  "Industria" = "Industria (%)",
-  "Remesas" = "Remesas (%)"
-)
+s.corcircle((resultado_ACP$dudi)$co, sub = "Círculo de Correlaciones")
 
-# Tabla principal de estadísticas por cluster
-tabla_estadisticas <- estadisticas_clusters %>%
-  mutate(
-    Variable_Descriptiva = nombres_variables[Variable],
-    Cluster = paste("Cluster", Cluster)
-  ) %>%
-  select(Cluster, Variable_Descriptiva, Media, DE, Min, Max, Rango) %>%
-  arrange(Cluster, Variable_Descriptiva) %>%
-  gt(groupname_col = "Cluster") %>%
-  tab_header(
-    title = md("**ESTADÍSTICAS DESCRIPTIVAS POR CLUSTER**"),
-    subtitle = "Medias, desviaciones estándar y rangos de las variables originales"
-  ) %>%
-  cols_label(
-    Variable_Descriptiva = md("**Variable**"),
-    Media = md("**Media**"),
-    DE = md("**D.E.**"),
-    Min = md("**Mín**"),
-    Max = md("**Máx**"),
-    Rango = md("**Rango**")
-  ) %>%
-  cols_align(
-    align = "center",
-    columns = c(Media, DE, Min, Max, Rango)
-  ) %>%
-  cols_align(
-    align = "left",
-    columns = Variable_Descriptiva
-  ) %>%
-  fmt_number(
-    columns = c(Media, DE, Min, Max, Rango),
-    decimals = 2
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
-    ),
-    locations = cells_column_labels()
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
-    ),
-    locations = list(
-      cells_column_labels(),
-      cells_body()
-    )
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = "right",
-      color = "gray80",
-      weight = px(1)
-    ),
-    locations = cells_body(columns = c(Variable_Descriptiva, Media, DE, Min, Max))
-  ) %>%
-  tab_style(
-    style = cell_text(weight = "bold"),
-    locations = cells_body(columns = Variable_Descriptiva)
-  ) %>%
-  tab_style(
-    style = cell_fill(color = "#F0F8FF"),
-    locations = cells_row_groups()
-  ) %>%
-  tab_options(
-    table.font.names = "Times New Roman",
-    table.width = pct(100),
-    table.border.top.style = "none",
-    table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
-    column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
-    table_body.border.bottom.style = "none",
-    table_body.border.top.style = "none",
-    data_row.padding = px(6),
-    heading.title.font.size = 16,
-    heading.subtitle.font.size = 14,
-    heading.padding = px(8),
-    footnotes.padding = px(6)
-  ) %>%
-  tab_source_note(
-    source_note = md("**Fuente:** Elaboración propia con base en World Bank (2023)")
-  )
+Grupo <- as.factor(NuevaBase$Cluster)
+s.class((resultado_ACP$dudi)$li, Grupo, 
+        sub = "Países por Cluster - Componentes 1-2", 
+        col = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"),
+        xax = 1, yax = 2)
 
-# Mostrar tabla principal
-tabla_estadisticas
-
+s.class((resultado_ACP$dudi)$li, Grupo,
+        sub = "Países por Cluster - Componentes 1-3", 
+        col = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"),
+        xax = 1, yax = 3)
 
 ```
 
+```{r dendograma}
+# Calcular matriz de distancias y crear dendrograma manualmente
+coordenadas_componentes <- resultado_ACP$dudi$li[, 1:3]
+distancias <- dist(coordenadas_componentes, method = "euclidean")
 
+# Aplicar clusterización jerárquica con método de Ward
+hc <- hclust(distancias, method = "ward.D2")
 
-### Segmentos de paises
+# Crear dendrograma con colores
+library(dendextend)
+dend <- as.dendrogram(hc)
 
-```{r segmentacion}
-clusters <- cutree(hc, k = 3)
+# Obtener número de clusters del análisis original
+k <- length(unique(resultado_ACP$cluster))
 
-cluster_df <- data.frame(
-  Pais = rownames(coordenadas_pca),
-  Dim1 = coordenadas_pca$Axis1,
-  Dim2 = coordenadas_pca$Axis2,
-  Dim3 = coordenadas_pca$Axis3,
-  Dim4 = coordenadas_pca$Axis4,
-  Cluster = as.factor(clusters)
-)
+# Colorear las ramas según los clusters
+dend_colored <- color_branches(dend, k = k)
 
+# Configurar márgenes para mejor visualización
+par(mar = c(5, 4, 4, 8) + 0.1)
 
-cluster_plot <- plot_ly(cluster_df,
-                        x = ~Dim1, 
-                        y = ~Dim2,
-                        color = ~Cluster,
-                        colors = c("red", "#00AFBB", "#E7B800"),
-                        text = ~paste("<b>", Pais, "</b><br>",
-                                      "Cluster:", Cluster),
-                        type = "scatter",
-                        mode = "markers",
-                        marker = list(size = 10, opacity = 0.8),
-                        hovertemplate = '%{text}<extra></extra>') %>%
-  layout(
-    title = list(
-      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
-      font = list(size = 16, color = "#2C5F8D")
-    ),
-    xaxis = list(title = "Dimensión 1"),
-    yaxis = list(title = "Dimensión 2"),
-    hovermode = "closest"
-  )
+# Graficar el dendrograma
+plot(dend_colored,
+     main = "Dendrograma - Clusterización Jerárquica (Método Ward)",
+     xlab = "Países",
+     ylab = "Distancia Euclidiana",
+     cex = 0.6,
+     horiz = FALSE)
 
-cluster_plot
+# Añadir leyenda
+legend("topright", 
+       legend = paste("Cluster", 1:k),
+       fill = unique(get_leaves_branches_col(dend_colored)),
+       cex = 0.8,
+       inset = c(-0.15, 0),
+       xpd = TRUE)
 
-cluster_plot1 <- plot_ly(cluster_df,
-                        x = ~Dim3, 
-                        y = ~Dim4,
-                        color = ~Cluster,
-                        colors = c("red", "#00AFBB", "#E7B800"),
-                        text = ~paste("<b>", Pais, "</b><br>",
-                                      "Cluster:", Cluster),
-                        type = "scatter",
-                        mode = "markers",
-                        marker = list(size = 10, opacity = 0.8),
-                        hovertemplate = '%{text}<extra></extra>') %>%
-  layout(
-    title = list(
-      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
-      font = list(size = 16, color = "#2C5F8D")
-    ),
-    xaxis = list(title = "Dimensión 3"),
-    yaxis = list(title = "Dimensión 4"),
-    hovermode = "closest"
-  )
-
-cluster_plot1
-
-resumen_clusters <- cluster_df %>%
-  group_by(Cluster) %>%
-  summarise(
-    Cantidad_Paises = n(),
-    Porcentaje = round(n() / nrow(cluster_df) * 100, 1),
-    Paises_Ejemplo = paste(head(Pais, 5), collapse = ", "),
-    .groups = 'drop'
-  ) %>%
-  gt() %>%
-  tab_header(
-    title = md("**Resumen de Clusters Identificados**"),
-    subtitle = "Agrupamiento jerárquico con método Ward"
-  ) %>%
-  cols_label(
-    Cluster = md("**Cluster**"),
-    Cantidad_Paises = md("**N° Países**"),
-    Porcentaje = md("**%**"),
-    Paises_Ejemplo = md("**Países Representativos**")
-  ) %>%
-  fmt_number(
-    columns = Porcentaje,
-    decimals = 1,
-    pattern = "{x}%"
-  ) %>%
-  tab_options(
-    table.font.names = "Times New Roman"
-  )
-
-resumen_clusters
-```
-
-```{r Mapa }
-world <- ne_countries(scale = "medium", returnclass = "sf")
-
-Base_2022_con_cluster <- Base_2022 %>%
-  mutate(Cluster = clusters) %>%  
-  select(Codigo, Cluster, Pais)   
-Base_con_mapa <- world %>%
-  left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
-  filter(!is.na(Cluster))  
-
-nombres_clusters <- c("1" = "Desarrollado", "2" = "Emergente", "3" = "Subdesarrollado")
-
-
-pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), domain = 1:3)
-leaflet(Base_con_mapa) %>%
-  addTiles() %>%  
-  addPolygons(fillColor = ~pal(Cluster), weight = 1, opacity = 1,
-              color = "white", fillOpacity = 0.7,
-              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)]))  
-```
-
-
-## Resultados e interpletacion
-
-### Caracterizacion de los componentes principales
-
-#### Componente Principal 1: "Desarrollo Humano y Conectividad Digital" (24.3% de varianza)
-
-El primer componente principal explica casi un cuarto de toda la variabilidad en desarrollo internacional, capturando la dimensión más fundamental que diferencia a países ricos de pobres. Se define por esperanza de vida (loading: 0.413), uso de internet (0.4126), acceso a electricidad (0.3709) contrapuestos a mortalidad infantil (-0.4083). Estas variables covarían porque todas requieren sistemas de salud consolidados, riqueza económica, infraestructura tecnológica y estabilidad política—es decir, reflejan la capacidad institucional de una sociedad para garantizar bienestar multidimensional. Países que han logrado esperanzas de vida de 80+ años han realizado décadas de inversión en salud pública, educación universal y desarrollo económico; simultáneamente, estos mismos países inevitablemente desarrollaron infraestructuras digitales avanzadas porque sus economías postindustriales dependen de servicios e innovación tecnológica.
-
-San Marino lidera el extremo positivo de PC1 con coordenada 4.609, siendo una micro-república de 34,000 habitantes enclavada en Italia con esperanza de vida de ~85 años, PIB per cápita superior a $50,000 USD, mortalidad infantil menor a 5 por 1,000, y acceso digital prácticamente universal. Malta (3.608) es otro micro-Estado mediterráneo con esperanza de vida de ~83 años que transitó desde economía agraria a hub financiero y tecnológico. Irlanda (3.457) representa el "milagro celta" que transformó una economía de subsistencia agraria en los 1950s hacia hub tecnológico global con esperanza de vida de ~82 años. Suiza (3.444) y Noruega (2.913) completan el quinteto de élite con sus sistemas de salud universales, educación de calidad, estabilidad política, y economías basadas en servicios financieros, manufactura de precisión, tecnología y recursos petroleros.
-
-En el extremo opuesto, Níger encabeza con coordenada -5.599, siendo un país saheliano sin salida al mar donde 85% del territorio es desierto del Sahara, con esperanza de vida apenas de 62 años, mortalidad infantil de 85 por 1,000, uso de internet inferior a 10%, y acceso a electricidad de apenas 18%. Burundi (-4.797), una pequeña nación densamente poblada devastada por conflictos étnicos, muestra esperanza de vida de 61 años y PIB per cápita de apenas $270 USD. República Democrática del Congo (-4.619) posee recursos naturales valorados en trillones de dólares pero permanece atrapada en pobreza extrema debido a conflictos armados recurrentes y corrupción sistémica, resultando en esperanza de vida de 60 años, mortalidad infantil de 68 por 1,000, y acceso a electricidad inferior a 20%. Sierra Leona (-4.406) y Madagascar (-4.393) completan este quinteto de vulnerabilidad extrema, compartiendo fragilidad institucional, dependencia de agricultura de subsistencia y sistemas de salud colapsados. La brecha cuantitativa es asombrosa: 30 años de diferencia en esperanza de vida, mortalidad infantil 17 veces mayor, acceso digital multiplicado por 10, y riqueza económica 200 veces inferior entre los extremos (Banco Mundial, 2023; PNUD, 2023).
-
-#### Componente Principal 2: "Modelo Económico-Institucional" (13.5% de varianza)
-El segundo componente, ortogonal al primero, captura una dimensión más sutil: la estructura económica independiente del nivel absoluto de riqueza. Se define por industria negativa (-0.5145, cos²: 0.2648), crecimiento poblacional negativo (-0.4365, cos²: 0.1906), contrapuestos a remesas (0.3465, cos²: 0.12), gasto en salud (0.3038, cos²: 0.0923), importaciones (0.2842, cos²: 0.0808) y tierra cultivable (0.2415, cos²: 0.0583). Esta estructura revela un contraste profundo: el extremo negativo representa economías industrializadas maduras que han completado transiciones demográficas con capacidad productiva autónoma; el extremo positivo representa economías pequeñas vulnerables dependientes de transferencias externas de población emigrada.
-
-Qatar encabeza el extremo negativo con coordenada -5.768 como pequeño emirato con población de 2.9 millones (90% migrantes temporales) donde la industria petrolera representa 66% del PIB, generando PIB per cápita de ~$61,000 USD a través de extracción de gas natural licuado. Kuwait (-5.102) y Arabia Saudita (-4.487) presentan patrones similares de economías extractivas con industria petroquímica representando 50-70% del PIB, crecimiento poblacional controlado artificialmente mediante políticas migratorias restrictivas, y no reciben remesas porque funcionan como exportadores netos de trabajadores. Omán (-4.455) e Iraq (-3.224), a pesar de la inestabilidad que afecta a Iraq, mantienen industria petrolera significativa que define sus estructuras económicas.
-
-En el extremo opuesto, Islas Marshall lideran con coordenada 4.210, siendo micro-nación insular del Pacífico con población de 60,000 habitantes donde casi 30% de los marshaleses viven en Estados Unidos, enviando remesas que representan 15-20% del PIB doméstico. Tonga (3.513), pequeña nación polinesia, tiene aproximadamente 50% de sus ciudadanos viviendo en el exterior, generando remesas que constituyen 40% de su PIB—la proporción más alta del mundo. Moldavia (3.041), antigua república soviética sin salida al mar, es una de las naciones más pobres de Europa donde ~25% de su población trabaja en Rusia o Italia, con remesas representando 16% del PIB como principal fuente de divisas. Samoa (2.898) y Líbano (2.750) completan este grupo dependiente de transferencias externas: Samoa recibe remesas principalmente de Australia y Nueva Zelanda, mientras Líbano, devastado por crisis financiera y explosiones, depende críticamente de remesas de su diáspora global (~$7 mil millones anuales, representando 15% del PIB). Este componente revela una paradoja fascinante: no todos los países ricos dependen de industrialización, y no todos los países dependientes de transferencias son pobres—reflejando que distintos modelos institucionales pueden coexistir con diferentes resultados de desarrollo (Banco Mundial, 2023; FMI, 2023).
-
-#### Componente Principal 3: "Integración Comercial Global" (9.1% de varianza)
-El tercer componente captura la dimensión de apertura e integración en cadenas globales de valor, definida por importaciones (0.5187, cos²: 0.269), exportaciones (0.5084, cos²: 0.2584), inversión extranjera directa (0.3714, cos²: 0.138) y crecimiento del PIB (0.2562, cos²: 0.0657) positivos, contrapuestos a área boscosa (-0.273, cos²: 0.0745) y población (-0.263, cos²: 0.0692) negativos. Esta estructura refleja que la globalización contemporánea ha permitido que economías pequeñas adopten estrategias de hiperespecialización e hiperaperrura insertándose en nichos de cadenas globales, mientras que economías continentales grandes pueden mantener mayor autosuficiencia porque sus mercados internos masivos absorben la mayor parte de la producción doméstica.
-
-Malta lidera el extremo positivo con la coordenada más extrema de todos los componentes (7.072), siendo archipiélago mediterráneo de 500 km² con 530,000 habitantes donde importaciones representan 120% del PIB y exportaciones 140%, sumando comercio total superior a 260% del PIB. Malta funciona como hub financiero offshore, centro de servicios digitales (iGaming, blockchain), y base logística para comercio regional, con inversión extranjera directa representando ~15% del PIB anualmente. Djibouti (5.246), pequeño país del Cuerno de África sin recursos naturales significativos pero posicionado estratégicamente en el Mar Rojo, maneja 95% del comercio exterior de Etiopía (población: 120 millones sin salida al mar), con importaciones y exportaciones combinadas superando 100% del PIB djiboutiano e ingresos de ~$200 millones anuales de alquiler de bases militares. San Marino (4.819) e Irlanda (2.588) completan el extremo de hiperglobalización: San Marino con comercio total >300% PIB, Irlanda como hub tecnológico y farmacéutico con exportaciones >100% PIB.
-
-En el extremo negativo, China encabeza con coordenada -3.651 a pesar de ser la "fábrica del mundo" y mayor exportador global en términos absolutos ($3.6 billones USD en 2022), porque su economía es tan masiva ($17.9 billones USD) que el comercio total representa apenas 37% del PIB. India (-2.453), a pesar de exportaciones de ~$770 mil millones USD, tiene comercio exterior representando apenas 22% de su PIB de $3.5 billones. Federación Rusa (-2.560), aunque es gran exportadora de petróleo, gas y armamento, tiene comercio total de ~45% del PIB porque su economía continental es relativamente autárquica. Este componente revela la paradoja fundamental de la globalización: los más globalizados son los más pequeños y vulnerables; los más grandes pueden permitirse mayor independencia comercial (Baldwin, 2016; Rodrik, 2011).
-
-#### Componente Principal 4: "Presión Territorial y Recursos Naturales" (7.5% de varianza)
-El cuarto componente captura el trade-off fundamental entre conservación ambiental y expansión agrícola, definido por área boscosa (0.5134, cos²: 0.2635) positiva, contrapuesta a tierra cultivable (-0.5539, cos²: 0.3068) y población (-0.4713, cos²: 0.2221) negativas. El extremo positivo representa países con ecosistemas naturales preservados y baja presión demográfica; el extremo negativo representa países con presión demográfica masiva que ha forzado sacrificar bosques por tierra agrícola para seguridad alimentaria.
-
-Timor-Leste encabeza el extremo positivo con coordenada 3.921, siendo joven nación independiente donde ~70% del territorio es bosque tropical montañoso con agricultura limitada a ~10% debido a escarpado terreno, población pequeña (~1.3 millones) y presión demográfica moderada. Finlandia (1.736) también en este extremo tiene ~73% de cobertura boscosa boreal, uno de los porcentajes más altos de Europa, con población de apenas 5.5 millones en territorio de 338,000 km². Islas Salomón (2.273) y República del Congo (2.259) tienen cobertura boscosa de ~80% y ~65% respectivamente, manteniéndola debido a baja densidad poblacional relativa.
-
-India lidera el extremo negativo con coordenada -5.813, teniendo 1,400 millones de habitantes en 3.3 millones de km² (densidad: ~420 hab/km²), lo que ha convertido ~60% del territorio en tierra cultivable para arroz, trigo, algodón, caña de azúcar, reduciendo bosques a apenas 23%. China (-3.891) y Bangladesh (-3.049) presentan patrones similares: Bangladesh tiene densidad de ~1,250 hab/km² con ~70% tierra cultivable y bosques reducidos a 11%; China, aunque menos densamente poblada (~145 hab/km²), tiene 1,400 millones de habitantes que han transformado casi toda tierra disponible en agricultura intensiva. Este componente revela el dilema del desarrollo: presión demográfica extrema obliga sacrificar ecosistemas naturales por seguridad alimentaria; solo países con baja densidad pueden permitirse preservar naturaleza (Banco Mundial, 2023).
-
-
-```{r caracterizacion }
-caracterizacion_componentes <- data.frame(
-  Componente = c("PC1", "PC2", "PC3", "PC4"),
-  Nombre = c("Desarrollo Humano y Conectividad Digital", 
-             "Modelo Económico-Institucional", 
-             "Integración Comercial Global", 
-             "Presión Territorial y Recursos Naturales"),
-  Varianza_Explicada = c("24.3%", "13.5%", "9.1%", "7.5%"),
-  Variables_Positivas = c(
-    "Esperanza de vida (0.413), Uso de internet (0.4126), Acceso a electricidad (0.3709)",
-    "Remesas (0.3465), Gasto en salud (0.3038), Importaciones (0.2842), Tierra cultivable (0.2415)",
-    "Importaciones (0.5187), Exportaciones (0.5084), Inversión extranjera (0.3714), Crecimiento PIB (0.2562)",
-    "Área boscosa (0.5134)"
-  ),
-  Variables_Negativas = c(
-    "Mortalidad infantil (-0.4083)",
-    "Industria (-0.5145), Crecimiento poblacional (-0.4365)",
-    "Área boscosa (-0.273), Población (-0.263)",
-    "Tierra cultivable (-0.5539), Población (-0.4713)"
-  ),
-  Interpretación = c(
-    "Países desarrollados con alta esperanza de vida, conectividad digital e infraestructura vs países en desarrollo con sistemas sanitarios frágiles",
-    "Economías industriales maduras vs economías dependientes de transferencias externas y remesas",
-    "Economías pequeñas ultra-abiertas (hubs comerciales) vs economías grandes con mercados internos dominantes",
-    "Países con ecosistemas preservados vs países con alta presión agrícola y demográfica"
-  )
-)
-
-tabla_componentes <- caracterizacion_componentes %>%
-  gt() %>%
-  tab_header(
-    title = md("**Caracterización de Componentes Principales**"),
-    subtitle = "Análisis de componentes principales de indicadores de desarrollo global"
-  ) %>%
-  cols_label(
-    Componente = md("**Comp.**"),
-    Nombre = md("**Dimensión Identificada**"),
-    Varianza_Explicada = md("**% Varianza**"),
-    Variables_Positivas = md("**Variables Positivas**"),
-    Variables_Negativas = md("**Variables Negativas**"),
-    Interpretación = md("**Interpretación Conceptual**")
-  ) %>%
-  cols_align(
-    align = "left",
-    columns = everything()
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
-    ),
-    locations = cells_column_labels()
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
-    ),
-    locations = list(
-      cells_column_labels(),
-      cells_body()
-    )
-  ) %>%
-  tab_style(
-    style = cell_text(weight = "bold"),
-    locations = cells_body(columns = c(Componente, Nombre))
-  ) %>%
-  tab_style(
-    style = cell_text(size = "small"),
-    locations = cells_body(columns = c(Variables_Positivas, Variables_Negativas, Interpretación))
-  ) %>%
-  tab_options(
-    table.font.names = "Times New Roman",
-    table.width = pct(100),
-    table.border.top.style = "none",
-    table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
-    column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
-    table_body.border.bottom.style = "none",
-    table_body.border.top.style = "none",
-    data_row.padding = px(8),
-    heading.title.font.size = 14,
-    heading.subtitle.font.size = 12,
-    heading.padding = px(4)
-  ) %>%
-  tab_source_note(
-    source_note = md("**Fuente:** Elaboración propia con base en análisis PCA de indicadores globales (Banco Mundial, PNUD, FMI)")
-  )
-
-tabla_componentes
-```
-
-
-### Prediccion
-
-Tras construir el modelo ACP con aproximadamente 180 países de entrenamiento, se proyectaron cinco países adicionales (Angola, Belice, Jordania, Luxemburgo, Uruguay) sobre el espacio factorial ya definido. La proyección utiliza las medias y varianzas del conjunto de entrenamiento para estandarizar los nuevos datos, evitando que cambien la estructura de componentes. Se calcularon las coordenadas de estos cinco países en los cuatro primeros componentes principales, cuantificando su posición relativa respecto al espacio multidimensional de desarrollo ya identificado (Hastie et al., 2009).
-
-```{r Prediccion}
-
-Prediccion <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
-                 show_col_types = FALSE) %>%
-  select(
-    Pais = `Country Name`,
-    Codigo = `Country Code`,
-    PIB_per = `GDP per capita (current US$) [NY.GDP.PCAP.CD]`,
-    Poblacion = `Population, total [SP.POP.TOTL]`,
-    `Esperanza vida` = `Life expectancy at birth, total (years) [SP.DYN.LE00.IN]`,
-    `Acceso electricidad` = `Access to electricity (% of population) [EG.ELC.ACCS.ZS]`,
-    `Area boscosa` = `Forest area (% of land area) [AG.LND.FRST.ZS]`,
-    `Suscripciones movil` = `Mobile cellular subscriptions (per 100 people) [IT.CEL.SETS.P2]`,
-    `Crecimiento PIB` = `GDP growth (annual %) [NY.GDP.MKTP.KD.ZG]`,
-    `Mortalidad infantil` = `Mortality rate, infant (per 1,000 live births) [SP.DYN.IMRT.IN]`,
-    `Inversion extranjera` = `Foreign direct investment, net inflows (% of GDP) [BX.KLT.DINV.WD.GD.ZS]`,
-    `Gasto salud` = `Current health expenditure (% of GDP) [SH.XPD.CHEX.GD.ZS]`,
-    `Uso internet` = `Individuals using the Internet (% of population) [IT.NET.USER.ZS]`,
-    Importaciones = `Imports of goods and services (% of GDP) [NE.IMP.GNFS.ZS]`,
-    Exportaciones = `Exports of goods and services (% of GDP) [NE.EXP.GNFS.ZS]`,
-    `Tierra cultivable` = `Arable land (% of land area) [AG.LND.ARBL.ZS]`,
-    `Crecimiento poblacion` = `Population growth (annual %) [SP.POP.GROW]`,
-    Industria = `Industry (including construction), value added (% of GDP) [NV.IND.TOTL.ZS]`,
-    Remesas = `Personal remittances, received (% of GDP) [BX.TRF.PWKR.DT.GD.ZS]`
-  ) %>%
-  filter(Pais %in% c("Uruguay","Belize","Luxembourg","Jordan","Angola"))
-
-ind.test <- Prediccion[, 3:19] %>%
-  mutate(across(everything(), as.numeric))
-
-
-ind.test_clean <- ind.test %>%
-  mutate(across(everything(), ~ifelse(is.na(.), mean(., na.rm = TRUE), .)))
-
-ind.test.coord <- predict(res.pca, newdata = ind.test_clean)
-coordenadas_paises <- data.frame(
-  País = Prediccion$Pais,
-  `Código País` = Prediccion$Codigo,
-  `Dimensión 1 - Desarrollo Humano` = round(ind.test.coord[, 1], 4),
-  `Dimensión 2 - Industrialización` = round(ind.test.coord[, 2], 4),
-  `Dimensión 3 - Apertura Comercial` = round(ind.test.coord[, 3], 4),
-  `Dimensión 4 - Recursos Naturales` = round(ind.test.coord[, 4], 4)
-)
-
-
-tabla_coordenadas <- coordenadas_paises %>%
-  gt() %>%
-  tab_header(
-    title = md("**Tabla 3: Coordenadas de Países en Componentes Principales**"),
-    subtitle = "Proyección de países seleccionados en las cuatro dimensiones del Análisis de Componentes Principales"
-  ) %>%
-  cols_label(
-    País = md("**País**"),
-    `Código.País` = md("**Código**"),
-    `Dimensión.1...Desarrollo.Humano` = md("**Dimensión 1**"),
-    `Dimensión.2...Industrialización` = md("**Dimensión 2**"),
-    `Dimensión.3...Apertura.Comercial` = md("**Dimensión 3**"),
-    `Dimensión.4...Recursos.Naturales` = md("**Dimensión 4**")
-  ) %>%
-  cols_align(
-    align = "center",
-    columns = c(`Dimensión.1...Desarrollo.Humano`, `Dimensión.2...Industrialización`,
-                `Dimensión.3...Apertura.Comercial`, `Dimensión.4...Recursos.Naturales`)
-  ) %>%
-  cols_align(
-    align = "left",
-    columns = c(País, `Código.País`)
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
-    ),
-    locations = cells_column_labels()
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
-    ),
-    locations = list(
-      cells_column_labels(),
-      cells_body()
-    )
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = "right",
-      color = "gray80",
-      weight = px(1)
-    ),
-    locations = cells_body(columns = c(País, `Código.País`, `Dimensión.1...Desarrollo.Humano`, 
-                                       `Dimensión.2...Industrialización`, `Dimensión.3...Apertura.Comercial`))
-  ) %>%
-  tab_style(
-    style = cell_text(weight = "bold"),
-    locations = cells_body(columns = País)
-  ) %>%
-  tab_style(
-    style = cell_text(size = "small"),
-    locations = cells_body(columns = c(`Código.País`, `Dimensión.1...Desarrollo.Humano`,
-                                       `Dimensión.2...Industrialización`, `Dimensión.3...Apertura.Comercial`,
-                                       `Dimensión.4...Recursos.Naturales`))
-  ) %>%
-  tab_options(
-    table.font.names = "Times New Roman",
-    table.width = pct(100),
-    table.border.top.style = "none",
-    table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
-    column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
-    table_body.border.bottom.style = "none",
-    table_body.border.top.style = "none",
-    data_row.padding = px(8),
-    heading.title.font.size = 14,
-    heading.subtitle.font.size = 12,
-    heading.padding = px(4),
-    footnotes.padding = px(4)
-  ) %>%
-  tab_source_note(
-    source_note = md("**Fuente:** Elaboración propia con base en proyección ACP de indicadores del World Bank (2023)")
-  ) %>%
-  tab_footnote(
-    footnote = "Dimensión 1: Desarrollo Humano y Tecnológico (24.3% varianza) | Dimensión 2: Industrialización y Dinámica Demográfica (13.5% varianza)",
-    locations = cells_title(groups = "subtitle")
-  ) %>%
-  tab_footnote(
-    footnote = "Dimensión 3: Apertura e Integración Comercial (9.1% varianza) | Dimensión 4: Base Territorial y Recursos Naturales (7.5% varianza)",
-    locations = cells_title(groups = "subtitle")
-  )
-
-tabla_coordenadas
-
-library(plotly)
-coordenadas_originales <- as.data.frame(res.pca$x)
-coordenadas_originales$Pais <- rownames(coordenadas_originales)
-coordenadas_originales$Tipo <- "Original"
-
-# Las coordenadas de los países predichos ya están en ind.test.coord
-coordenadas_predichas <- as.data.frame(ind.test.coord)
-coordenadas_predichas$Pais <- Prediccion$Pais
-coordenadas_predichas$Tipo <- "Predicho"
-
-# Renombrar las columnas para que coincidan
-colnames(coordenadas_originales)[1:4] <- c("PC1", "PC2", "PC3", "PC4")
-colnames(coordenadas_predichas)[1:4] <- c("PC1", "PC2", "PC3", "PC4")
-
-# Combinar los datos
-datos_completos <- rbind(
-  coordenadas_originales[, c("Pais", "PC1", "PC2", "Tipo")],
-  coordenadas_predichas[, c("Pais", "PC1", "PC2", "Tipo")]
-)
-
-# Crear el gráfico plotly SIN nombres visibles
-p_animado <- plot_ly() %>%
-  
-  # Países originales (solo puntos, sin texto)
-  add_trace(
-    data = datos_completos[datos_completos$Tipo == "Original", ],
-    x = ~PC1, y = ~PC2,
-    type = 'scatter',
-    mode = 'markers',
-    marker = list(
-      color = 'black',
-      size = 8,
-      opacity = 0.7,
-      line = list(width = 1, color = 'white')
-    ),
-    name = "Países originales",
-    hoverinfo = 'text',
-    hovertext = ~paste("<b>", Pais, "</b><br>",
-                       "Tipo: Original<br>",
-                       "Dimensión 1: ", round(PC1, 3), "<br>",
-                       "Dimensión 2: ", round(PC2, 3))
-  ) %>%
-  
-  # Países predichos (solo puntos, sin texto)
-  add_trace(
-    data = datos_completos[datos_completos$Tipo == "Predicho", ],
-    x = ~PC1, y = ~PC2,
-    type = 'scatter',
-    mode = 'markers',
-    marker = list(
-      color = 'blue',
-      size = 12,
-      opacity = 0.8,
-      symbol = 'star',
-      line = list(width = 1.5, color = 'white')
-    ),
-    name = "Países predichos",
-    hoverinfo = 'text',
-    hovertext = ~paste("<b>", Pais, "</b><br>",
-                       "Tipo: Predicho<br>",
-                       "Dimensión 1: ", round(PC1, 3), "<br>",
-                       "Dimensión 2: ", round(PC2, 3)),
-    visible = FALSE  # Inicialmente ocultos
-  ) %>%
-  
-  layout(
-    title = list(
-      text = "<b>PCA - Países originales (negro) y países predichos (azul)</b>",
-      x = 0.05,
-      font = list(size = 16, color = "#2C5F8D")
-    ),
-    xaxis = list(
-      title = "Dimensión 1 - Desarrollo Humano y Tecnológico (24.3%)",
-      zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
-    ),
-    yaxis = list(
-      title = "Dimensión 2 - Modelo Económico-Institucional (13.5%)",
-      zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
-    ),
-    hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    showlegend = TRUE,
-    legend = list(
-      x = 0.02,
-      y = 0.98,
-      bgcolor = "rgba(255,255,255,0.8)"
-    ),
-    annotations = list(
-      list(
-        x = 0.5,
-        y = -0.15,
-        text = "● Países originales | ★ Países predichos • Pasa el cursor sobre los puntos para ver información",
-        showarrow = FALSE,
-        xref = "paper",
-        yref = "paper",
-        font = list(size = 12, color = "gray")
-      )
-    )
-  ) %>%
-  
-  # Configurar animación con botones
-  layout(
-    updatemenus = list(
-      list(
-        type = "buttons",
-        direction = "right",
-        x = 0.1,
-        y = 1.15,
-        buttons = list(
-          list(
-            method = "update",
-            args = list(
-              list(visible = c(TRUE, FALSE)),
-              list(title = "PCA - Solo países originales")
-            ),
-            label = "Solo Originales"
-          ),
-          list(
-            method = "update",
-            args = list(
-              list(visible = c(TRUE, TRUE)),
-              list(title = "PCA - Países originales (negro) y países predichos (azul)")
-            ),
-            label = "Mostrar Predichos"
-          )
-        )
-      )
-    )
-  )
-
-# Mostrar el gráfico
-p_animado
+# Añadir líneas que muestran el corte para k clusters
+abline(h = hc$height[length(hc$height) - k + 1], 
+       col = "red", lty = 2, lwd = 2)
+text(x = length(hc$labels) * 0.8, 
+     y = hc$height[length(hc$height) - k + 1],
+     labels = paste("Corte para", k, "clusters"),
+     col = "red", pos = 3)
 
 ```
- Luxemburgo obtiene coordenada 2.9075 en PC1 (desarrollo extremo), junto a San Marino en la élite ultra-desarrollada, confirmando su posición como micro-Estado financiero con esperanza de vida de 85 años e hiperconectividad digital. Uruguay (1.4145 en PC1) se posiciona como país emergente latinoamericano con desarrollo humano consolidado. Jordania (0.1673) y Belice (-0.4472) son casos intermedios de ingresos medios con vulnerabilidades persistentes. Angola (-3.6127) lidera el rezago extremo, caracterizada por baja esperanza de vida (61 años), alta mortalidad infantil (56 por 1,000) y acceso limitado a servicios. En Dimensión 2, Luxemburgo (-1.0540) representa industrialización postindustrial consolidada; Angola (-1.7126) representa industrialización petroquímica sin beneficios distributivos. En Dimensión 3, Luxemburgo (-7.6090) es hiperglobalizado (comercio >300% PIB); Angola (-0.1232) es básicamente cerrada con dependencia petrolera. En Dimensión 4, Luxemburgo (4.9379) tiene escasa presión demográfica; Angola (1.7885) tiene tierra cultivable disponible pero sin transformación agrícola.
 
 # Bibliografia
