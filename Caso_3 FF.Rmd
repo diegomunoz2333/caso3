@@ -2070,9 +2070,6 @@ El algoritmo se ejecuta recursivamente hasta que todos los países quedan englob
 
 En síntesis, el modelo integra: (1) estandarización para igualar contribuciones relativas, (2) reducción de dimensionalidad mediante ACP para simplificar sin perder información, (3) cálculo de distancias euclidianas para cuantificar disimilaridad, y (4) clusterización jerárquica Ward para crear una taxonomía multidimensional de desarrollo. Esta arquitectura metodológica asegura que los agrupamientos emergentes sean producto exclusivamente de los datos y no de imposiciones externas, permitiendo descubrimientos genuinos sobre la estructura del desarrollo internacional (Jolliffe, 2002; Charrad et al., 2014).
 
-### Prediccion
-
-Con el objetivo de validar la robustez del modelo de clusterización y demostrar su capacidad predictiva, se procedió a proyectar cinco países adicionales no incluidos en el conjunto de entrenamiento original sobre el espacio factorial de componentes principales. Estos países fueron: Luxemburgo, Uruguay, Belice, Jordania y Angola. La proyección de nuevas observaciones sobre el espacio factorial permite evaluar cómo cada país se posiciona relativamente respecto a los clusters identificados, prediciendo su asignación más probable basada en similitud multidimensional (Hastie et al., 2009; Jolliffe, 2002).
 ------------------------------------------------------------------------
 
 # Análisis Descriptivo
@@ -3407,7 +3404,14 @@ p
 
 ```
 
+El gráfico revela una clara segregación geográfica en el uso de tierra: algunos países concentran la zona agrícola con alta tierra cultivable pero baja cobertura boscosa, mientras otros ocupan la zona de balance manteniendo ambas variables moderadas. Europa tiende a distribuirse en la zona media-superior con mayor cobertura forestal, mientras que muchos países africanos se concentran en la zona crítica donde ambos recursos son limitados. La dispersión dentro de cada continente muestra variabilidad significativa, indicando que el uso de tierra no sigue un patrón único sino que responde a dinámicas regionales específicas. Esta visualización permite identificar que la presión ambiental—reflejada en el balance entre conservación y agricultura—opera de formas distintas según geografía, información que el análisis multivariado posteriormente contextualizará dentro de la estructura general del desarrollo.
+
 ### Dimensión Demográfica
+
+La dinámica poblacional condiciona fundamentalmente los desafíos de desarrollo: presión sobre recursos, mercado laboral, demanda por servicios públicos y sostenibilidad fiscal. Esta figura examina simultáneamente población y crecimiento poblacional en los 60 países más grandes, permitiendo visualizar si el crecimiento demográfico genera oportunidades (dividendo demográfico) o presiones críticas (declive o sobrepoblación).
+
+Estructura del Gráfico: Cada rectángulo representa un país donde el tamaño codifica población total. El color codifica crecimiento poblacional anual: verde indica crecimiento alto (2%+, potencial dividendo demográfico), amarillo transición moderada (0.5-2%), naranja-rojo crecimiento bajo o negativo (riesgo de declive poblacional).
+Al pasar el cursor sobre cada país, aparecen simultáneamente cinco indicadores demográficos y algunos de desarrollo para complementar: población en millones, tasa de crecimiento anual, esperanza de vida, mortalidad infantil, y PIB per cápita. También se muestra la clasificación demográfica del país (Dividendo Demográfico, Madurez Estable o Declive Poblacional).
 
 ```{r treemap-oportunidades-riesgos, fig.height=9, fig.width=25, out.width="100%"}
 
@@ -3638,7 +3642,15 @@ fig_treemap <- fig_treemap %>%
 fig_treemap
 ```
 
+India y China dominan por volumen (rectángulos enormes), pero con dinámicas opuestas: India en amarillo-verde (crecimiento 1-2%) versus China en naranja-rojo (crecimiento bajo). Estados Unidos, Indonesia y Brasil exhiben colores intermedios, reflejando transiciones demográficas distintas. Países africanos como Congo Democrático, Nigeria y Uganda aparecen en verde brillante, indicando crecimiento rápido (oportunidades de dividendo demográfico pero también presión sobre servicios). Europeos como Alemania y España muestran tonos rojos-naranjas, evidenciando declive poblacional y envejecimiento. Esta distribución muestra que presiones demográficas operan en direcciones opuestas según región, información que contextualizará el análisis multivariado posterior.
+
 ## Visualización Geoespacial
+
+La visualización geoespacial complementa el análisis dimensional anterior ofreciendo una perspectiva geográfica integrada que revela cómo las dinámicas de desarrollo se distribuyen espacialmente en el planeta. Esta sección presenta un mapa interactivo mundial donde cada territorio se colorea según el indicador seleccionado, permitiendo identificar patrones de concentración geográfica, grupos regionales y anomalías que anticipan la estructura latente del desarrollo global.
+
+El mapa ofrece tres variables seleccionables mediante controles en la esquina superior izquierda: (1) Crecimiento PIB, (2) Acceso a Electricidad, y (3) Crecimiento Poblacional. Cada variable posee su propia paleta de colores. Una leyenda dinámica en la esquina inferior derecha se actualiza automáticamente al cambiar de variable, mostrando la escala específica.
+
+Al pasar el cursor sobre cualquier país, emerge informacón con nombre del país, variable seleccionada y valor específico, permitiendo consultar información precise sin interrumpir la visualización general.
 
 ```{r crear-datos-mapa}
 
@@ -3954,6 +3966,7 @@ mapa <- mapa %>%
 mapa
 ```
 
+En crecimiento PIB, se observa segregación clara: Europa y América del Norte tienden a tonos amarillo-verde (crecimiento moderado), mientras muchas naciones africanas muestran tonos negros o rojo oscuro (estancamiento). Asia exhibe máxima variabilidad: gigantes como India y Bangladesh en verde (crecimiento dinámico), mientras Japón mantiene tonos amarillos (crecimiento moderado). En acceso a electricidad, la brecha digital-energética es evidente: Europa, América del Norte y gran parte de Asia en amarillo (acceso universal), mientras amplias regiones de África central permanecen en azul oscuro. América Latina exhibe transición: colores intermedios reflejando acceso extendido pero no universal. En crecimiento poblacional, se observa un patrón opuesto al desarrollo económico: Europa y Japón dominan tonos azules (declive demográfico), mientras África muestra naranjas y rojos intensos (presión poblacional extrema), y América Latina ocupa posiciones intermedias. Esta disociación geográfica entre prosperidad económica, acceso de servicios básicos y dinámica demográfica anticipa que el análisis multivariado revelará si estas dimensiones operan de forma integrada o representan trayectorias divergentes del desarrollo.
 ------------------------------------------------------------------------
 
 ## Visualizaciones Exploratorias
