@@ -1054,8 +1054,6 @@ El año 2022 marca un punto de inflexión crítico en la economía global, repre
 
 En este contexto, 2022 funciona como un "revelador" excepcional de vulnerabilidades y fortalezas estructurales subyacentes de los países: aquellos con sistemas de salud robustos, infraestructura tecnológica consolidada y economías diversificadas mostraron resiliencia; los que enfrentaban fragilidades estructurales experimentaron impactos persistentes (Banco Mundial, 2022; CIDOB, 2022). Por tanto, 2022 es un año extraordinariamente informativo para identificar perfiles reales de desarrollo, ya que las diferencias entre países se magnificaron visiblemente, permitiendo observar no clasificaciones arbitrarias sino estructuras auténticas de capacidad nacional.
 
-Los datos utilizados provienen del **World Development Indicators** del Banco Mundial.
-
 ## Descripción de las variables
 
 El dataset construido para este análisis integra 17 variables cuantitativas que capturan las múltiples dimensiones del desarrollo contemporáneo. Estas variables se organizan en cinco áreas temáticas que, en conjunto, ofrecen una perspectiva comprehensiva del desempeño socioeconómico, tecnológico y ambiental de cada país. A continuación, se presenta una descripción detallada de cada variable según su área temática.
@@ -1772,6 +1770,7 @@ tabla_5
 A continuacion, se muestra la base de datos que se usara para el modelo de aprendizaje no supervisado.
 
 ```{r Base de datos, warning=FALSE,message=FALSE}
+
 Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE) %>%
   select(
@@ -1808,8 +1807,10 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
                       "Caribbean small states", "Other small states", 
                       "IDA & IBRD total", "IDA only", "IBRD only",
                       "Pre-demographic dividend", "Post-demographic dividend", 
-                      "Early-demographic dividend", "Late-demographic dividend", "Luxembourg")) %>% 
-  mutate(across(3:19, as.numeric)) %>% drop_na()
+                      "Early-demographic dividend", "Late-demographic dividend")) %>% 
+  mutate(across(3:19, as.numeric)) %>% drop_na()%>% 
+  filter(Pais != c( "Luxembourg","	Uruguay", "Angola","Jordan","Belize")) %>% 
+  filter(Codigo != "BLZ",Codigo!="JOR",Codigo!="URY")
 
 
 tabla_inicial <- datatable(
@@ -2025,6 +2026,7 @@ tabla_inicial <- datatable(
 
 tabla_inicial
 ```
+
 ## Descripción del modelo
 
 La implementación del análisis se estructura en cuatro etapas secuenciales, cada una construida sobre los resultados de la anterior, garantizando que la información y patrones descubiertos se preserven y amplifiquen a través del pipeline de análisis.
@@ -2072,14 +2074,14 @@ En síntesis, el modelo integra: (1) estandarización para igualar contribucione
 
 # Análisis Descriptivo
 
-Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica relaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo—información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?"
-Las cinco dimensiones temáticas—económica, de salud, tecnológica, ambiental y demográfica—se examinan secuencialmente a través de visualizaciones interactivas que revelan líderes y rezagados en cada indicador, patrones de asociación entre variables dentro de dimensiones, y diferencias regionales que anticipan los agrupamientos posteriores. Este enfoque dimensional permite reconocer que el "desarrollo" no es una variable única sino un fenómeno multifacético donde países pueden destacar en algunas áreas mientras quedan rezagados en otras—precisamente la complejidad que justifica un análisis multivariado integrado.
+Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica relaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo—información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?" Las cinco dimensiones temáticas—económica, de salud, tecnológica, ambiental y demográfica—se examinan secuencialmente a través de visualizaciones interactivas que revelan líderes y rezagados en cada indicador, patrones de asociación entre variables dentro de dimensiones, y diferencias regionales que anticipan los agrupamientos posteriores. Este enfoque dimensional permite reconocer que el "desarrollo" no es una variable única sino un fenómeno multifacético donde países pueden destacar en algunas áreas mientras quedan rezagados en otras—precisamente la complejidad que justifica un análisis multivariado integrado.
 
 ## Explorador Interactivo de Indicadores
 
 Con el propósito de facilitar el análisis exploratorio de cada una de las 17 variables de desarrollo de forma individual, se ha desarrollado un explorador interactivo que permite examinar dinámicamente la distribución, dispersión y rankings de cada indicador. Esta herramienta opera sobre todo el dataset y proporciona tres niveles de información complementarios: (1) estadísticas globales que resumen la concentración y dispersión de cada variable (media, mediana, desviación estándar, percentiles), (2) ranking de los 10 países líderes en cada indicador, y (3) variabilidad porcentual respecto a la media, que cuantifica cuánto cada país se desvía del patrón global.
 
 El explorador funciona mediante un sistema de pestañas interactivas: selecciona cualquier variable haciendo click en sus botonespara visualizar simultáneamente las estadísticas agregadas y el top 10 de desempeño. Esta estructura permite identificar patrones preliminares de concentración, identificar outliers extremos, y reconocer diferenciaciones regionales antes de proceder al análisis multidimensional integrado. A continuación se presentan dos ejemplos ilustrativos que ejemplifican la heterogeneidad fundamental del desarrollo global.
+
 ```{r preparar-datos-unificados}
 
 variables_numericas <- names(Base_2022)[3:ncol(Base_2022)]
@@ -2302,8 +2304,7 @@ for (variable in variables_numericas) {
 }
 ```
 
-El análisis del conjunto de los indicadores revela una característica fundamental: la desigualdad internacional no es uniforme sino específica a cada dimensión de desarrollo. Mientras que el PIB per cápita muestra una concentración extrema (media $17,045.36 vs. mediana $6,705.15, indicando que el 50% de países está por debajo de apenas $6,705), la población exhibe un patrón radicalmente distinto de concentración geográfica en gigantes asiáticos (media 49.6 millones vs. mediana 10.4 millones).
-Esta variabilidad específica a cada variable es precisamente lo que genera la complejidad multidimensional del desarrollo: países pueden sobresalir en algunas áreas (por ejemplo, esperanza de vida alta pero PIB bajo, como Costa Rica) mientras quedan rezagados en otras (por ejemplo, PIB alto pero vulnerabilidad ambiental, como algunos productores de petróleo). El explorador revela estas heterogeneidades al visualizar que en algunas variables existe concentración extrema (desv. est. > 3x la media), mientras que en otras la dispersión es más moderada, lo que puede indicar que el ACP identificará dimensiones donde la varianza es máxima y donde se concentra realmente la diferencia internacional.
+El análisis del conjunto de los indicadores revela una característica fundamental: la desigualdad internacional no es uniforme sino específica a cada dimensión de desarrollo. Mientras que el PIB per cápita muestra una concentración extrema (media \$17,045.36 vs. mediana \$6,705.15, indicando que el 50% de países está por debajo de apenas \$6,705), la población exhibe un patrón radicalmente distinto de concentración geográfica en gigantes asiáticos (media 49.6 millones vs. mediana 10.4 millones). Esta variabilidad específica a cada variable es precisamente lo que genera la complejidad multidimensional del desarrollo: países pueden sobresalir en algunas áreas (por ejemplo, esperanza de vida alta pero PIB bajo, como Costa Rica) mientras quedan rezagados en otras (por ejemplo, PIB alto pero vulnerabilidad ambiental, como algunos productores de petróleo). El explorador revela estas heterogeneidades al visualizar que en algunas variables existe concentración extrema (desv. est. \> 3x la media), mientras que en otras la dispersión es más moderada, lo que puede indicar que el ACP identificará dimensiones donde la varianza es máxima y donde se concentra realmente la diferencia internacional.
 
 ## Análisis por Dimensiones
 
@@ -2768,12 +2769,16 @@ p <- plot_ly(
 p
 ```
 
-La gráfica evidencia una segregación geográfica pronunciada: los paises Europa y Oceanía se concentran casi completamente en la zona óptima, formando un grupo de alta longevidad y baja mortalidad infantil. En contraste,  muchos paises de África ocupan predominantemente la zona crítica, con esperanza de vida entre 50-65 años y mortalidad infantil superior a 30 por mil nacidos vivos. Los paises de América  exhiben una distribución intermedia con variabilidad interna significativa: mientras algunos países rondan los 75 años de EV, otros permanecen por debajo de 70.
-Los Asiaticos destacan por su extrema heterogeneidad: naciones desarrolladas se ubican en la zona óptima, mientras casos como Pakistan ilustran cómo países asiáticos pueden enfrentar desafíos sanitarios comparables a contextos africanos, a pesar de perfiles económicos distintos.
+La gráfica evidencia una segregación geográfica pronunciada: los paises Europa y Oceanía se concentran casi completamente en la zona óptima, formando un grupo de alta longevidad y baja mortalidad infantil. En contraste, muchos paises de África ocupan predominantemente la zona crítica, con esperanza de vida entre 50-65 años y mortalidad infantil superior a 30 por mil nacidos vivos. Los paises de América exhiben una distribución intermedia con variabilidad interna significativa: mientras algunos países rondan los 75 años de EV, otros permanecen por debajo de 70. Los Asiaticos destacan por su extrema heterogeneidad: naciones desarrolladas se ubican en la zona óptima, mientras casos como Pakistan ilustran cómo países asiáticos pueden enfrentar desafíos sanitarios comparables a contextos africanos, a pesar de perfiles económicos distintos.
 
 La marcada relación inversa evidencia que los sistemas de salud más robustos logran simultáneamente aumentar longevidad y reducir mortalidad infantil, señalando que ambas variables capturan la misma realidad subyacente: la calidad y accesibilidad de servicios sanitarios fundamentales.
 
 ### Dimensión Tecnológica y de Conectividad
+
+La conectividad digital es un mecanismo contemporáneo fundamental de inclusión económica, pero no es unidimensional: requiere infraestructura energética (acceso a electricidad), conectividad informática (uso de internet) y penetración móvil (suscripciones por habitante). Estas variables son complementarias pero pueden desacoplarse—un país puede tener electricidad universal pero baja adopción de internet, o inversamente, penetración móvil extraordinaria sin acceso eléctrico generalizado.
+
+La Figura XX desagrega estos indicadores en cinco paneles geográficos, donde el eje horizontal representa acceso a electricidad, el eje vertical uso de internet, y el tamaño de cada burbuja codifica suscripciones móviles. Una línea diagonal de referencia actúa como benchmark: países sobre ella tienen penetración digital que compensa acceso eléctrico limitado; países bajo ella exhiben brechas donde energía no se traduce en conectividad informática. Al pasar el cursor sobre cada burbuja, se despliegan los tres indicadores de conectividad específicos del país y continente.
+
 ```{r scatter-facetado-tecnologia, fig.height=10, fig.width=14, out.width="90%"}
 
 datos_scatter_gg <- Base_2022 %>%
@@ -3081,7 +3086,10 @@ plotly_plot <- plotly_plot %>%
 plotly_plot
 ```
 
+En África, países como Níger y Mali se concentran en el cuadrante inferior izquierdo (20-40% electricidad, 10-30% internet), aunque Marruecos emerge como outlier con 100% acceso eléctrico y 89.9% internet, demostrando que la universalización es viable. En Europa, Suecia y Noruega ocupan la esquina superior derecha con universalización eléctrica, internet penetrante (95-100%) y saturación móvil (100+ suscripciones/100 hab.). América presenta electricidad generalizada (80-95%) pero internet variable (50-80%), indicando que infraestructura energética no garantiza automáticamente adopción digital sin inversión específica en telecomunicaciones. Asia destaca por su extrema heterogeneidad: mientras Japón y Singapur se alinean con economías desarrolladas, Bangladesh y Pakistán enfrentan limitaciones más severas. Notablemente, países asiáticos como India y Filipinas exhiben penetración móvil extraordinaria (120-140 suscripciones/100 hab.) a pesar de acceso eléctrico limitado, evidenciando que la telefonía móvil ha permitido saltos tecnológicos sin requerir infraestructura fija completa.
+
 ### Dimension ambiental y de recursos
+
 ```{r ambiental-scatter, fig.height=8, fig.width=25, out.width="100%"}
 
 asignar_continentes <- function(data) {
@@ -3179,20 +3187,18 @@ datos_ambiental <- Base_2022 %>%
     Poblacion
   ) %>%
   mutate(
-    Tamaño = Poblacion^(1/3),
-    Tamaño_escalado = 10 + (Tamaño - min(Tamaño)) / (max(Tamaño) - min(Tamaño)) * 30,
-    # Hover con colores que contrasten sobre fondo claro
-    Hover = paste0(
-      "<b style='font-size:14px; color:#000000;'>", Pais, "</b><br>",
-      "<span style='color:#555555; font-size:12px;'>", Continente, "</span><br><br>",
-      "<b style='color:#333333; font-size:12px;'>USO DE TIERRA:</b><br>",
-      "├─ Área Boscosa: <b style='color:#006400;'>", 
+    # ✅ TOOLTIP CON EL MISMO DISEÑO QUE EL GRÁFICO DE CONECTIVIDAD
+    tooltip = paste0(
+      "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
+      "<span style='color:#a259ff; font-size:11px;'>", Continente, "</span><br><br>",
+      "<b style='color:#ffd600;'> USO DE TIERRA:</b><br>",
+      "├─ Área Boscosa: <b style='color:#00e676;'>", 
       round(`Area boscosa`, 1), "%</b><br>",
-      "├─ Tierra Cultivable: <b style='color:#8B8000;'>", 
+      "├─ Tierra Cultivable: <b style='color:#ffd600;'>", 
       round(`Tierra cultivable`, 1), "%</b><br>",
-      "├─ Balance: <b style='color:#005a9e;'>", 
+      "├─ Balance: <b style='color:#00e5ff;'>", 
       round(`Area boscosa` + `Tierra cultivable`, 1), "% (bosque + cultivo)</b><br>",
-      "└─ Población: <b style='color:#8B0000;'>", 
+      "└─ Población: <b style='color:#ff1744;'>", 
       format(round(Poblacion/1e6, 1), big.mark = ",", trim = TRUE), " M</b>"
     )
   )
@@ -3210,17 +3216,16 @@ p <- plot_ly() %>%
     data = datos_ambiental,
     x = ~`Area boscosa`,
     y = ~`Tierra cultivable`,
-    size = ~Tamaño_escalado,  
+    # ✅ TAMAÑO FIJO - SIN VARIACIÓN POR POBLACIÓN
     color = ~Continente,
     colors = color_map,
     type = "scatter",
     mode = "markers",
-    customdata = ~Hover,
+    customdata = ~tooltip,
     hovertemplate = "%{customdata}<extra></extra>",
     marker = list(
-      sizeref = 0.1,  
-      sizemin = 2.5,    
-      opacity = 0.7,  
+      size = 12,  # ✅ TAMAÑO FIJO PARA TODOS LOS PUNTOS
+      opacity = 0.8,
       line = list(
         color = "#ffffff", 
         width = 1.5   
@@ -3232,7 +3237,7 @@ p <- plot_ly() %>%
   layout(
     title = list(
       text = "<b style='color:#00e5ff; font-size:24px;'>Sostenibilidad Ambiental: Uso de Tierra</b><br>
-               <span style='color:#8b92a0; font-size:14px;'>Año 2022 | Tamaño de burbuja = Población | Balance entre conservación y agricultura</span>",
+               <span style='color:#8b92a0; font-size:14px;'>Año 2022 | Balance entre conservación y agricultura</span>",
       x = 0.5,
       xanchor = 'center',
       y = 0.95
@@ -3262,26 +3267,27 @@ p <- plot_ly() %>%
     paper_bgcolor = '#0a0e1a',
     font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 13),
     
+    # ✅ LEYENDA MOVIDA A LA ESQUINA SUPERIOR DERECHA
     legend = list(
       title = list(text = "<b style='font-size:14px;'>Continente</b>", font = list(size = 14, color = "#00e5ff")),
       bgcolor = 'rgba(10,14,26,0.95)',
       bordercolor = '#00e5ff',
       borderwidth = 1.5,
-      x = 0.02,
-      y = 0.98,
+      x = 0.98,  # ✅ POSICIÓN DERECHA
+      y = 0.98,  # ✅ POSICIÓN SUPERIOR
+      xanchor = "right",
+      yanchor = "top",
       font = list(size = 12, color = "#e0e6ed")
     ),
+    
     margin = list(l = 100, r = 50, b = 120, t = 120),
     hovermode = 'closest',
+    
+    # ✅ HOVERLABEL IDÉNTICO AL GRÁFICO DE CONECTIVIDAD
     hoverlabel = list(
-      bgcolor = "#ffffff",        
-      bordercolor = "#00e5ff",    
-      font = list(
-        color = "#000000",        
-        size = 12, 
-        family = "Arial"
-      ),
-      align = "left"
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
     ),
     
     shapes = list(
@@ -3325,7 +3331,7 @@ p <- plot_ly() %>%
     
     annotations = list(
       list(
-        x = 82, y = 10,
+        x = 88, y = 10,
         text = "<b style='color:#00e676; font-size:12px;'>🌲 CONSERVACIÓN</b>",
         showarrow = FALSE,
         bgcolor = "rgba(0, 230, 118, 0.2)",
@@ -3335,7 +3341,7 @@ p <- plot_ly() %>%
         font = list(size = 11)
       ),
       list(
-        x = 25, y = 65,
+        x = 30, y = 65,
         text = "<b style='color:#ffd600; font-size:12px;'>🌾 AGRÍCOLA</b>",
         showarrow = FALSE,
         bgcolor = "rgba(255, 214, 0, 0.2)",
@@ -3368,7 +3374,7 @@ p <- plot_ly() %>%
       list(
         x = 0.5, y = -0.15,
         xref = "paper", yref = "paper",
-        text = "<span style='color:#8b92a0; font-size:12px;'></b> Burbujas más grandes = mayor población. Verde = alta cobertura boscosa. Amarillo = alta agricultura. Equilibrio = desarrollo sostenible.</span>",
+        text = "<span style='color:#8b92a0; font-size:12px;'>Verde = alta cobertura boscosa. Amarillo = alta agricultura. Equilibrio = desarrollo sostenible.</span>",
         showarrow = FALSE,
         xanchor = "center",
         yanchor = "top",
@@ -3505,10 +3511,11 @@ datos_riesgos <- Base_2022 %>%
       `Crecimiento poblacion` < 0.5 ~ "Declive Poblacional",
       TRUE ~ "Sin Clasificar"
     ),
+    # ✅ TOOLTIP CON EL MISMO DISEÑO QUE EL GRÁFICO DE CONECTIVIDAD
     tooltip = paste0(
       "<b style='font-size:14px; color:#00e5ff;'>", Pais, "</b><br>",
-      "<span style='color:#a259ff; font-size:12px;'>", Continente, "</span><br><br>",
-      "<b style='color:#e0e6ed; font-size:12px;'>INDICADORES DEMOGRÁFICOS:</b><br>",
+      "<span style='color:#a259ff; font-size:11px;'>", Continente, "</span><br><br>",
+      "<b style='color:#ffd600;'> INDICADORES DEMOGRÁFICOS:</b><br>",
       "├─ Población: <b style='color:#ffd600;'>", 
       format(round(Poblacion_millones, 1), big.mark = ",", decimal.mark = ".", trim = TRUE), " M</b><br>",
       "├─ Crecimiento: <b style='color:#00e676;'>", 
@@ -3583,6 +3590,14 @@ fig_treemap <- fig_treemap %>%
     plot_bgcolor = '#000000',
     paper_bgcolor = '#0a0e1a',
     font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    
+    # ✅ HOVERLABEL IDÉNTICO AL GRÁFICO DE CONECTIVIDAD
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    
     margin = list(l = 10, r = 150, b = 100, t = 120),
     annotations = list(
       list(
