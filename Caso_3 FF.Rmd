@@ -3986,13 +3986,10 @@ En crecimiento PIB, se observa segregación clara: Europa y América del Norte t
 
 Antes de aplicar el Análisis de Componentes Principales, es fundamental examinar la estructura de correlaciones entre las 17 variables para identificar redundancias potenciales y validar la pertinencia de la reducción de dimensionalidad. La matriz de correlación de Pearson revela las asociaciones lineales entre pares de variables, proporcionando una visión exploratoria de cómo las dimensiones del desarrollo se interrelacionan. (Jolliffe, 2002).
 
-```{r Matriz de correlaciones}
-
+```{r matriz-correlaciones-cyber, fig.height=9, fig.width=14, out.width="100%"}
 datos_analisis <- Base_2022 %>%
   select(-Codigo) %>%
   column_to_rownames("Pais")
-
-library(ggcorrplot)
 
 matriz_cor <- cor(datos_analisis, use = "complete.obs")
 
@@ -4021,61 +4018,89 @@ nombres_completos <- c(
 rownames(matriz_cor) <- nombres_completos[rownames(matriz_cor)]
 colnames(matriz_cor) <- nombres_completos[colnames(matriz_cor)]
 
-# Crear heatmap interactivo
+# Crear heatmap interactivo con tema cyber
 heatmap_interactivo <- plot_ly(
   x = colnames(matriz_cor),
   y = rownames(matriz_cor),
   z = matriz_cor,
   type = "heatmap",
-  colors = colorRamp(c("#6D9EC1", "white", "#E46726")),
+  colors = colorRamp(c("#ff1744", "#0a0e1a", "#00e5ff")),  # Rojo cyber - Negro - Cyan cyber
   hoverinfo = "text",
   text = matrix(
     paste(
-      "Variable X:", rep(colnames(matriz_cor), each = nrow(matriz_cor)),
-      "<br>Variable Y:", rep(rownames(matriz_cor), times = ncol(matriz_cor)),
-      "<br>Correlación:", round(c(matriz_cor), 3)
+      "<b>", rep(colnames(matriz_cor), each = nrow(matriz_cor)), "</b><br>",
+      "vs <b>", rep(rownames(matriz_cor), times = ncol(matriz_cor)), "</b><br>",
+      "Correlación: <b style='color:#00e5ff'>", round(c(matriz_cor), 3), "</b>"
     ),
     nrow = nrow(matriz_cor),
     ncol = ncol(matriz_cor)
   ),
   colorbar = list(
-    title = "Correlación",
-    titleside = "right"
+    title = list(
+      text = "<b>Correlación</b>",
+      font = list(color = "#e0e6ed", size = 12)
+    ),
+    tickfont = list(color = "#8b92a0", size = 10),
+    thickness = 15,
+    len = 0.8
   )
 ) %>%
   layout(
     title = list(
-      text = "<b>Matriz de Correlaciones Interactiva - 17 Variables de Desarrollo</b>",
+      text = "<b style='color:#00e5ff; font-size:20px;'>🌐 Matriz de Correlaciones Multidimensional</b><br>
+             <span style='color:#8b92a0; font-size:13px;'>17 Variables de Desarrollo Global | Año 2022</span>",
       x = 0.05,
-      font = list(size = 16)
+      y = 0.95,
+      font = list(size = 14)
     ),
     xaxis = list(
       title = "",
       tickangle = -45,
-      tickfont = list(size = 10),
-      showgrid = FALSE
+      tickfont = list(size = 10, color = "#8b92a0"),
+      showgrid = FALSE,
+      zeroline = FALSE
     ),
     yaxis = list(
       title = "",
-      tickfont = list(size = 10),
-      showgrid = FALSE
+      tickfont = list(size = 10, color = "#8b92a0"),
+      showgrid = FALSE,
+      zeroline = FALSE
     ),
-    margin = list(l = 150, r = 50, b = 150, t = 80),
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed'),
+    margin = list(l = 180, r = 50, b = 180, t = 120),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial")
+    ),
     annotations = list(
       list(
         x = 0.5,
-        y = -0.15,
-        text = "Haz clic y arrastra para zoom • Pasa el cursor para ver valores",
+        y = -0.18,
+        text = "<span style='color:#8b92a0; font-size:11px;'>🔍 Haz clic y arrastra para zoom • 📊 Pasa el cursor para ver valores exactos</span>",
         showarrow = FALSE,
         xref = "paper",
         yref = "paper",
-        font = list(size = 10, color = "gray")
+        font = list(size = 11)
       )
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "matriz_correlaciones_cyber",
+      width = 1400,
+      height = 1000
     )
   )
 
 heatmap_interactivo
-matriz_cor <- cor(datos_analisis, use = "complete.obs")
 
 matriz_cor_long <- matriz_cor %>%
   as.data.frame() %>%
@@ -4089,21 +4114,21 @@ matriz_cor_long <- matriz_cor %>%
   mutate(Correlacion = round(Correlacion, 3))
 
 nombres_abreviados <- c(
-  "PIB_per" = "PIB pc",
-  "Poblacion" = "Población",
-  "Esperanza vida" = "Esp. vida",
+  "PIB per cápita" = "PIB pc",
+  "Población total" = "Población",
+  "Esperanza de vida" = "Esp. vida",
   "Acceso electricidad" = "Electricidad",
-  "Area boscosa" = "Bosques",
-  "Suscripciones movil" = "Móvil",
+  "Área boscosa" = "Bosques",
+  "Suscripciones móviles" = "Móvil",
   "Crecimiento PIB" = "Crec. PIB",
   "Mortalidad infantil" = "Mort. inf.",
-  "Inversion extranjera" = "IED",
-  "Gasto salud" = "Salud",
-  "Uso internet" = "Internet",
+  "Inversión extranjera" = "IED",
+  "Gasto en salud" = "Salud",
+  "Uso de internet" = "Internet",
   "Importaciones" = "Import.",
   "Exportaciones" = "Export.",
   "Tierra cultivable" = "Cultivable",
-  "Crecimiento poblacion" = "Crec. pob.",
+  "Crecimiento población" = "Crec. pob.",
   "Industria" = "Industria",
   "Remesas" = "Remesas"
 )
@@ -4121,8 +4146,8 @@ cor_significativas <- matriz_cor_long %>%
 tabla_cor <- cor_significativas %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 12**"),
-    subtitle = "Matriz de Correlaciones - Correlaciones Significativas (|r| > 0.5)"
+    title = md("**🔗 Correlaciones Significativas entre Variables**"),
+    subtitle = "Relaciones con |r| > 0.5 entre indicadores de desarrollo global"
   ) %>%
   cols_label(
     Variable1_abr = md("**Variable 1**"),
@@ -4139,16 +4164,16 @@ tabla_cor <- cor_significativas %>%
   ) %>%
   tab_style(
     style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
+      cell_text(weight = "bold", size = "medium", color = "#000000"),
+      cell_fill(color = "#00e5ff")
     ),
     locations = cells_column_labels()
   ) %>%
   tab_style(
     style = cell_borders(
       sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
+      color = "#00e5ff",
+      weight = px(2)
     ),
     locations = list(
       cells_column_labels(),
@@ -4158,62 +4183,90 @@ tabla_cor <- cor_significativas %>%
   tab_style(
     style = cell_borders(
       sides = "right",
-      color = "gray80",
+      color = "#00e5ff",
       weight = px(1)
     ),
     locations = cells_body(columns = c(Variable1_abr, Variable2_abr))
   ) %>%
   tab_style(
-    style = cell_text(weight = "bold"),
+    style = list(
+      cell_fill(color = "#0a0e1a"),
+      cell_text(color = "#e0e6ed")
+    ),
+    locations = cells_body()
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold", color = "#00e5ff"),
     locations = cells_body(columns = c(Variable1_abr, Variable2_abr))
   ) %>%
   tab_style(
-    style = cell_fill(color = "#E8F5E8"),
+    style = cell_fill(color = "rgba(0, 230, 118, 0.15)"),
     locations = cells_body(
       rows = Correlacion > 0.7
     )
   ) %>%
   tab_style(
-    style = cell_fill(color = "#FFE6E6"),
+    style = cell_fill(color = "rgba(255, 23, 68, 0.15)"),
     locations = cells_body(
       rows = Correlacion < -0.7
     )
   ) %>%
+  tab_style(
+    style = cell_text(color = "#00e676"),
+    locations = cells_body(
+      rows = Correlacion > 0.7,
+      columns = Correlacion
+    )
+  ) %>%
+  tab_style(
+    style = cell_text(color = "#ff1744"),
+    locations = cells_body(
+      rows = Correlacion < -0.7,
+      columns = Correlacion
+    )
+  ) %>%
   tab_options(
     table.font.names = "Arial",
-    table.width = pct(80),
+    table.width = pct(90),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
+    column_labels.border.top.style = "solid",
+    column_labels.border.top.color = "#00e5ff",
+    column_labels.border.top.width = px(3),
+    column_labels.border.bottom.style = "solid",
     column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
+    column_labels.border.bottom.color = "#00e5ff",
     table_body.border.bottom.style = "none",
     table_body.border.top.style = "none",
-    data_row.padding = px(6),
-    heading.title.font.size = 14,
-    heading.subtitle.font.size = 12,
-    heading.padding = px(4),
-    footnotes.padding = px(4)
+    table_body.hlines.style = "solid",
+    table_body.hlines.color = "#00e5ff",
+    table_body.hlines.width = px(1),
+    table.background.color = "#0a0e1a",
+    data_row.padding = px(10),
+    heading.title.font.size = 18,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(12),
+    heading.border.bottom.style = "solid",
+    heading.border.bottom.width = px(2),
+    heading.border.bottom.color = "#00e5ff",
+    footnotes.padding = px(10),
+    footnotes.font.size = 12,
+    source_notes.font.size = 12,
+    source_notes.padding = px(10)
   ) %>%
   tab_source_note(
-    source_note = md("**Fuentes:** Elaboración propia con base en World Bank (2023)")
+    source_note = md("**Fuente:** Elaboración propia con base en World Bank (2023)")
   ) %>%
   tab_footnote(
-    footnote = "Correlaciones positivas fuertes (r > 0.7) en verde claro",
-    locations = cells_body(
-      rows = 1
-    )
+    footnote = "💚 Correlaciones positivas fuertes (r > 0.7) indican relaciones directas significativas",
+    locations = cells_body(rows = 1)
   ) %>%
   tab_footnote(
-    footnote = "Correlaciones negativas fuertes (r < -0.7) en rojo claro",
-    locations = cells_body(
-      rows = nrow(cor_significativas)
-    )
+    footnote = "❤️ Correlaciones negativas fuertes (r < -0.7) indican relaciones inversas significativas",
+    locations = cells_body(rows = nrow(cor_significativas))
   )
 
 tabla_cor
-
-
 
 ```
 
@@ -4372,34 +4425,44 @@ En este análisis, el primer componente (**PC1**) capturó un **`r pc1_var`%** d
 
 El gráfico de sedimentación visualiza el concepto del "codo" (elbow) introducido por Kaiser (1960). La curva de los eigenvalores (representada como barras) exhibe un descenso pronunciado en los primeros componentes, indicando que capturan varianza sustancial. A partir de cierto componente, la pendiente se aplana significativamente, entrando en un régimen donde componentes posteriores explican proporciones cada vez menores de varianza residual (Hastie et al., 2009).
 
-```{r sedimentacion, message =FALSE}
+
+```{r sedimentacion-cyber, fig.height=7, fig.width=12, out.width="100%"}
 res.pca <- prcomp(datos_analisis, scale = TRUE)
 
-
 eig.val <- get_eigenvalue(res.pca)
-fviz_eig(res.pca,
-         addlabels = TRUE,
-         ylim = c(0, max(get_eigenvalue(res.pca)[, 2]) + 5),
-         choice = "variance") +
+
+n_comp <- min(10, nrow(eig.val))
+
+eig_df <- data.frame(
+  Componente = factor(1:n_comp),
+  Varianza = eig.val[1:n_comp, 2]
+)
+
+g <- ggplot(eig_df, aes(x = Componente, y = Varianza)) +
+  geom_bar(stat = "identity", fill = "#00e5ff", color = "#00e5ff", alpha = 0.8) +
+  geom_line(aes(group = 1), color = "#00e5ff", size = 1) +
+  geom_point(color = "#00e5ff", size = 2) +
+  geom_text(aes(label = round(Varianza, 1)), color = "#ffffff", vjust = -0.4, fontface = "bold", size = 4) +
+  theme_cyber() +
   labs(
     title = "Varianza Explicada por Componente Principal",
     subtitle = "Autovalores del análisis de componentes principales",
     x = "Componentes Principales",
     y = "Porcentaje de Varianza Explicada (%)"
   ) +
-  theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, color = "#2C5F8D"),
-    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray40"),
-    axis.title = element_text(face = "bold", size = 12, color = "#2C5F8D"),
-    axis.text = element_text(size = 10, color = "gray30"),
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5, color = "#00e5ff", margin = margin(b = 10)),
+    plot.subtitle = element_text(size = 13, hjust = 0.5, color = "#8b92a0", margin = margin(b = 15)),
+    axis.title = element_text(face = "bold", size = 14, color = "#e0e6ed"),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    axis.text = element_text(size = 11, color = "#8b92a0"),
     panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray92", size = 0.3),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+    panel.grid.major = element_line(color = "#12161f", size = 0.5)
   ) +
-  scale_fill_manual(values = "#2C5F8D") +
-  scale_color_manual(values = "#2C5F8D")
+  ylim(0, max(eig_df$Varianza) + 5)
+
+g
 ```
 
 ```{r, include=FALSE}
