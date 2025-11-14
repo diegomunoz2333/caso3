@@ -127,23 +127,64 @@ html, body {
   display: block !important;
   padding: 10px 15px !important;
   border-left: 3px solid transparent !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   background: transparent !important;
   border-radius: 0 !important;
+  position: relative !important;
 }
 
+/* HOVER - Visible y atractivo */
 #TOC a:hover {
   color: var(--accent-cyan) !important;
   border-left: 3px solid var(--accent-cyan) !important;
-  transform: translateX(5px) !important;
-  background: transparent !important;
+  background: rgba(0, 229, 255, 0.08) !important;
+  padding-left: 20px !important;
+  box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.1) !important;
+  transform: translateX(3px) !important;
 }
 
+/* ACTIVE - Link en sección actual */
 #TOC a.active {
   color: var(--accent-cyan) !important;
-  background: transparent !important;
-  border-left: 3px solid var(--accent-cyan) !important;
+  background: rgba(0, 229, 255, 0.12) !important;
+  border-left: 4px solid var(--accent-cyan) !important;
   font-weight: 700 !important;
+  box-shadow: 
+    inset 0 0 20px rgba(0, 229, 255, 0.15),
+    0 0 20px rgba(0, 229, 255, 0.2) !important;
+  padding-left: 18px !important;
+}
+
+/* Efecto glow en active */
+#TOC a.active::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 4px !important;
+  height: 60% !important;
+  background: linear-gradient(180deg, 
+    transparent, 
+    var(--accent-cyan), 
+    transparent) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 10px var(--accent-cyan) !important;
+}
+
+#TOC ul ul a {
+  font-size: 0.85em !important;
+  padding: 8px 12px !important;
+}
+
+#TOC ul ul a:hover {
+  background: rgba(0, 229, 255, 0.06) !important;
+  color: var(--accent-cyan) !important;
+}
+
+#TOC ul ul a.active {
+  color: var(--accent-cyan) !important;
+  background: rgba(0, 229, 255, 0.1) !important;
 }
 
 #TOC .toc-section-number {
@@ -247,20 +288,51 @@ html, body {
   border-radius: 0 4px 4px 0 !important;
 }
 
+#right-toc-list a {
+  color: var(--text-gray) !important;
+  text-decoration: none !important;
+  font-size: 0.8em !important;
+  display: block !important;
+  padding: 8px 12px !important;
+  border-left: 2px solid transparent !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 0 4px 4px 0 !important;
+  position: relative !important;
+}
+
 #right-toc-list a:hover {
   color: var(--accent-purple) !important;
   border-left: 2px solid var(--accent-purple) !important;
   padding-left: 15px !important;
-  background: rgba(162, 89, 255, 0.08) !important;
+  background: rgba(162, 89, 255, 0.1) !important;
+  box-shadow: inset 0 0 12px rgba(162, 89, 255, 0.1) !important;
+  transform: translateX(2px) !important;
 }
 
 #right-toc-list a.active-section {
   color: var(--accent-purple) !important;
-  border-left: 2px solid var(--accent-purple) !important;
-  padding-left: 15px !important;
-  background: rgba(162, 89, 255, 0.15) !important;
+  border-left: 3px solid var(--accent-purple) !important;
+  padding-left: 14px !important;
+  background: rgba(162, 89, 255, 0.18) !important;
   font-weight: 600 !important;
-  box-shadow: 0 0 15px rgba(162, 89, 255, 0.2) !important;
+  box-shadow: 
+    inset 0 0 15px rgba(162, 89, 255, 0.2),
+    0 0 15px rgba(162, 89, 255, 0.15) !important;
+}
+
+#right-toc-list a.active-section::after {
+  content: '' !important;
+  position: absolute !important;
+  left: -2px !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 3px !important;
+  background: linear-gradient(180deg,
+    transparent,
+    var(--accent-purple),
+    transparent) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 8px var(--accent-purple) !important;
 }
 
 /* ========== CONTENIDO CENTRAL - SIN HUECOS ========== */
@@ -640,11 +712,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentSection = null;
     let minDistance = Infinity;
     
-    // Primero intentar encontrar la sección visible en viewport
     sections.forEach(section => {
       const rect = section.getBoundingClientRect();
       
-      // Si la sección está en el tercio superior de la pantalla
       if (rect.top <= windowHeight / 3 && rect.bottom > 0) {
         const distance = Math.abs(rect.top);
         if (distance < minDistance) {
@@ -654,7 +724,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Si no hay sección en viewport, tomar la más cercana por arriba
     if (!currentSection) {
       sections.forEach(section => {
         const rect = section.getBoundingClientRect();
@@ -664,7 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Si aún no hay, tomar la primera sección visible
     if (!currentSection && sections.length > 0) {
       for (let section of sections) {
         const rect = section.getBoundingClientRect();
@@ -690,7 +758,6 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Buscar todos los encabezados h2, h3, h4 dentro de la sección activa
     const headings = activeSection.querySelectorAll('h2, h3, h4');
     rightTocList.innerHTML = '';
     
@@ -703,20 +770,17 @@ document.addEventListener('DOMContentLoaded', function() {
       const li = document.createElement('li');
       const a = document.createElement('a');
       
-      // Asignar ID si no existe
       if (!heading.id) {
         heading.id = 'sub-heading-' + index + '-' + Date.now();
       }
       
       a.href = '#' + heading.id;
       
-      // Limpiar texto (remover numeración)
       let textContent = heading.textContent || heading.innerText;
       textContent = textContent.replace(/^\d+(\.\d+)*\s*/, '').trim();
       
       a.textContent = textContent;
       
-      // Aplicar indentación según nivel
       if (heading.tagName === 'H3') {
         a.style.paddingLeft = '20px';
         a.style.fontSize = '0.75em';
@@ -728,23 +792,28 @@ document.addEventListener('DOMContentLoaded', function() {
       li.appendChild(a);
       rightTocList.appendChild(li);
       
-      // Evento click para scroll suave
+      // ✅ MEJORADO: Event listener con scroll correcto
       a.addEventListener('click', function(e) {
         e.preventDefault();
-        const targetTop = heading.getBoundingClientRect().top + window.pageYOffset - 120;
-        window.scrollTo({ top: targetTop, behavior: 'smooth' });
-        
-        setTimeout(() => {
-          highlightActiveRightToc();
-        }, 400);
+        const targetElement = document.getElementById(heading.id);
+        if (targetElement) {
+          const offsetTop = targetElement.getBoundingClientRect().top + window.pageYOffset - 100;
+          window.scrollTo({ 
+            top: offsetTop, 
+            behavior: 'smooth' 
+          });
+          
+          setTimeout(() => {
+            highlightActiveRightToc();
+          }, 500);
+        }
       });
     });
     
-    // Resaltar el subtítulo activo
     highlightActiveRightToc();
   }
   
-  // Resaltar subtítulo activo en TOC derecho
+  // ✅ MEJORADO: Resaltar subtítulo activo en TOC derecho
   function highlightActiveRightToc() {
     const activeSection = getCurrentSection();
     if (!activeSection) return;
@@ -752,9 +821,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const headings = Array.from(activeSection.querySelectorAll('h2, h3, h4'));
     const rightTocLinks = document.querySelectorAll('#right-toc-list a');
     
+    if (headings.length === 0 || rightTocLinks.length === 0) return;
+    
     let activeIndex = -1;
     let minDistance = Infinity;
-    const threshold = 200;
+    const threshold = 150;
     
     headings.forEach((heading, index) => {
       const rect = heading.getBoundingClientRect();
@@ -766,6 +837,16 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
+    // Si no encontramos ninguno en el threshold, tomar el primero visible
+    if (activeIndex === -1) {
+      headings.forEach((heading, index) => {
+        const rect = heading.getBoundingClientRect();
+        if (rect.top > 0 && rect.top < window.innerHeight) {
+          if (activeIndex === -1) activeIndex = index;
+        }
+      });
+    }
+    
     rightTocLinks.forEach((link, index) => {
       if (index === activeIndex) {
         link.classList.add('active-section');
@@ -775,101 +856,88 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-// Resaltar sección activa en TOC izquierdo CON AUTO-SCROLL
-function highlightActiveTocSection() {
-  const sections = document.querySelectorAll('.section.level1');
-  const tocContainer = document.getElementById('TOC');
-  
-  if (!tocContainer) return;
-  
-  // Obtener todos los enlaces del TOC (incluyendo subsecciones)
-  const tocLinks = tocContainer.querySelectorAll('a[href^="#"]');
-  
-  const activeSection = getCurrentSection();
-  
-  if (!activeSection) return;
-  
-  const activeId = activeSection.id;
-  
-  let activeLinkElement = null;
-  
-  // Remover clase active de todos los links
-  tocLinks.forEach(link => {
-    link.classList.remove('active');
+  // ✅ MEJORADO: Resaltar sección activa en TOC izquierdo CON AUTO-SCROLL
+  function highlightActiveTocSection() {
+    const sections = document.querySelectorAll('.section.level1');
+    const tocContainer = document.getElementById('TOC');
     
-    // Verificar si el href coincide con la sección activa
-    const href = link.getAttribute('href');
-    if (href) {
-      const linkId = href.replace('#', '');
-      if (linkId === activeId) {
-        link.classList.add('active');
-        activeLinkElement = link;
-      }
-    }
-  });
-  
-  // AUTO-SCROLL DEL TOC - MEJORADO
-  if (activeLinkElement && tocContainer) {
-    // Usar requestAnimationFrame para asegurar que el DOM está listo
-    requestAnimationFrame(() => {
-      const linkTop = activeLinkElement.offsetTop;
-      const tocScrollTop = tocContainer.scrollTop;
-      const tocHeight = tocContainer.clientHeight;
+    if (!tocContainer) return;
+    
+    const tocLinks = tocContainer.querySelectorAll('a[href^="#"]');
+    const activeSection = getCurrentSection();
+    
+    if (!activeSection) return;
+    
+    const activeId = activeSection.id;
+    let activeLinkElement = null;
+    
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
       
-      // Obtener la posición del header "CONTENIDO"
-      const headerHeight = 100; // Altura aproximada del header + padding
-      
-      // Calcular la posición relativa del link en el TOC
-      const linkRelativeTop = linkTop - tocScrollTop;
-      
-      // Definir zona visible (con margen)
-      const visibleTop = headerHeight;
-      const visibleBottom = tocHeight - 50;
-      
-      // Si el link está fuera de la zona visible, hacer scroll
-      if (linkRelativeTop < visibleTop) {
-        // El link está por encima, scroll hacia arriba
-        tocContainer.scrollTo({
-          top: linkTop - headerHeight - 20,
-          behavior: 'smooth'
-        });
-      } else if (linkRelativeTop > visibleBottom) {
-        // El link está por debajo, scroll hacia abajo
-        tocContainer.scrollTo({
-          top: linkTop - tocHeight + 100,
-          behavior: 'smooth'
-        });
+      const href = link.getAttribute('href');
+      if (href) {
+        const linkId = href.replace('#', '');
+        if (linkId === activeId) {
+          link.classList.add('active');
+          activeLinkElement = link;
+        }
       }
     });
+    
+    if (activeLinkElement && tocContainer) {
+      requestAnimationFrame(() => {
+        const linkTop = activeLinkElement.offsetTop;
+        const tocScrollTop = tocContainer.scrollTop;
+        const tocHeight = tocContainer.clientHeight;
+        
+        const headerHeight = 100;
+        const linkRelativeTop = linkTop - tocScrollTop;
+        
+        const visibleTop = headerHeight;
+        const visibleBottom = tocHeight - 50;
+        
+        if (linkRelativeTop < visibleTop) {
+          tocContainer.scrollTo({
+            top: linkTop - headerHeight - 20,
+            behavior: 'smooth'
+          });
+        } else if (linkRelativeTop > visibleBottom) {
+          tocContainer.scrollTo({
+            top: linkTop - tocHeight + 100,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
   }
-}
+  
   // ========== EVENT LISTENERS ==========
   
-  // Throttled scroll handler para mejor rendimiento
   let scrollTimeout;
   let lastScrollTop = 0;
   
   window.addEventListener('scroll', function() {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
-    // Solo actualizar si el scroll cambió significativamente
     if (Math.abs(scrollTop - lastScrollTop) > 10) {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(function() {
         updateRightToc();
         highlightActiveTocSection();
+        highlightActiveRightToc();
         lastScrollTop = scrollTop;
-      }, 100);
+      }, 50);
     }
   }, { passive: true });
   
-  // Inicialización después de que el documento esté completamente cargado
+  // Inicialización
   setTimeout(function() {
     updateRightToc();
     highlightActiveTocSection();
+    highlightActiveRightToc();
   }, 600);
   
-  // Manejar clicks en enlaces del TOC izquierdo
+  // ✅ MEJORADO: Manejar clicks en enlaces del TOC izquierdo
   document.querySelectorAll('#TOC a').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       const targetId = this.getAttribute('href');
@@ -879,12 +947,13 @@ function highlightActiveTocSection() {
       const target = document.querySelector(targetId);
       
       if (target) {
-        const offsetTop = target.getBoundingClientRect().top + window.pageYOffset - 100;
+        const offsetTop = target.getBoundingClientRect().top + window.pageYOffset - 80;
         window.scrollTo({ top: offsetTop, behavior: 'smooth' });
         
         setTimeout(function() {
           updateRightToc();
           highlightActiveTocSection();
+          highlightActiveRightToc();
         }, 500);
       }
     });
@@ -897,12 +966,12 @@ function highlightActiveTocSection() {
         setTimeout(function() {
           updateRightToc();
           highlightActiveTocSection();
+          highlightActiveRightToc();
         }, 300);
       }
     });
   });
   
-  // Observar cambios en el contenido principal
   const mainContent = document.querySelector('.toc-content') || document.body;
   observer.observe(mainContent, {
     childList: true,
