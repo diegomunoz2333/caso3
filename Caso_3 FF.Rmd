@@ -1887,7 +1887,7 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
   filter(Codigo != "BLZ",Codigo!="JOR",Codigo!="URY")
 
 nombres_columnas <- c(
-  "País", "Código", "PIB per cápita (US$)", "Población", 
+  "País", "Código", "PIB per cápita", "Población", 
   "Esperanza vida", "Acceso electricidad", "Área boscosa",
   "Suscripciones móviles", "Crecimiento PIB", "Mortalidad infantil",
   "Inversión extranjera", "Gasto salud", "Uso internet", 
@@ -1897,54 +1897,46 @@ nombres_columnas <- c(
 
 tabla_inicial <- datatable(
   Base_2022,
-  extensions = c('Buttons', 'Scroller', 'Responsive', 'FixedHeader', 'ColReorder'),
+  extensions = c('Buttons', 'Scroller', 'Responsive'),
   options = list(
-    dom = '<"top"Bfl>rt<"bottom"ip><"clear">',
+    dom = '<"tabla-header"B>frtip',
     buttons = list(
-      list(extend = 'copy', text = '📋 Copiar', className = 'btn-cyber-copy'),
-      list(extend = 'csv', text = '📊 CSV', className = 'btn-cyber-csv'),
-      list(extend = 'excel', text = '📈 Excel', className = 'btn-cyber-excel'),
-      list(extend = 'pdf', text = '📄 PDF', className = 'btn-cyber-pdf'),
-      list(extend = 'print', text = '🖨️ Imprimir', className = 'btn-cyber-print'),
-      list(extend = 'colvis', text = '👁️ Columnas', className = 'btn-cyber-colvis')
+      list(extend = 'copy', text = '📋 Copiar', className = 'btn-cyber-primary'),
+      list(extend = 'csv', text = '📊 CSV', className = 'btn-cyber-primary'),
+      list(extend = 'excel', text = '📈 Excel', className = 'btn-cyber-primary'),
+      list(extend = 'pdf', text = '📄 PDF', className = 'btn-cyber-primary'),
+      list(extend = 'print', text = '🖨️ Imprimir', className = 'btn-cyber-primary')
     ),
     pageLength = 12,
     lengthMenu = list(c(8, 12, 20, 50, -1), 
                      c('8', '12', '20', '50', 'Todos')),
     scrollX = TRUE,
-    scrollY = "600px",
+    scrollY = "550px",
     scroller = TRUE,
     deferRender = TRUE,
-    colReorder = TRUE,
-    fixedHeader = TRUE,
     autoWidth = FALSE,
-    columnDefs = list(
-      list(width = '120px', targets = 0),  # País
-      list(width = '80px', targets = 1),   # Código
-      list(width = '100px', targets = 2),  # PIB per cápita
-      list(width = '100px', targets = 3),  # Población
-      list(width = '90px', targets = 4:19) # Resto de variables
-    ),
+    responsive = FALSE,
     language = list(
       url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
       search = "🔍 Buscar:",
       lengthMenu = "Mostrar _MENU_ registros",
       info = "_START_ - _END_ de _TOTAL_ países",
       paginate = list(
-        first = "⏮️ Primero",
-        last = "⏭️ Último",
-        `next` = "▶️ Siguiente",
-        previous = "◀️ Anterior"
+        first = "⏮️",
+        last = "⏭️",
+        `next` = "➡️",
+        previous = "⬅️"
       )
-    ),
-    searchHighlight = TRUE
+    )
   ),
   rownames = FALSE,
-  filter = 'top',
-  class = c('display', 'compact', 'hover', 'stripe', 'row-border'),
-  caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center; color: #00e5ff; font-size: 18px; font-weight: bold; margin-bottom: 15px;',
-    '🌍 DATASET COMPLETO - 17 VARIABLES DE DESARROLLO GLOBAL 2022'
+  class = c('display', 'compact', 'hover', 'nowrap'),
+  caption = htmltools::HTML(
+    '<div style="color: #FFFFFF; font-size: 18px; font-weight: bold; 
+    margin-bottom: 20px; text-align: left; text-shadow: 0 0 15px rgba(0, 229, 255, 0.5); 
+    text-transform: uppercase; letter-spacing: 2px;">
+    Tabla 6: Dataset Completo - Variables de Desarrollo Global 2022
+    </div>'
   ),
   colnames = nombres_columnas
 ) %>%
@@ -1970,218 +1962,351 @@ tabla_inicial <- datatable(
     columns = 'Mortalidad infantil',
     digits = 1
   ) %>%
-  formatStyle(
-    columns = names(Base_2022),
-    fontSize = '12px',
-    fontFamily = 'Arial, sans-serif',
-    color = '#e0e6ed',
-    backgroundColor = '#0a0e1a',
-    textAlign = 'center'
-  ) %>%
   htmlwidgets::onRender("
     function(el, x) {
-      var table = this;
       
-      // ESTILIZAR ENCABEZADOS PRINCIPALES
-      var headers = $(el).find('thead th');
-      headers.css({
-        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
-        'color': '#000000 !important',
-        'font-weight': '700 !important',
-        'font-size': '11px !important',
-        'border': '2px solid #00e5ff !important',
-        'text-transform': 'uppercase',
-        'letter-spacing': '0.8px',
-        'padding': '10px 6px !important',
-        'white-space': 'normal !important',
-        'text-align': 'center !important',
-        'position': 'relative',
-        'text-shadow': '0 0 10px rgba(255,255,255,0.5)'
+      var wrapper = $(el).find('.dataTables_wrapper');
+      wrapper.css({
+        'background': 'linear-gradient(135deg, #0a0e1a 0%, #12161f 100%)',
+        'border': '2px solid rgba(0, 229, 255, 0.4)',
+        'border-radius': '14px',
+        'padding': '25px',
+        'box-shadow': '0 12px 50px rgba(0, 0, 0, 0.8)',
+        'font-family': 'Arial, sans-serif',
+        'overflow': 'visible !important',
+        'width': '100% !important'
       });
       
-      // ESTILIZAR FILAS DEL CUERPO
-      $(el).find('tbody tr').css({
-        'background-color': '#0a0e1a !important',
-        'border-bottom': '1px solid rgba(0, 229, 255, 0.2) !important'
+      // ========== CONTENEDOR DE BOTONES MEJORADO ==========
+      var btnContainer = $(el).find('.dt-buttons');
+      btnContainer.css({
+        'padding': '20px 0',
+        'margin-bottom': '20px',
+        'display': 'flex',
+        'gap': '12px',
+        'flex-wrap': 'wrap',
+        'align-items': 'center',
+        'border-bottom': '2px solid rgba(0, 229, 255, 0.3)',
+        'padding-bottom': '20px'
       });
       
-      // HOVER EFFECT MEJORADO
-      $(el).find('tbody tr').hover(
-        function() {
-          $(this).css({
-            'background': 'linear-gradient(90deg, rgba(0, 229, 255, 0.1) 0%, rgba(10, 14, 26, 0.9) 100%) !important',
-            'box-shadow': 'inset 0 0 30px rgba(0, 229, 255, 0.3) !important',
-            'transform': 'scale(1.01)',
-            'transition': 'all 0.2s ease'
-          });
-        },
-        function() {
-          $(this).css({
-            'background-color': '#0a0e1a !important',
-            'box-shadow': 'none !important',
-            'transform': 'scale(1)'
-          });
-        }
-      );
-      
-      // ESTILIZAR CELDAS
-      $(el).find('tbody td').css({
-        'color': '#e0e6ed !important',
-        'border-right': '1px solid rgba(0, 229, 255, 0.2) !important',
-        'padding': '8px 6px !important',
-        'text-align': 'center !important',
-        'white-space': 'nowrap !important',
-        'font-size': '11px !important',
-        'font-weight': '500'
-      });
-      
-      // FILA DE FILTROS - MEJORADA
-      var filterRow = $(el).find('thead tr:eq(1)');
-      filterRow.css({
-        'background': 'linear-gradient(135deg, #12161f 0%, #0a0e1a 100%) !important',
-        'border': '2px solid rgba(0, 229, 255, 0.4) !important'
-      });
-      
-      filterRow.find('th').css({
-        'background': 'transparent !important',
-        'border': '1px solid rgba(0, 229, 255, 0.3) !important',
-        'padding': '6px 4px !important'
-      });
-      
-      filterRow.find('input').css({
-        'background-color': '#000000 !important',
-        'color': '#00e5ff !important',
-        'border': '2px solid #00e5ff !important',
-        'border-radius': '6px',
-        'padding': '6px 8px !important',
-        'font-size': '10px !important',
-        'width': '90% !important',
-        'box-shadow': 'inset 0 0 15px rgba(0, 229, 255, 0.3) !important',
-        'font-weight': 'bold'
-      }).attr('placeholder', '🔍 Filtrar...');
-      
-      // BOTONES DE EXPORTACIÓN - MUY VISIBLES
-      var buttonContainer = $(el).find('.dt-buttons');
-      buttonContainer.css({
-        'margin-bottom': '15px !important',
-        'text-align': 'center !important'
-      });
-      
-      // Estilo para TODOS los botones
-      $(el).find('.dt-button').css({
-        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
-        'color': '#000000 !important',
-        'border': '3px solid #ffffff !important',
-        'border-radius': '8px !important',
-        'padding': '10px 16px !important',
-        'font-weight': '700 !important',
-        'font-size': '12px !important',
-        'cursor': 'pointer !important',
-        'margin': '4px 3px !important',
-        'transition': 'all 0.3s ease !important',
-        'box-shadow': '0 4px 15px rgba(0, 229, 255, 0.6) !important',
-        'text-shadow': '0 1px 2px rgba(0,0,0,0.3) !important',
-        'display': 'inline-block !important',
-        'min-width': '100px !important'
+      // ========== BOTONES CON COLORES BRILLANTES Y VISIBLES ==========
+      $(el).find('.dt-button').each(function() {
+        $(this).css({
+          'background': '#00e5ff !important',
+          'background-color': '#00e5ff !important',
+          'background-image': 'linear-gradient(135deg, #00e5ff 0%, #00b8d4 100%) !important',
+          'color': '#000000 !important',
+          'border': '3px solid #00ffff !important',
+          'border-radius': '10px !important',
+          'padding': '14px 24px !important',
+          'margin': '0 8px !important',
+          'font-size': '14px !important',
+          'font-weight': '900 !important',
+          'cursor': 'pointer !important',
+          'transition': 'all 0.25s ease !important',
+          'box-shadow': '0 6px 20px rgba(0, 229, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3) !important',
+          'text-transform': 'uppercase',
+          'letter-spacing': '1.5px',
+          'text-shadow': '0 1px 3px rgba(0, 0, 0, 0.3)',
+          'display': 'inline-block !important',
+          'opacity': '1 !important',
+          'visibility': 'visible !important'
+        });
       }).hover(
         function() {
           $(this).css({
-            'transform': 'translateY(-3px) scale(1.05) !important',
-            'box-shadow': '0 6px 25px rgba(0, 229, 255, 0.9) !important',
-            'background': 'linear-gradient(135deg, #ffffff 0%, #00e5ff 100%) !important',
-            'color': '#000000 !important'
+            'transform': 'translateY(-4px) scale(1.05) !important',
+            'background': '#00ffff !important',
+            'background-color': '#00ffff !important',
+            'box-shadow': '0 12px 35px rgba(0, 255, 255, 1), inset 0 0 25px rgba(255, 255, 255, 0.4) !important'
           });
         },
         function() {
           $(this).css({
             'transform': 'translateY(0) scale(1) !important',
-            'box-shadow': '0 4px 15px rgba(0, 229, 255, 0.6) !important',
-            'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important'
+            'background': '#00e5ff !important',
+            'background-color': '#00e5ff !important',
+            'box-shadow': '0 6px 20px rgba(0, 229, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3) !important'
           });
         }
       );
       
-      // PAGINACIÓN MEJORADA
-      $(el).find('.dataTables_paginate .paginate_button').css({
-        'background': 'linear-gradient(135deg, #12161f 0%, #0a0e1a 100%) !important',
+      // ========== APLICAR A TODOS LOS BOTONES POSIBLES ==========
+      setTimeout(function() {
+        $(el).find('a.dt-button, button.dt-button, .btn-cyber-primary, .buttons-copy, .buttons-csv, .buttons-excel, .buttons-pdf, .buttons-print').css({
+          'background': '#00e5ff !important',
+          'background-color': '#00e5ff !important',
+          'color': '#000000 !important',
+          'opacity': '1 !important',
+          'visibility': 'visible !important',
+          'border': '3px solid #00ffff !important'
+        });
+      }, 100);
+      
+      // ========== CONTENEDOR DE SCROLL HORIZONTAL ARREGLADO ==========
+      $(el).find('.dataTables_scroll').css({
+        'overflow-x': 'auto !important',
+        'width': '100% !important'
+      });
+      
+      $(el).find('.dataTables_scrollHead').css({
+        'overflow': 'visible !important',
+        'width': '100% !important'
+      });
+      
+      $(el).find('.dataTables_scrollBody').css({
+        'overflow-x': 'auto !important',
+        'overflow-y': 'auto !important',
+        'width': '100% !important',
+        'background': '#0a0e1a',
+        'border': '1px solid rgba(0, 229, 255, 0.2)',
+        'border-radius': '8px'
+      });
+      
+      $(el).find('table').css({
+        'width': '100% !important',
+        'table-layout': 'auto !important'
+      });
+      
+      // ========== ENCABEZADOS CYBER ==========
+      var thead = $(el).find('thead');
+      thead.css({
+        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%)',
+        'box-shadow': '0 0 30px rgba(0, 229, 255, 0.7)'
+      });
+      
+      $(el).find('thead th').css({
+        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
+        'color': '#000000 !important',
+        'font-weight': 'bold !important',
+        'font-size': '14px !important',
+        'padding': '16px 12px !important',
+        'text-align': 'center',
+        'border': '3px solid #0084ff !important',
+        'white-space': 'nowrap !important',
+        'text-transform': 'uppercase',
+        'letter-spacing': '1px',
+        'box-shadow': 'inset 0 0 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(0, 229, 255, 0.3)',
+        'font-family': 'Arial, sans-serif',
+        'min-width': '120px'
+      });
+      
+      // ========== CUERPO DE LA TABLA ==========
+      $(el).find('tbody tr').css({
+        'background-color': '#0a0e1a !important',
+        'border-bottom': '2px solid #12161f !important',
+        'transition': 'all 0.2s ease'
+      });
+      
+      // PRIMERA COLUMNA - PAÍS OSCURA CON TEXTO CYAN
+      $(el).find('tbody tr td:first-child').css({
+        'background-color': '#12161f !important',
+        'color': '#00e5ff !important',
+        'font-weight': 'bold !important',
+        'font-size': '14px !important',
+        'border-left': '4px solid #00e5ff !important',
+        'border-right': '3px solid #00e5ff !important',
+        'padding': '14px 10px !important',
+        'text-shadow': '0 0 10px rgba(0, 229, 255, 0.4)',
+        'white-space': 'nowrap !important',
+        'min-width': '150px'
+      });
+      
+      // RESTO DE COLUMNAS
+      $(el).find('tbody td').not(':first-child').css({
+        'padding': '14px 10px !important',
+        'border-right': '1px solid rgba(0, 229, 255, 0.2) !important',
+        'text-align': 'center',
+        'font-size': '13px',
+        'color': '#e0e6ed !important',
+        'background-color': '#0a0e1a !important',
+        'white-space': 'nowrap !important',
+        'min-width': '100px'
+      });
+      
+      // ========== HOVER EN FILAS - EFECTO GLOW CYBER ==========
+      $(el).find('tbody tr').hover(
+        function() {
+          $(this).css({
+            'background-color': '#12161f !important',
+            'box-shadow': 'inset 0 0 25px rgba(0, 229, 255, 0.2), 0 0 15px rgba(0, 229, 255, 0.3) !important',
+            'border-left': '4px solid #00e5ff !important'
+          });
+          $(this).find('td').css({
+            'color': '#00e5ff !important',
+            'text-shadow': '0 0 8px rgba(0, 229, 255, 0.4)'
+          });
+          $(this).find('td:first-child').css('color', '#00ffff !important');
+        },
+        function() {
+          $(this).css({
+            'background-color': '#0a0e1a !important',
+            'box-shadow': 'none !important',
+            'border-left': 'none !important'
+          });
+          $(this).find('td').css({
+            'color': '#e0e6ed',
+            'text-shadow': 'none'
+          });
+          $(this).find('td:first-child').css('color', '#00e5ff');
+        }
+      );
+      
+      // ========== BÚSQUEDA CYBER ==========
+      var searchLabel = $(el).find('label:has([type=search])');
+      searchLabel.css({
+        'color': '#e0e6ed !important',
+        'font-weight': 'bold',
+        'font-size': '14px',
+        'display': 'flex',
+        'align-items': 'center',
+        'gap': '10px',
+        'margin-bottom': '15px'
+      });
+      
+      var searchBox = $(el).find('input[type=search]');
+      searchBox.css({
+        'background-color': '#12161f !important',
         'color': '#e0e6ed !important',
         'border': '2px solid #00e5ff !important',
-        'margin': '2px !important',
-        'padding': '8px 12px !important',
-        'border-radius': '6px',
-        'font-size': '11px',
-        'font-weight': '600 !important',
-        'transition': 'all 0.2s ease !important'
+        'border-radius': '8px !important',
+        'padding': '12px 15px !important',
+        'font-size': '14px !important',
+        'width': '300px !important',
+        'box-shadow': '0 0 20px rgba(0, 229, 255, 0.2) inset',
+        'transition': 'all 0.3s ease'
+      }).focus(function() {
+        $(this).css({
+          'box-shadow': '0 0 30px rgba(0, 229, 255, 0.6) inset, 0 0 20px rgba(0, 229, 255, 0.4)',
+          'border-color': '#00ffff !important'
+        });
+      }).blur(function() {
+        $(this).css({
+          'box-shadow': '0 0 20px rgba(0, 229, 255, 0.2) inset'
+        });
+      });
+      
+      // ========== SELECT DE PAGINACIÓN ==========
+      var lengthLabel = $(el).find('label:has(select)');
+      lengthLabel.css({
+        'color': '#e0e6ed',
+        'font-size': '13px',
+        'display': 'flex',
+        'align-items': 'center',
+        'gap': '8px'
+      });
+      
+      $(el).find('select').css({
+        'background-color': '#12161f !important',
+        'color': '#e0e6ed !important',
+        'border': '2px solid #00e5ff !important',
+        'border-radius': '6px !important',
+        'padding': '8px 10px !important',
+        'font-size': '13px !important',
+        'cursor': 'pointer',
+        'box-shadow': '0 0 15px rgba(0, 229, 255, 0.2) inset'
+      });
+      
+      // ========== PAGINACIÓN CYBER ==========
+      $(el).find('.dataTables_paginate').css({
+        'margin-top': '20px',
+        'padding-top': '15px',
+        'border-top': '2px solid rgba(0, 229, 255, 0.3)'
+      });
+      
+      $(el).find('.paginate_button').css({
+        'background-color': '#12161f !important',
+        'color': '#e0e6ed !important',
+        'border': '2px solid #00e5ff !important',
+        'padding': '10px 14px !important',
+        'margin': '3px 3px !important',
+        'border-radius': '6px !important',
+        'font-size': '13px !important',
+        'font-weight': 'bold',
+        'cursor': 'pointer',
+        'transition': 'all 0.2s ease',
+        'box-shadow': '0 0 10px rgba(0, 229, 255, 0.2)'
       }).hover(
         function() {
           if (!$(this).hasClass('disabled')) {
             $(this).css({
-              'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
+              'background-color': '#00e5ff !important',
               'color': '#000000 !important',
-              'transform': 'scale(1.1) !important',
-              'box-shadow': '0 0 15px rgba(0, 229, 255, 0.7) !important'
+              'box-shadow': '0 0 20px rgba(0, 229, 255, 0.8)',
+              'transform': 'scale(1.08)'
             });
           }
         },
         function() {
-          $(this).css({
-            'background': 'linear-gradient(135deg, #12161f 0%, #0a0e1a 100%) !important',
-            'color': '#e0e6ed !important',
-            'transform': 'scale(1) !important',
-            'box-shadow': 'none !important'
-          });
+          if (!$(this).hasClass('disabled')) {
+            $(this).css({
+              'background-color': '#12161f !important',
+              'color': '#e0e6ed !important',
+              'box-shadow': '0 0 10px rgba(0, 229, 255, 0.2)',
+              'transform': 'scale(1)'
+            });
+          }
         }
       );
       
-      $(el).find('.dataTables_paginate .paginate_button.current').css({
-        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
+      $(el).find('.paginate_button.current').css({
+        'background-color': '#00e5ff !important',
         'color': '#000000 !important',
-        'box-shadow': '0 0 20px rgba(0, 229, 255, 0.8) !important',
-        'font-weight': '700 !important',
-        'border': '2px solid #ffffff !important'
+        'border-color': '#00ffff !important',
+        'font-weight': '900',
+        'box-shadow': '0 0 30px rgba(0, 229, 255, 0.9), inset 0 0 15px rgba(255, 255, 255, 0.2)'
       });
       
-      // INFORMACIÓN DE LA TABLA
+      $(el).find('.paginate_button.disabled').css({
+        'opacity': '0.4 !important',
+        'cursor': 'not-allowed !important'
+      });
+      
+      // ========== INFO DE LA TABLA ==========
       $(el).find('.dataTables_info').css({
         'color': '#00e5ff !important',
-        'font-size': '12px',
-        'font-weight': '600',
-        'padding': '10px 0 !important'
+        'font-size': '14px !important',
+        'font-weight': 'bold',
+        'padding': '15px 0',
+        'border-top': '2px solid rgba(0, 229, 255, 0.3)',
+        'text-shadow': '0 0 10px rgba(0, 229, 255, 0.3)'
       });
       
-      // CONTROLES DE LONGITUD
-      $(el).find('label').css({
-        'color': '#e0e6ed !important',
-        'font-size': '12px',
-        'font-weight': '600'
-      });
-      
-      $(el).find('select').css({
-        'background-color': '#000000 !important',
-        'color': '#00e5ff !important',
-        'border': '2px solid #00e5ff !important',
-        'border-radius': '6px',
-        'padding': '6px 8px !important',
-        'font-weight': '600 !important',
-        'font-size': '11px',
-        'margin': '0 5px !important'
-      });
-      
-      // SCROLLBAR PERSONALIZADO
-      var scrollBody = $(el).find('.dataTables_scrollBody');
-      scrollBody.css({
-        'scrollbar-width': 'thin',
-        'scrollbar-color': '#00e5ff #12161f'
-      });
-      
-      // Webkit scrollbar
-      scrollBody.on('mouseenter', function() {
-        $(this).css('overflow', 'auto');
-      });
+      // ========== SCROLLBAR PERSONALIZADA ==========
+      var style = document.createElement('style');
+      style.textContent = `
+        .dataTables_scrollBody::-webkit-scrollbar {
+          width: 12px;
+          height: 12px;
+        }
+        .dataTables_scrollBody::-webkit-scrollbar-track {
+          background: #0a0e1a;
+          border-radius: 6px;
+          border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .dataTables_scrollBody::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #00e5ff, #0084ff);
+          border-radius: 6px;
+          box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+        .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #00ffff, #00e5ff);
+          box-shadow: 0 0 20px rgba(0, 229, 255, 0.8);
+        }
+        .dataTables_scrollBody::-webkit-scrollbar-corner {
+          background: #0a0e1a;
+        }
+        .dataTables_scroll {
+          overflow-x: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
     }
   ")
 
 tabla_inicial
+
 ```
 
 ## Descripción del modelo
@@ -2387,7 +2512,7 @@ h4 .header-section-number {
 </style>
 ```
 
-### Selecciona una Variable {.tabset .tabset-pills .unnumbered}
+### Tabla 7: Selecciona una Variable {.tabset .tabset-pills .unnumbered}
 
 ```{r tablas-layout, results='asis'}
 for (variable in variables_numericas) {
@@ -2649,7 +2774,7 @@ La Figura XX presenta la relación bidimensional entre esperanza de vida al nace
 El gráfico interactivo es especialmente informativo: al pasar el cursor sobre cada punto (país), se despliegan simultáneamente tres dimensiones de salud—esperanza de vida, mortalidad infantil y gasto público en salud—permitiendo identificar si los países con mejor desempeño en longevidad genuinamente invierten recursos en su sistema de salud o si tienen patrones anómalos.
 
 ```{r ev-mi-animado, fig.height=8, fig.width=28, out.width="100%"}
-# Asignar continentes
+
 asignar_continentes <- function(data) {
   continentes_map <- c(
     "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
@@ -4145,7 +4270,6 @@ datos_analisis <- Base_2022 %>%
 
 matriz_cor <- cor(datos_analisis, use = "complete.obs")
 
-# Nombres completos para mejor legibilidad
 nombres_completos <- c(
   "PIB_per" = "PIB per cápita",
   "Poblacion" = "Población total",
@@ -4166,11 +4290,9 @@ nombres_completos <- c(
   "Remesas" = "Remesas"
 )
 
-# Aplicar nombres completos
 rownames(matriz_cor) <- nombres_completos[rownames(matriz_cor)]
 colnames(matriz_cor) <- nombres_completos[colnames(matriz_cor)]
 
-# Crear heatmap interactivo con tema cyber
 heatmap_interactivo <- plot_ly(
   x = colnames(matriz_cor),
   y = rownames(matriz_cor),
@@ -4298,7 +4420,7 @@ cor_significativas <- matriz_cor_long %>%
 tabla_cor <- cor_significativas %>%
   gt() %>%
   tab_header(
-    title = md("**🔗 Correlaciones Significativas entre Variables**"),
+    title = md("**Tabla 8: Correlaciones Significativas entre Variables**"),
     subtitle = "Relaciones con |r| > 0.5 entre indicadores de desarrollo global"
   ) %>%
   cols_label(
@@ -4456,9 +4578,10 @@ varianza_df <- data.frame(
   Componente = factor(1:length(acp_resultado$eig)),
   Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
   VarianzaAcum = varianza_acum
-) %>%  gt() %>%
+) %>%
+  gt() %>%
   tab_header(
-    title = md("**Tabla 5**"),
+    title = md("**Tabla 9**"),
     subtitle = "Varianza Explicada por Componentes Principales"
   ) %>%
   cols_label(
@@ -4467,25 +4590,27 @@ varianza_df <- data.frame(
     VarianzaAcum = md("**Varianza Acumulada (%)**")
   ) %>%
   cols_align(
-    align = "left",
+    align = "center",
     columns = everything()
   ) %>%
   fmt_number(
     columns = c(Varianza, VarianzaAcum),
     decimals = 2
   ) %>%
+  # ========== ENCABEZADOS CYBER ==========
   tab_style(
     style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
+      cell_text(weight = "bold", size = "medium", color = "#000000"),
+      cell_fill(color = "#00e5ff")
     ),
     locations = cells_column_labels()
   ) %>%
+  # ========== BORDES CYBER ==========
   tab_style(
     style = cell_borders(
       sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
+      color = "#00e5ff",
+      weight = px(2)
     ),
     locations = list(
       cells_column_labels(),
@@ -4495,58 +4620,109 @@ varianza_df <- data.frame(
   tab_style(
     style = cell_borders(
       sides = "right",
-      color = "gray80",
+      color = "#00e5ff",
       weight = px(1)
     ),
     locations = cells_body(columns = c(Componente, Varianza))
   ) %>%
+  # ========== CUERPO DE LA TABLA ==========
   tab_style(
-    style = cell_text(weight = "bold"),
+    style = list(
+      cell_fill(color = "#0a0e1a"),
+      cell_text(color = "#e0e6ed")
+    ),
+    locations = cells_body()
+  ) %>%
+  # ========== PRIMERA COLUMNA DESTACADA ==========
+  tab_style(
+    style = cell_text(weight = "bold", color = "#00e5ff"),
     locations = cells_body(columns = Componente)
   ) %>%
+  # ========== VALORES NUMÉRICOS ==========
   tab_style(
-    style = cell_text(size = "small"),
+    style = cell_text(size = "small", color = "#e0e6ed"),
     locations = cells_body(columns = c(Varianza, VarianzaAcum))
   ) %>%
+  # ========== FILA CON MAYOR VARIANZA (PC1) - DESTACADA ==========
+  tab_style(
+    style = list(
+      cell_fill(color = "#12161f"),
+      cell_text(color = "#00ffff", weight = "bold")
+    ),
+    locations = cells_body(rows = 1)
+  ) %>%
+  # ========== OPCIONES GENERALES ==========
   tab_options(
     table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
-    column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
+    # Encabezados
+    column_labels.border.top.style = "solid",
+    column_labels.border.top.color = "#00e5ff",
+    column_labels.border.top.width = px(3),
+    column_labels.border.bottom.style = "solid",
+    column_labels.border.bottom.width = px(3),
+    column_labels.border.bottom.color = "#00e5ff",
+    # Cuerpo
     table_body.border.bottom.style = "none",
     table_body.border.top.style = "none",
-    data_row.padding = px(8),
-    heading.title.font.size = 14,
-    heading.subtitle.font.size = 12,
-    heading.padding = px(4),
-    footnotes.padding = px(4)
+    table_body.hlines.style = "solid",
+    table_body.hlines.color = "#00e5ff",
+    table_body.hlines.width = px(1),
+    # Fondo y padding
+    table.background.color = "#0a0e1a",
+    data_row.padding = px(12),
+    # Títulos
+    heading.title.font.size = 18,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(12),
+    heading.border.bottom.style = "solid",
+    heading.border.bottom.width = px(2),
+    heading.border.bottom.color = "#00e5ff",
+    # Notas
+    footnotes.padding = px(10),
+    footnotes.font.size = 13,
+    source_notes.font.size = 13,
+    source_notes.padding = px(10)
   ) %>%
+  # Aplicar estilos a títulos
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", color = "#00e5ff", size = "large")
+    ),
+    locations = cells_title(groups = "title")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(color = "#e0e6ed", size = "medium")
+    ),
+    locations = cells_title(groups = "subtitle")
+  ) %>%
+  # ========== NOTAS Y FUENTES ==========
   tab_source_note(
-    source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP")
+    source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP (Análisis de Componentes Principales)")
   ) %>%
   tab_footnote(
-    footnote = "Porcentaje de varianza explicada individualmente por cada componente principal",
+    footnote = "Porcentaje de varianza explicada individualmente por cada componente principal en el espacio multidimensional",
     locations = cells_body(
       rows = 1,
       columns = Varianza
     )
   ) %>%
   tab_footnote(
-    footnote = "Porcentaje acumulado de varianza explicada por los componentes hasta el actual",
+    footnote = "Porcentaje acumulado de varianza explicada por los componentes hasta el actual. Determina el número óptimo de componentes",
     locations = cells_body(
       rows = 1,
       columns = VarianzaAcum
     )
   ) %>%
   tab_footnote(
-    footnote = "Los componentes principales se ordenan de mayor a menor varianza explicada",
+    footnote = "Los componentes principales se ordenan de mayor a menor varianza explicada. Un nivel de 70-80% acumulado es típicamente considerado suficiente",
     locations = cells_title(groups = "subtitle")
   )
 
-varianza_df 
+varianza_df
 
 varianza_df <- data.frame(
   Componente = paste0("PC", 1:length(acp_resultado$eig)),
@@ -4640,62 +4816,16 @@ contribuciones$Variable <- rownames(contribuciones)
 
 cos2_df <- as.data.frame(acp_resultado$co^2)
 cos2_df$Variable <- rownames(cos2_df)
-
-crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo, tabla_num) {
-  comp_data <- contrib_df %>%
-    select(Variable, paste0("Comp", componente_num)) %>%
-    rename(Loading = paste0("Comp", componente_num))
+crear_tabla_contribucion <- function(componente_num, contribuciones, cos2_df, titulo, tabla_num) {
   
-  cos2_data <- cos2_df %>%
-    select(Variable, paste0("Comp", componente_num)) %>%
-    rename(Cos2 = paste0("Comp", componente_num))
-  
-  comp_data <- comp_data %>%
-    left_join(cos2_data, by = "Variable") %>%
-    mutate(LoadingAbs = abs(Loading)) %>%
-    arrange(desc(LoadingAbs)) %>%
-    select(-LoadingAbs) %>%
-    mutate(
-      Loading = round(Loading, 4),
-      Cos2 = round(Cos2, 4)
-    )
-  
-  descripciones <- c(
-    "PIB_per" = "PIB per cápita (US$)",
-    "Poblacion" = "Población total",
-    "Esperanza vida" = "Esperanza de vida al nacer (años)",
-    "Acceso electricidad" = "Acceso a electricidad (% población)",
-    "Area boscosa" = "Área boscosa (% territorio)",
-    "Suscripciones movil" = "Suscripciones móviles (cada 100 hab.)",
-    "Crecimiento PIB" = "Crecimiento del PIB (% anual)",
-    "Mortalidad infantil" = "Mortalidad infantil (cada 1,000 nac.)",
-    "Inversion extranjera" = "Inversión extranjera (% PIB)",
-    "Gasto salud" = "Gasto en salud (% PIB)",
-    "Uso internet" = "Uso de internet (% población)",
-    "Importaciones" = "Importaciones (% PIB)",
-    "Exportaciones" = "Exportaciones (% PIB)",
-    "Tierra cultivable" = "Tierra cultivable (% territorio)",
-    "Crecimiento poblacion" = "Crecimiento poblacional (% anual)",
-    "Industria" = "Industria (% PIB)",
-    "Remesas" = "Remesas recibidas (% PIB)"
+  comp_data <- data.frame(
+    Variable = rownames(contribuciones),
+    Descripcion = round(abs(contribuciones[, componente_num]), 4),
+    Interpretacion = round(cos2_df[, componente_num], 4)
   )
   
-  comp_data <- comp_data %>%
-    mutate(
-      Descripcion = descripciones[Variable],
-      Interpretacion = paste0(
-        "Loading: ", Loading, 
-        " | Cos²: ", Cos2,
-        case_when(
-          abs(Loading) >= 0.3 ~ " (Contribución muy fuerte)",
-          abs(Loading) >= 0.2 ~ " (Contribución fuerte)", 
-          abs(Loading) >= 0.1 ~ " (Contribución moderada)",
-          abs(Loading) >= 0.05 ~ " (Contribución débil)",
-          TRUE ~ " (Contribución muy débil)"
-        )
-      )
-    ) %>%
-    select(Variable, Descripcion, Interpretacion)
+  comp_data <- comp_data[order(comp_data$Descripcion, decreasing = TRUE), ]
+  rownames(comp_data) <- NULL
   
   tabla <- comp_data %>%
     gt() %>%
@@ -4705,25 +4835,25 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
     ) %>%
     cols_label(
       Variable = md("**Variable**"),
-      Descripcion = md("**Descripción**"),
-      Interpretacion = md("**Interpretación**")
+      Descripcion = md("**Loading**"),
+      Interpretacion = md("**Cos²**")
     ) %>%
     cols_align(
-      align = "left",
+      align = "center",
       columns = everything()
     ) %>%
     tab_style(
       style = list(
-        cell_text(weight = "bold", size = "medium"),
-        cell_fill(color = "white")
+        cell_text(weight = "bold", size = "medium", color = "#000000"),
+        cell_fill(color = "#00e5ff")
       ),
       locations = cells_column_labels()
     ) %>%
     tab_style(
       style = cell_borders(
         sides = c("top", "bottom"),
-        color = "black",
-        weight = px(1)
+        color = "#00e5ff",
+        weight = px(2)
       ),
       locations = list(
         cells_column_labels(),
@@ -4733,66 +4863,135 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
     tab_style(
       style = cell_borders(
         sides = "right",
-        color = "gray80",
+        color = "#00e5ff",
         weight = px(1)
       ),
       locations = cells_body(columns = c(Variable, Descripcion))
     ) %>%
     tab_style(
-      style = cell_text(weight = "bold"),
+      style = list(
+        cell_fill(color = "#0a0e1a"),
+        cell_text(color = "#e0e6ed")
+      ),
+      locations = cells_body()
+    ) %>%
+    tab_style(
+      style = list(
+        cell_text(weight = "bold", color = "#00e5ff"),
+        cell_fill(color = "#12161f"),
+        cell_borders(sides = "left", color = "#00e5ff", weight = px(2))
+      ),
       locations = cells_body(columns = Variable)
     ) %>%
     tab_style(
-      style = cell_text(size = "small"),
-      locations = cells_body(columns = c(Descripcion, Interpretacion))
+      style = list(
+        cell_text(color = "#00e676", weight = "bold"),
+        cell_fill(color = "rgba(0, 230, 118, 0.1)")
+      ),
+      locations = cells_body(
+        columns = Descripcion,
+        rows = Descripcion > 0.3
+      )
+    ) %>%
+    tab_style(
+      style = list(
+        cell_text(color = "#a259ff", weight = "bold"),
+        cell_fill(color = "rgba(162, 89, 255, 0.1)")
+      ),
+      locations = cells_body(
+        columns = Interpretacion,
+        rows = Interpretacion > 0.7
+      )
+    ) %>%
+    tab_style(
+      style = list(
+        cell_text(color = "#ffd600"),
+        cell_fill(color = "rgba(255, 214, 0, 0.08)")
+      ),
+      locations = cells_body(
+        columns = Descripcion,
+        rows = Descripcion >= 0.15 & Descripcion <= 0.3
+      )
+    ) %>%
+    tab_style(
+      style = list(
+        cell_text(weight = "bold", color = "#00e5ff", size = "large")
+      ),
+      locations = cells_title(groups = "title")
+    ) %>%
+    tab_style(
+      style = list(
+        cell_text(color = "#8b92a0", size = "medium")
+      ),
+      locations = cells_title(groups = "subtitle")
     ) %>%
     tab_options(
       table.font.names = "Arial",
       table.width = pct(100),
       table.border.top.style = "none",
       table.border.bottom.style = "none",
-      column_labels.border.top.style = "none",
-      column_labels.border.bottom.width = px(2),
-      column_labels.border.bottom.color = "black",
+      column_labels.border.top.style = "solid",
+      column_labels.border.top.color = "#00e5ff",
+      column_labels.border.top.width = px(3),
+      column_labels.border.bottom.style = "solid",
+      column_labels.border.bottom.width = px(3),
+      column_labels.border.bottom.color = "#00e5ff",
       table_body.border.bottom.style = "none",
       table_body.border.top.style = "none",
-      data_row.padding = px(8),
-      heading.title.font.size = 14,
-      heading.subtitle.font.size = 12,
-      heading.padding = px(4),
-      footnotes.padding = px(4)
+      table_body.hlines.style = "solid",
+      table_body.hlines.color = "#00e5ff",
+      table_body.hlines.width = px(1),
+      table.background.color = "#0a0e1a",
+      data_row.padding = px(12),
+      heading.title.font.size = 18,
+      heading.subtitle.font.size = 14,
+      heading.padding = px(12),
+      heading.border.bottom.style = "solid",
+      heading.border.bottom.width = px(2),
+      heading.border.bottom.color = "#00e5ff",
+      footnotes.padding = px(10),
+      footnotes.font.size = 13,
+      source_notes.font.size = 13,
+      source_notes.padding = px(10)
     ) %>%
     tab_source_note(
       source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP")
     ) %>%
     tab_footnote(
-      footnote = "Loading: contribución de la variable al componente (valores absolutos >0.3 indican contribución fuerte)",
+      footnote = "Loading: Contribución de la variable al componente. >0.3 = fuerte (verde), 0.15-0.3 = moderada (amarillo)",
       locations = cells_title(groups = "subtitle")
     ) %>%
     tab_footnote(
-      footnote = "Cos²: calidad de representación de la variable en el componente (valores cercanos a 1 indican mejor representación)",
-      locations = cells_body(
-        rows = 1,
-        columns = Interpretacion
-      )
+      footnote = "Cos²: Calidad de representación. >0.7 = excelente (púrpura), valores cercanos a 1 = mejor representación",
+      locations = cells_body(rows = 1, columns = Interpretacion)
     )
   
   return(tabla)
 }
 
+tabla_pc1 <- crear_tabla_contribucion(
+  1, contribuciones, cos2_df,
+  "Contribución de Variables al Componente Principal 1 (24.3% de varianza)",
+  10
+)
 
-tabla_pc1 <- crear_tabla_contribucion(1, contribuciones, cos2_df,
-                                     "Contribución de Variables al Componente Principal 1 (24.3% de varianza)",
-                                     6)
-tabla_pc2 <- crear_tabla_contribucion(2, contribuciones, cos2_df,
-                                     "Contribución de Variables al Componente Principal 2 (13.5% de varianza)", 
-                                     7)
-tabla_pc3 <- crear_tabla_contribucion(3, contribuciones, cos2_df,
-                                     "Contribución de Variables al Componente Principal 3 (9.1% de varianza)",
-                                     8)
-tabla_pc4 <- crear_tabla_contribucion(4, contribuciones, cos2_df,
-                                     "Contribución de Variables al Componente Principal 4 (7.5% de varianza)",
-                                     9)
+tabla_pc2 <- crear_tabla_contribucion(
+  2, contribuciones, cos2_df,
+  "Contribución de Variables al Componente Principal 2 (13.5% de varianza)", 
+  11
+)
+
+tabla_pc3 <- crear_tabla_contribucion(
+  3, contribuciones, cos2_df,
+  "Contribución de Variables al Componente Principal 3 (9.1% de varianza)",
+  12
+)
+
+tabla_pc4 <- crear_tabla_contribucion(
+  4, contribuciones, cos2_df,
+  "Contribución de Variables al Componente Principal 4 (7.5% de varianza)",
+  13
+)
 
 tabla_pc1
 tabla_pc2
