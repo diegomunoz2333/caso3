@@ -1,4 +1,3 @@
-```{=html}
 ---
 title: "Análisis de Componentes Principales y Clusterización de Países"
 subtitle: "Aplicación de Técnicas de Aprendizaje No Supervisado con Datos del Banco Mundial"
