@@ -1886,46 +1886,67 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
   filter(Pais != c( "Luxembourg","	Uruguay", "Angola","Jordan","Belize")) %>% 
   filter(Codigo != "BLZ",Codigo!="JOR",Codigo!="URY")
 
+nombres_columnas <- c(
+  "País", "Código", "PIB per cápita (US$)", "Población", 
+  "Esperanza vida", "Acceso electricidad", "Área boscosa",
+  "Suscripciones móviles", "Crecimiento PIB", "Mortalidad infantil",
+  "Inversión extranjera", "Gasto salud", "Uso internet", 
+  "Importaciones", "Exportaciones", "Tierra cultivable",
+  "Crecimiento población", "Industria", "Remesas"
+)
 
 tabla_inicial <- datatable(
   Base_2022,
-  extensions = c('Buttons', 'Scroller', 'Responsive', 'FixedHeader'),
+  extensions = c('Buttons', 'Scroller', 'Responsive', 'FixedHeader', 'ColReorder'),
   options = list(
-    dom = '<"top"lBf>rt<"bottom"ip><"clear">',
+    dom = '<"top"Bfl>rt<"bottom"ip><"clear">',
     buttons = list(
-      list(extend = 'copy', text = ' Copiar', className = 'btn-cyber'),
-      list(extend = 'csv', text = ' CSV', className = 'btn-cyber'),
-      list(extend = 'excel', text = ' Excel', className = 'btn-cyber'),
-      list(extend = 'pdf', text = ' PDF', className = 'btn-cyber'),
-      list(extend = 'print', text = '️ Imprimir', className = 'btn-cyber')
+      list(extend = 'copy', text = '📋 Copiar', className = 'btn-cyber-copy'),
+      list(extend = 'csv', text = '📊 CSV', className = 'btn-cyber-csv'),
+      list(extend = 'excel', text = '📈 Excel', className = 'btn-cyber-excel'),
+      list(extend = 'pdf', text = '📄 PDF', className = 'btn-cyber-pdf'),
+      list(extend = 'print', text = '🖨️ Imprimir', className = 'btn-cyber-print'),
+      list(extend = 'colvis', text = '👁️ Columnas', className = 'btn-cyber-colvis')
     ),
     pageLength = 12,
     lengthMenu = list(c(8, 12, 20, 50, -1), 
                      c('8', '12', '20', '50', 'Todos')),
     scrollX = TRUE,
-    scrollY = "550px",
+    scrollY = "600px",
     scroller = TRUE,
     deferRender = TRUE,
+    colReorder = TRUE,
+    fixedHeader = TRUE,
+    autoWidth = FALSE,
+    columnDefs = list(
+      list(width = '120px', targets = 0),  # País
+      list(width = '80px', targets = 1),   # Código
+      list(width = '100px', targets = 2),  # PIB per cápita
+      list(width = '100px', targets = 3),  # Población
+      list(width = '90px', targets = 4:19) # Resto de variables
+    ),
     language = list(
       url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
-      search = "Buscar:",
+      search = "🔍 Buscar:",
       lengthMenu = "Mostrar _MENU_ registros",
-      info = "_START_ - _END_ de _TOTAL_",
+      info = "_START_ - _END_ de _TOTAL_ países",
       paginate = list(
-        first = "Primero",
-        last = "Último",
-        `next` = "Siguiente",
-        previous = "Anterior"
+        first = "⏮️ Primero",
+        last = "⏭️ Último",
+        `next` = "▶️ Siguiente",
+        previous = "◀️ Anterior"
       )
     ),
-    autoWidth = TRUE,
-    fixedHeader = TRUE,
     searchHighlight = TRUE
   ),
   rownames = FALSE,
   filter = 'top',
-  class = c('display', 'compact', 'hover', 'dt-cyber'),
-  caption = htmltools::HTML(' <span style="color: #00e5ff; font-weight: bold; font-size: 16px;">Indicadores Económicos y Sociales Globales 2022</span>')
+  class = c('display', 'compact', 'hover', 'stripe', 'row-border'),
+  caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center; color: #00e5ff; font-size: 18px; font-weight: bold; margin-bottom: 15px;',
+    '🌍 DATASET COMPLETO - 17 VARIABLES DE DESARROLLO GLOBAL 2022'
+  ),
+  colnames = nombres_columnas
 ) %>%
   formatCurrency(
     columns = 'PIB_per', 
@@ -1951,149 +1972,211 @@ tabla_inicial <- datatable(
   ) %>%
   formatStyle(
     columns = names(Base_2022),
-    fontSize = '13px',
+    fontSize = '12px',
     fontFamily = 'Arial, sans-serif',
     color = '#e0e6ed',
-    backgroundColor = '#0a0e1a'
+    backgroundColor = '#0a0e1a',
+    textAlign = 'center'
   ) %>%
   htmlwidgets::onRender("
     function(el, x) {
-      // Estilizar encabezados
-      var headers = $('thead th');
+      var table = this;
+      
+      // ESTILIZAR ENCABEZADOS PRINCIPALES
+      var headers = $(el).find('thead th');
       headers.css({
-        'background-color': '#00e5ff !important',
+        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
         'color': '#000000 !important',
-        'font-weight': 'bold !important',
-        'font-size': '14px !important',
+        'font-weight': '700 !important',
+        'font-size': '11px !important',
         'border': '2px solid #00e5ff !important',
         'text-transform': 'uppercase',
-        'letter-spacing': '0.5px'
+        'letter-spacing': '0.8px',
+        'padding': '10px 6px !important',
+        'white-space': 'normal !important',
+        'text-align': 'center !important',
+        'position': 'relative',
+        'text-shadow': '0 0 10px rgba(255,255,255,0.5)'
       });
       
-      // Estilizar filas
-      $('tbody tr').css({
+      // ESTILIZAR FILAS DEL CUERPO
+      $(el).find('tbody tr').css({
         'background-color': '#0a0e1a !important',
-        'border-bottom': '1px solid #00e5ff !important'
+        'border-bottom': '1px solid rgba(0, 229, 255, 0.2) !important'
       });
       
-      // Hover effect
-      $('tbody tr').hover(
+      // HOVER EFFECT MEJORADO
+      $(el).find('tbody tr').hover(
         function() {
           $(this).css({
-            'background-color': '#12161f !important',
-            'box-shadow': 'inset 0 0 20px rgba(0, 229, 255, 0.2) !important'
+            'background': 'linear-gradient(90deg, rgba(0, 229, 255, 0.1) 0%, rgba(10, 14, 26, 0.9) 100%) !important',
+            'box-shadow': 'inset 0 0 30px rgba(0, 229, 255, 0.3) !important',
+            'transform': 'scale(1.01)',
+            'transition': 'all 0.2s ease'
           });
         },
         function() {
           $(this).css({
             'background-color': '#0a0e1a !important',
-            'box-shadow': 'none !important'
+            'box-shadow': 'none !important',
+            'transform': 'scale(1)'
           });
         }
       );
       
-      // Estilizar celdas
-      $('tbody td').css({
+      // ESTILIZAR CELDAS
+      $(el).find('tbody td').css({
         'color': '#e0e6ed !important',
-        'border-right': '1px solid #00e5ff !important',
-        'padding': '12px !important'
+        'border-right': '1px solid rgba(0, 229, 255, 0.2) !important',
+        'padding': '8px 6px !important',
+        'text-align': 'center !important',
+        'white-space': 'nowrap !important',
+        'font-size': '11px !important',
+        'font-weight': '500'
       });
       
-      // Estilizar filtros
-      var filterRow = $('thead tr:last');
+      // FILA DE FILTROS - MEJORADA
+      var filterRow = $(el).find('thead tr:eq(1)');
+      filterRow.css({
+        'background': 'linear-gradient(135deg, #12161f 0%, #0a0e1a 100%) !important',
+        'border': '2px solid rgba(0, 229, 255, 0.4) !important'
+      });
+      
       filterRow.find('th').css({
-        'background-color': '#12161f !important',
-        'border': '1px solid #0084ff !important'
+        'background': 'transparent !important',
+        'border': '1px solid rgba(0, 229, 255, 0.3) !important',
+        'padding': '6px 4px !important'
       });
       
       filterRow.find('input').css({
-        'background-color': '#0a0e1a !important',
-        'color': '#e0e6ed !important',
-        'border': '1px solid #00e5ff !important',
+        'background-color': '#000000 !important',
+        'color': '#00e5ff !important',
+        'border': '2px solid #00e5ff !important',
         'border-radius': '6px',
-        'padding': '8px !important',
-        'font-size': '12px'
-      }).attr('placeholder', ' Filtrar...');
+        'padding': '6px 8px !important',
+        'font-size': '10px !important',
+        'width': '90% !important',
+        'box-shadow': 'inset 0 0 15px rgba(0, 229, 255, 0.3) !important',
+        'font-weight': 'bold'
+      }).attr('placeholder', '🔍 Filtrar...');
       
-      // Estilizar botones
-      var buttons = $('.dt-buttons .btn-cyber');
-      buttons.css({
+      // BOTONES DE EXPORTACIÓN - MUY VISIBLES
+      var buttonContainer = $(el).find('.dt-buttons');
+      buttonContainer.css({
+        'margin-bottom': '15px !important',
+        'text-align': 'center !important'
+      });
+      
+      // Estilo para TODOS los botones
+      $(el).find('.dt-button').css({
         'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
         'color': '#000000 !important',
-        'border': '2px solid #00e5ff !important',
+        'border': '3px solid #ffffff !important',
         'border-radius': '8px !important',
         'padding': '10px 16px !important',
-        'font-weight': 'bold !important',
-        'font-size': '13px !important',
+        'font-weight': '700 !important',
+        'font-size': '12px !important',
         'cursor': 'pointer !important',
-        'margin': '5px !important',
+        'margin': '4px 3px !important',
         'transition': 'all 0.3s ease !important',
-        'box-shadow': '0 0 15px rgba(0, 229, 255, 0.4) !important'
+        'box-shadow': '0 4px 15px rgba(0, 229, 255, 0.6) !important',
+        'text-shadow': '0 1px 2px rgba(0,0,0,0.3) !important',
+        'display': 'inline-block !important',
+        'min-width': '100px !important'
       }).hover(
         function() {
           $(this).css({
-            'transform': 'translateY(-3px) !important',
-            'box-shadow': '0 0 25px rgba(0, 229, 255, 0.8) !important'
+            'transform': 'translateY(-3px) scale(1.05) !important',
+            'box-shadow': '0 6px 25px rgba(0, 229, 255, 0.9) !important',
+            'background': 'linear-gradient(135deg, #ffffff 0%, #00e5ff 100%) !important',
+            'color': '#000000 !important'
           });
         },
         function() {
           $(this).css({
-            'transform': 'translateY(0) !important',
-            'box-shadow': '0 0 15px rgba(0, 229, 255, 0.4) !important'
+            'transform': 'translateY(0) scale(1) !important',
+            'box-shadow': '0 4px 15px rgba(0, 229, 255, 0.6) !important',
+            'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important'
           });
         }
       );
       
-      // Estilizar paginación
-      $('.dataTables_paginate .paginate_button').css({
-        'background-color': '#12161f !important',
+      // PAGINACIÓN MEJORADA
+      $(el).find('.dataTables_paginate .paginate_button').css({
+        'background': 'linear-gradient(135deg, #12161f 0%, #0a0e1a 100%) !important',
         'color': '#e0e6ed !important',
-        'border': '1px solid #00e5ff !important',
+        'border': '2px solid #00e5ff !important',
         'margin': '2px !important',
         'padding': '8px 12px !important',
-        'border-radius': '4px',
-        'font-size': '12px'
+        'border-radius': '6px',
+        'font-size': '11px',
+        'font-weight': '600 !important',
+        'transition': 'all 0.2s ease !important'
       }).hover(
         function() {
           if (!$(this).hasClass('disabled')) {
             $(this).css({
-              'background-color': '#00e5ff !important',
-              'color': '#000000 !important'
+              'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
+              'color': '#000000 !important',
+              'transform': 'scale(1.1) !important',
+              'box-shadow': '0 0 15px rgba(0, 229, 255, 0.7) !important'
             });
           }
         },
         function() {
           $(this).css({
-            'background-color': '#12161f !important',
-            'color': '#e0e6ed !important'
+            'background': 'linear-gradient(135deg, #12161f 0%, #0a0e1a 100%) !important',
+            'color': '#e0e6ed !important',
+            'transform': 'scale(1) !important',
+            'box-shadow': 'none !important'
           });
         }
       );
       
-      $('.dataTables_paginate .paginate_button.current').css({
-        'background-color': '#00e5ff !important',
+      $(el).find('.dataTables_paginate .paginate_button.current').css({
+        'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%) !important',
         'color': '#000000 !important',
-        'box-shadow': '0 0 15px rgba(0, 229, 255, 0.6) !important'
+        'box-shadow': '0 0 20px rgba(0, 229, 255, 0.8) !important',
+        'font-weight': '700 !important',
+        'border': '2px solid #ffffff !important'
       });
       
-      // Estilizar info
-      $('.dataTables_info').css({
-        'color': '#e0e6ed !important',
-        'font-size': '13px'
+      // INFORMACIÓN DE LA TABLA
+      $(el).find('.dataTables_info').css({
+        'color': '#00e5ff !important',
+        'font-size': '12px',
+        'font-weight': '600',
+        'padding': '10px 0 !important'
       });
       
-      // Estilizar controles
-      $('label').css({
+      // CONTROLES DE LONGITUD
+      $(el).find('label').css({
         'color': '#e0e6ed !important',
-        'font-size': '13px'
+        'font-size': '12px',
+        'font-weight': '600'
       });
       
-      $('select').css({
-        'background-color': '#0a0e1a !important',
-        'color': '#e0e6ed !important',
-        'border': '1px solid #00e5ff !important',
-        'border-radius': '4px',
-        'padding': '6px !important'
+      $(el).find('select').css({
+        'background-color': '#000000 !important',
+        'color': '#00e5ff !important',
+        'border': '2px solid #00e5ff !important',
+        'border-radius': '6px',
+        'padding': '6px 8px !important',
+        'font-weight': '600 !important',
+        'font-size': '11px',
+        'margin': '0 5px !important'
+      });
+      
+      // SCROLLBAR PERSONALIZADO
+      var scrollBody = $(el).find('.dataTables_scrollBody');
+      scrollBody.css({
+        'scrollbar-width': 'thin',
+        'scrollbar-color': '#00e5ff #12161f'
+      });
+      
+      // Webkit scrollbar
+      scrollBody.on('mouseenter', function() {
+        $(this).css('overflow', 'auto');
       });
     }
   ")
@@ -4966,8 +5049,7 @@ El círculo de correlaciones es una herramienta fundamental para interpretar las
 
 La dirección de cada flecha—es decir, el ángulo que forma con los ejes PC1 y PC2—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
 
-```{r Variables DIM 1 Y DIM 2}
-
+```{r Variables DIM 1 Y DIM 2., fig.height=7, fig.width=12, out.width="100%"}
 var_data <- get_pca_var(res.pca)
 
 var_df <- data.frame(
@@ -4992,78 +5074,244 @@ var_df <- data.frame(
   Cos2_6 = var_data$cos2[, 6]
 )
 
-
 p1 <- plot_ly(var_df,
               x = ~Dim1, 
               y = ~Dim2,
               color = ~Contrib1,
-              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
-              text = ~paste("<b>", Variable, "</b><br>",
-                            "Dim 1:", round(Dim1, 3), "<br>",
-                            "Dim 2:", round(Dim2, 3), "<br>",
-                            "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
-                            "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%<br>",
-                            "Cos2 Dim 1:", round(Cos2_1, 3), "<br>",
-                            "Cos2 Dim 2:", round(Cos2_2, 3)),
+              colors = cyber_color_scale,
+              text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Variable, "</b><br>",
+                            "<span style='color:#8b92a0;'>COORDENADAS PCA:</span><br>",
+                            "├─ Dim 1: <b style='color:#00e676;'>", round(Dim1, 3), "</b><br>",
+                            "├─ Dim 2: <b style='color:#00e5ff;'>", round(Dim2, 3), "</b><br>",
+                            "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                            "├─ Dim 1: <b style='color:#ffd600;'>", round(Contrib1, 2), "%</b><br>",
+                            "├─ Dim 2: <b style='color:#a259ff;'>", round(Contrib2, 2), "%</b><br>",
+                            "<br><span style='color:#8b92a0;'>CALIDAD (Cos²):</span><br>",
+                            "├─ Dim 1: <b style='color:#00e676;'>", round(Cos2_1, 3), "</b><br>",
+                            "└─ Dim 2: <b style='color:#0084ff;'>", round(Cos2_2, 3), "</b>"),
               type = "scatter",
               mode = "markers",
-              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              marker = list(
+                size = 7,
+                opacity = 0.8, 
+                line = list(width = 0.5, color = "#ffffff"),
+                symbol = 'circle'
+              ),
               hovertemplate = '%{text}<extra></extra>') %>%
   
   add_segments(x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
-               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               line = list(color = "rgba(0, 229, 255, 0.5)", width = 1.2),
                showlegend = FALSE, hoverinfo = "skip") %>%
   
   layout(
     title = list(
-      text = "Variables: Dimensión 1 vs Dimensión 2<br><sub>Coloreado por Contribución Dim 1</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:20px;'>Variables: Dimensión 1 vs Dimensión 2</b><br>
+             <span style='color:#8b92a0; font-size:14px;'>Coloreado por Contribución a Dimensión 1</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
     ),
-    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    xaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 1</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      range = c(-1.1, 1.1),
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
+    yaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 2</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      range = c(-1.1, 1.1),
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white"
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 80, r = 80, b = 80, t = 100),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial")
+    ),
+    coloraxis = list(
+      colorbar = list(
+        title = list(
+          text = "<b>Contribución<br>Dim 1 (%)</b>",
+          font = list(size = 12, color = "#e0e6ed")
+        ),
+        tickfont = list(color = '#8b92a0', size = 11),
+        thickness = 20,
+        len = 0.75
+      )
+    ),
+    shapes = list(
+      list(
+        type = "circle",
+        x0 = -1, x1 = 1,
+        y0 = -1, y1 = 1,
+        xref = "x", yref = "y",
+        line = list(color = "rgba(0, 229, 255, 0.3)", width = 1.5, dash = "dash")
+      )
+    ),
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.12,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>Pasa el mouse sobre los puntos para ver detalles. Vectores = dirección e importancia de variables.</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "pca_variables_dim1_dim2",
+      width = 1200,
+      height = 800
+    )
   )
 
 p1
+
 ```
 Observamos en el gráfico que las variables que más contribuyen a la dimensión 1 son esperanza de vida positivamente (17.03%), uso de internet positivamente (16.88%) y mortalidad infantil negativamente (16.63%)
 A la dimensión 2 son la indutria negativamente (27.37%), el crecimiento poblacional negativamente (18.23%) y las remesas positivamente (13.15%)
 
 
-```{r Variables DIM 3 Y DIM 4}
+```{r Variables DIM 3 Y DIM 4, fig.height=7, fig.width=12, out.width="100%"}
 p2 <- plot_ly(var_df,
               x = ~Dim3, 
               y = ~Dim4,
               color = ~Contrib3,
-              colors = colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))(100),
-              text = ~paste("<b>", Variable, "</b><br>",
-                            "Dim 3:", round(Dim3, 3), "<br>",
-                            "Dim 4:", round(Dim4, 3), "<br>",
-                            "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
-                            "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%<br>",
-                            "Cos2 Dim 3:", round(Cos2_3, 3), "<br>",
-                            "Cos2 Dim 4:", round(Cos2_4, 3)),
+              colors = cyber_color_scale,
+              text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Variable, "</b><br>",
+                            "<span style='color:#8b92a0;'>COORDENADAS PCA:</span><br>",
+                            "├─ Dim 3: <b style='color:#00e676;'>", round(Dim3, 3), "</b><br>",
+                            "├─ Dim 4: <b style='color:#00e5ff;'>", round(Dim4, 3), "</b><br>",
+                            "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                            "├─ Dim 3: <b style='color:#ffd600;'>", round(Contrib3, 2), "%</b><br>",
+                            "├─ Dim 4: <b style='color:#a259ff;'>", round(Contrib4, 2), "%</b><br>",
+                            "<br><span style='color:#8b92a0;'>CALIDAD (Cos²):</span><br>",
+                            "├─ Dim 3: <b style='color:#00e676;'>", round(Cos2_3, 3), "</b><br>",
+                            "└─ Dim 4: <b style='color:#0084ff;'>", round(Cos2_4, 3), "</b>"),
               type = "scatter",
               mode = "markers",
-              marker = list(size = 12, opacity = 0.8, line = list(width = 2, color = "white")),
+              marker = list(
+                size = 7,
+                opacity = 0.8, 
+                line = list(width = 0.5, color = "#ffffff"),
+                symbol = 'circle'
+              ),
               hovertemplate = '%{text}<extra></extra>') %>%
   
   add_segments(x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
-               line = list(color = "rgba(100, 100, 100, 0.3)", width = 1),
+               line = list(color = "rgba(0, 229, 255, 0.5)", width = 1.2),
                showlegend = FALSE, hoverinfo = "skip") %>%
   
   layout(
     title = list(
-      text = "Variables: Dimensión 3 vs Dimensión 4<br><sub>Coloreado por Contribución Dim 3</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:20px;'>Variables: Dimensión 3 vs Dimensión 4</b><br>
+             <span style='color:#8b92a0; font-size:14px;'>Coloreado por Contribución a Dimensión 3</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.95
     ),
-    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    xaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 3</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      range = c(-1.1, 1.1),
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
+    yaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 4</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      range = c(-1.1, 1.1),
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white"
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 80, r = 80, b = 80, t = 100),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial")
+    ),
+    coloraxis = list(
+      colorbar = list(
+        title = list(
+          text = "<b>Contribución<br>Dim 3 (%)</b>",
+          font = list(size = 12, color = "#e0e6ed")
+        ),
+        tickfont = list(color = '#8b92a0', size = 11),
+        thickness = 20,
+        len = 0.75
+      )
+    ),
+    shapes = list(
+      list(
+        type = "circle",
+        x0 = -1, x1 = 1,
+        y0 = -1, y1 = 1,
+        xref = "x", yref = "y",
+        line = list(color = "rgba(0, 229, 255, 0.3)", width = 1.5, dash = "dash")
+      )
+    ),
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.12,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>Pasa el mouse sobre los puntos para ver detalles. Vectores = dirección e importancia de variables.</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "pca_variables_dim3_dim4",
+      width = 1200,
+      height = 800
+    )
   )
 
 p2
@@ -5078,11 +5326,11 @@ El análisis combinado de las variables y los países en el espacio reducido de 
 
 Para comprender la lógica interpretativa del biplot, es fundamental reconocer que la posición de un país en relación a la dirección de una flecha de variable indica el valor relativo de ese país en esa variable específica. Países ubicados en la misma dirección que una flecha exhiben valores altos en esa variable; países ubicados en dirección opuesta exhiben valores bajos; países ubicados perpendicularmente (formando ángulos de \~$90°$) exhiben valores cercanos a la media global. Esta propiedad geométrica del biplot permite realizar diagnósticos cuantitativos directamente desde la visualización gráfica, sin necesidad de consultar la base de datos original, siempre que la calidad de representación ($cos²$) sea suficientemente alta (Jolliffe, 2002).
 
-```{r Paises y variables DIM 1 Y DIM 2}
+```{r Paises y variables DIM 1 Y DIM 2, fig.height=8, fig.width=12, out.width="100%"}
+
 acp_prcomp <- prcomp(datos_analisis, center = TRUE, scale. = TRUE)
 ind_data <- get_pca_ind(acp_prcomp)
 var_data <- get_pca_var(acp_prcomp)
-
 
 ind_df <- data.frame(
   Pais = rownames(ind_data$coord),
@@ -5110,54 +5358,133 @@ var_df <- data.frame(
 
 p1 <- plot_ly() %>%
   
+  # Vectores de variables
   add_segments(
     data = var_df,
     x = 0, xend = ~Dim1, y = 0, yend = ~Dim2,
-    line = list(color = "#2E9FDF", width = 2),
+    line = list(color = "#00e5ff", width = 2),
     showlegend = FALSE, hoverinfo = "skip"
   ) %>%
   
   add_trace(
     data = var_df,
     x = ~Dim1, y = ~Dim2,
-    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
-                  "Dim 1:", round(Dim1/3, 3), "<br>",
-                  "Dim 2:", round(Dim2/3, 3), "<br>",
-                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
-                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Variable, "</b><br>",
+                  "<span style='color:#8b92a0;'>COORDENADAS:</span><br>",
+                  "├─ Dim 1: <b style='color:#00e676;'>", round(Dim1/3, 3), "</b><br>",
+                  "├─ Dim 2: <b style='color:#00e5ff;'>", round(Dim2/3, 3), "</b><br>",
+                  "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                  "├─ Dim 1: <b style='color:#ffd600;'>", round(Contrib1, 2), "%</b><br>",
+                  "└─ Dim 2: <b style='color:#a259ff;'>", round(Contrib2, 2), "%</b>"),
     type = "scatter",
     mode = "markers",
-    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    marker = list(
+      size = 10, 
+      color = "#00e5ff", 
+      opacity = 0.9, 
+      line = list(width = 1.5, color = "#ffffff")
+    ),
     hovertemplate = '%{text}<extra></extra>',
-    name = "Variables"
+    name = "Variables",
+    showlegend = TRUE
   ) %>%
   
   add_trace(
     data = ind_df,
     x = ~Dim1, y = ~Dim2,
-    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
-                  "Dim 1:", round(Dim1, 3), "<br>",
-                  "Dim 2:", round(Dim2, 3), "<br>",
-                  "<b>Contribución Dim 1:</b> ", round(Contrib1, 2), "%<br>",
-                  "<b>Contribución Dim 2:</b> ", round(Contrib2, 2), "%"),
+    text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Pais, "</b><br>",
+                  "<span style='color:#8b92a0;'>COORDENADAS:</span><br>",
+                  "├─ Dim 1: <b style='color:#00e676;'>", round(Dim1, 3), "</b><br>",
+                  "├─ Dim 2: <b style='color:#00e5ff;'>", round(Dim2, 3), "</b><br>",
+                  "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                  "├─ Dim 1: <b style='color:#ffd600;'>", round(Contrib1, 2), "%</b><br>",
+                  "└─ Dim 2: <b style='color:#a259ff;'>", round(Contrib2, 2), "%</b>"),
     type = "scatter",
     mode = "markers",
-    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    marker = list(
+      size = 6, 
+      color = "#4a9eff", 
+      opacity = 0.5, 
+      line = list(width = 0.5, color = "#00e5ff")
+    ),
     hovertemplate = '%{text}<extra></extra>',
-    name = "Países"
+    name = "Países",
+    showlegend = TRUE
   ) %>%
   
   layout(
     title = list(
-      text = "Biplot: Dimensión 1 vs Dimensión 2<br><sub>Azul = Variables | Gris = Países</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:22px;'>Biplot: Dimensión 1 vs Dimensión 2</b><br>
+             <span style='color:#8b92a0; font-size:13px;'></span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.98
     ),
-    xaxis = list(title = "Dimensión 1", zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Dimensión 2", zeroline = TRUE, zerolinecolor = "gray"),
+    xaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 1</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
+    yaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 2</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    legend = list(x = 0.02, y = 0.98)
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 80, r = 80, b = 80, t = 120),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial")
+    ),
+    legend = list(
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1.5,
+      font = list(size = 12, color = "#e0e6ed"),
+      x = 0.02,
+      y = 0.98,
+      xanchor = "left",
+      yanchor = "top"
+    ),
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.12,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>Vectores cyan = direcciones de máxima varianza | Puntos azules = posiciones de países en el espacio PCA</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "biplot_dim1_dim2",
+      width = 1400,
+      height = 900
+    )
   )
 
 p1
@@ -5167,60 +5494,143 @@ p1
 Senegal y Burkina Faso se alinean con la flecha de mortalidad infantil, confirmando valores altos en esa variable. Egipto se alinea con crecimiento poblacional, indicando tasa de crecimiento demográfico elevada. Corea del Sur y Nueva Zelanda se alinean con exportaciones, indicando economías muy orientadas a comercio externo. Suiza se alinea con esperanza de vida, confirmando longevidad excepcional.
 
 En dirección opuesta: países desarrollados europeos se oponen a flechas de mortalidad y rezago, reflejando valores bajos en estos indicadores negativos. Honduras y República Kirguisa se alinean con remesas, indicando dependencia crítica de transferencias de migrantes.
-```{r Paises y variables DIM 3 Y DIM 4}
+```{r Paises y variables DIM 3 Y DIM 4, fig.height=8, fig.width=12, out.width="100%"}
+
 p2 <- plot_ly() %>%
   
+  # Vectores de variables
   add_segments(
     data = var_df,
     x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
-    line = list(color = "#2E9FDF", width = 2),
+    line = list(color = "#00e5ff", width = 2),
     showlegend = FALSE, hoverinfo = "skip"
   ) %>%
   
+  # Marcadores de variables (cyan)
   add_trace(
     data = var_df,
     x = ~Dim3, y = ~Dim4,
-    text = ~paste("<b>VARIABLE: ", Variable, "</b><br>",
-                  "Dim 3:", round(Dim3/3, 3), "<br>",
-                  "Dim 4:", round(Dim4/3, 3), "<br>",
-                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
-                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Variable, "</b><br>",
+                  "<span style='color:#8b92a0;'>COORDENADAS:</span><br>",
+                  "├─ Dim 3: <b style='color:#00e676;'>", round(Dim3/3, 3), "</b><br>",
+                  "├─ Dim 4: <b style='color:#00e5ff;'>", round(Dim4/3, 3), "</b><br>",
+                  "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                  "├─ Dim 3: <b style='color:#ffd600;'>", round(Contrib3, 2), "%</b><br>",
+                  "└─ Dim 4: <b style='color:#a259ff;'>", round(Contrib4, 2), "%</b>"),
     type = "scatter",
     mode = "markers",
-    marker = list(size = 10, color = "#2E9FDF", opacity = 0.8, line = list(width = 2, color = "white")),
+    marker = list(
+      size = 10, 
+      color = "#00e5ff", 
+      opacity = 0.9, 
+      line = list(width = 1.5, color = "#ffffff")
+    ),
     hovertemplate = '%{text}<extra></extra>',
-    name = "Variables"
+    name = "Variables",
+    showlegend = TRUE
   ) %>%
   
+  # Marcadores de países (azul oscuro)
   add_trace(
     data = ind_df,
     x = ~Dim3, y = ~Dim4,
-    text = ~paste("<b>PAÍS: ", Pais, "</b><br>",
-                  "Dim 3:", round(Dim3, 3), "<br>",
-                  "Dim 4:", round(Dim4, 3), "<br>",
-                  "<b>Contribución Dim 3:</b> ", round(Contrib3, 2), "%<br>",
-                  "<b>Contribución Dim 4:</b> ", round(Contrib4, 2), "%"),
+    text = ~paste("<b style='color:#00e5ff; font-size:14px;'>", Pais, "</b><br>",
+                  "<span style='color:#8b92a0;'>COORDENADAS:</span><br>",
+                  "├─ Dim 3: <b style='color:#00e676;'>", round(Dim3, 3), "</b><br>",
+                  "├─ Dim 4: <b style='color:#00e5ff;'>", round(Dim4, 3), "</b><br>",
+                  "<br><span style='color:#8b92a0;'>CONTRIBUCIÓN:</span><br>",
+                  "├─ Dim 3: <b style='color:#ffd600;'>", round(Contrib3, 2), "%</b><br>",
+                  "└─ Dim 4: <b style='color:#a259ff;'>", round(Contrib4, 2), "%</b>"),
     type = "scatter",
     mode = "markers",
-    marker = list(size = 8, color = "#696969", opacity = 0.6, line = list(width = 1, color = "white")),
+    marker = list(
+      size = 6, 
+      color = "#4a9eff", 
+      opacity = 0.5, 
+      line = list(width = 0.5, color = "#00e5ff")
+    ),
     hovertemplate = '%{text}<extra></extra>',
-    name = "Países"
+    name = "Países",
+    showlegend = TRUE
   ) %>%
   
   layout(
     title = list(
-      text = "Biplot: Dimensión 3 vs Dimensión 4<br><sub>Azul = Variables | Gris = Países</sub>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:22px;'>Biplot: Dimensión 3 vs Dimensión 4</b><br>
+             <span style='color:#8b92a0; font-size:13px;'></span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.98
     ),
-    xaxis = list(title = "Dimensión 3", zeroline = TRUE, zerolinecolor = "gray"),
-    yaxis = list(title = "Dimensión 4", zeroline = TRUE, zerolinecolor = "gray"),
+    xaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 3</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
+    yaxis = list(
+      title = "<b style='font-size:14px;'>Dimensión 4</b>",
+      zeroline = TRUE, 
+      zerolinecolor = "rgba(0, 229, 255, 0.6)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 12),
+      titlefont = list(color = '#e0e6ed', size = 14)
+    ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    legend = list(x = 0.02, y = 0.98)
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 80, r = 80, b = 80, t = 120),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial")
+    ),
+    legend = list(
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1.5,
+      font = list(size = 12, color = "#e0e6ed"),
+      x = 0.02,
+      y = 0.98,
+      xanchor = "left",
+      yanchor = "top"
+    ),
+    annotations = list(
+      list(
+        x = 0.5, 
+        y = -0.12,
+        xref = "paper", 
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:11px;'>Vectores cyan = direcciones de máxima varianza | Puntos azules = posiciones de países en el espacio PCA</span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "biplot_dim3_dim4",
+      width = 1400,
+      height = 900
+    )
   )
 
 p2
+
 ```
 
 Guinea se posiciona en la dirección de crecimiento poblacional, indicando valores altos en esta variable. Kuwait y Djibouti se alinean con importaciones, indicando ratios elevados. Senegal e Irlanda se alinean con exportaciones, indicando orientación exportadora. Burkina Faso y Qatar se alinean con mortalidad infantil, indicando valores en esta variable. Macedonia del Norte se alinea con PIB per cápita, indicando ingreso por habitante en esa dirección.
