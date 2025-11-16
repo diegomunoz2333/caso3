@@ -19,7 +19,6 @@ editor_options:
   markdown: 
     wrap: sentence
 ---
-```
 
 ```{=html}
 <style type="text/css">
