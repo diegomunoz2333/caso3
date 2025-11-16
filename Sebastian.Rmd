@@ -1494,7 +1494,7 @@ res.var$contrib
 res.var$cos2  
 ```
 
-El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). En este análisis, la línea verde punteada marca el umbral del 70%, y la intersección de la línea morada acumulada con este umbral define el número final de componentes 6 que será utilizado para la clusterización posterior.
+El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). Y se selecciona 4 componentes.
 
 ### Contribución de Variables a Componentes Principales
 
@@ -1725,9 +1725,9 @@ p1 <- plot_ly(ind_df,
 p1
 ```
 
-Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11.66%, es algo esperable sabiendo que el país árabe tiene un gran comercio. Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariamente de su aporte en la dimensión 1 el cual es 3.14%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
+<!-- cambios -->
 
-Al contrario podemos ver países como Niger el cual la dimensión 2 tiene un aporte de 0,64%, lo cual nos da a pensar que este país tiene deficiencia en lo económico
+En la dimensión 1, Níger emerge como el mayor contribuidor, posicionándose en el extremo negativo del eje que representa el déficit en desarrollo humano y conectividad tecnológica, reflejando severas limitaciones en acceso a servicios básicos, mortalidad infantil elevada y baja penetración digital. Le sigue San Marino, ubicado en el extremo positivo, representando un microestado con indicadores de bienestar consolidados en salud y esperanza de vida. En la dimensión 2, Qatar lidera como mayor contribuidor, posicionándose en el extremo inferior del eje, consolidándose como economía petroquímica ultraespecializada con estructura industrial dominada por hidrocarburos y dinámicas demográficas atípicas. Islas Marshall emerge como segundo mayor contribuidor, ubicándose en el extremo superior, caracterizándose como Estado insular vulnerable con alta dependencia de ayuda externa y servicios financieros.﻿
 
 ```{r individuos DIM 3 Y DIM 4}
 
@@ -1763,7 +1763,9 @@ p2 <- plot_ly(ind_df,
 p2
 ```
 
-Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 18,65% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable. Timor-leste tiene un aporte en la dimensión 4 de un 8.49% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa. Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 10.69% y en la 4 de 0,28%, lo cual refiere que es uno de los paises que menos exporta y más importa.
+<!-- cambios -->
+
+En la dimensión 3, Malta emerge como el mayor contribuidor, posicionándose en el extremo positivo del eje que representa economías hiperglobalizadas con ratios comerciales excesivamente altos, reflejando su condición de centro financiero y comercial con flujos internacionales que superan significativamente su PIB. China se sitúa en el extremo negativo, evidenciando una estructura comercial más balanceada basada en exportaciones de manufactura y sostenida por una vasta base poblacional. En la dimensión 4, India se coloca en el extremo negativo, reflejando presión demográfica extrema sobre recursos naturales (1,400 millones de habitantes sobre territorio limitado generan demanda exponencial de tierra cultivable y agua). Timor-Leste se ubica en el extremo positivo, caracterizándose por baja densidad poblacional relativa y abundancia de cobertura forestal.
 
 ### Representación de Variables en el Plano de Componentes Principales
 
@@ -1834,7 +1836,9 @@ p1 <- plot_ly(var_df,
 p1
 ```
 
-Observamos en el gráfico que las variables que más contribuyen a la dimensión 1 son esperanza de vida positivamente (17.03%), uso de internet positivamente (16.88%) y mortalidad infantil negativamente (16.63%) A la dimensión 2 son la indutria negativamente (27.37%), el crecimiento poblacional negativamente (18.23%) y las remesas positivamente (13.15%)
+<!-- cambios -->
+
+En la dimensión 1, la Esperanza de vida lidera, posicionándose en el extremo positivo, consolidando un eje que representa desarrollo humano y calidad de vida. Simultáneamente, la Mortalidad infantil se posiciona en el extremo negativo, estableciendo un contraste fundamental entre naciones con alta esperanza de vida versus aquellas con elevada mortalidad neonatal refleja de sistemas de salud deficitarios. En la dimensión 2, la Industria en el extremo negativo refleja economías donde la dependencia de una única rama industrial es REDUCIDA o donde la manufactura está integrada verticalmente de manera autónoma. Las Remesas emergen como segundo vector importante en el extremo positivo, capturando economías ALTAMENTE DEPENDIENTES de transferencias de capital internacional, caracterizadas por débil base productiva propia y vulnerabilidad a ciclos externos.
 
 ```{r Variables DIM 3 Y DIM 4}
 p2 <- plot_ly(var_df,
@@ -1873,7 +1877,11 @@ p2 <- plot_ly(var_df,
 p2
 ```
 
-A la dimensión 3 las variables que más contribuyen son las importaciones negativamente (26.78%), las exportaciones negativamente (26.43%) y la inversión extranjera negativamente (13.2%). En la dimensión 4 las variables que más contribuyen son el area boscosa negativamente (29.47%), la tierra cultivable positivamente (26.32%)y la población positivamente (19.51%).
+```         
+<!-- cambios -->
+```
+
+En la dimensión 3, las Importaciones se colocan en el extremo negativo del eje, que representa economías cerradas con baja intensidad comercial, reflejando limitadas importaciones, reducidas exportaciones y escasa inversión externa. Simultáneamente, el polo positivo representa el extremo opuesto, estableciendo un contraste fundamental entre economías cerradas versus aquellas altamente abiertas con flujos comerciales exponenciados e inversión transnacional abundante. En la dimensión 4, el Área boscosa se posiciona en el extremo negativo, reflejando deforestación severa donde bosques han sido masivamente convertidos en tierra cultivable. En contraste, Tierra cultivable y Población emergen en el extremo positivo, caracterizándose por equilibrio entre población y recursos territoriales, con alta disponibilidad de tierra cultivable y ausencia de presión deforestadora extrema.﻿
 
 ### Análisis Integrado de Variables y Países
 
@@ -2233,7 +2241,6 @@ dend_interactive <- dend_interactive %>%
   config(displayModeBar = TRUE, scrollZoom = TRUE, displaylogo = FALSE)
 dend_interactive
 ```
-
 
 El método del codo examina cómo disminuye WCSS (suma de cuadrados dentro de clusters) conforme aumenta el número de clusters desde $k=2$ hasta $k=10$ Inicialmente, incrementar $k$ reduce WCSS rápidamente porque se reduce heterogeneidad interna; sin embargo, a partir de cierto $k$ (el "codo"), la reducción adicional se vuelve marginal, sugiriendo que clusters posteriores no capturan estructura genuina sino que simplemente subdividen artificialmente. Típicamente, el codo se identifica en $k=3$ a $k=4$ para análisis de desarrollo internacional.
 
