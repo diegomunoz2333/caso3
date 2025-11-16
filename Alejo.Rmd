@@ -290,39 +290,37 @@ library(tidyverse)
 
 # Introducción
 
-En el corazón de la economía global existe una paradoja fundamental: mientras que algunos indicadores sugieren una relación lineal y predecible entre el desarrollo económico y el bienestar social, la realidad es mucho más compleja y matizada. Tomemos un ejemplo: Costa Rica tiene una esperanza de vida comparable a la de países europeos desarrollados, pero con un PIB per cápita significativamente menor; Qatar, por su parte, lidera en PIB per cápita pero no encabeza necesariamente en todos los indicadores de bienestar social (Shkolnikov et al., 2019). Estas "anomalías" no son excepciones sino revelaciones de una verdad fundamental: el desarrollo no es unidimensional.
+En el corazón de la economía global existe una paradoja fundamental, mientras que algunos indicadores sugieren una relación lineal y predecible entre el desarrollo económico y el bienestar social, la realidad es mucho más compleja y matizada. Tomemos un ejemplo, Costa Rica tiene una esperanza de vida comparable a la de países europeos desarrollados, pero con un PIB per cápita significativamente menor; Qatar, por su parte, lidera en PIB per cápita pero no encabeza necesariamente en todos los indicadores de bienestar social (Shkolnikov et al., 2019). Estas "anomalías" no son excepciones sino revelaciones de una verdad fundamental, la cual es que el desarrollo no es unidimensional.
 
-El problema central que motiva este trabajo es fundamental: ¿Cuáles son realmente los "tipos" de desarrollo que caracterizan la economía mundial cuando se analiza simultáneamente un conjunto amplio de 17 indicadores económicos, sociales, tecnológicos y ambientales? No se trata de responder cuál país es más "rico", sino algo más profundo: descubrir si existen estructuras ocultas en los datos que agrupen países con perfiles similares más allá de la geografía o las clasificaciones convencionales. Específicamente, la pregunta es: ¿Colombia y Uruguay podrían compartir más similitudes con algunos países asiáticos que con sus propios vecinos latinoamericanos? ¿Existe realmente un "grupo de países con baja renta pero alto acceso tecnológico"? ¿Las características ambientales y demográficas se alinean con la riqueza económica o presentan patrones independientes?
+El principal problema que motiva este trabajo es ¿cuáles son realmente los "tipos" de desarrollo que caracterizan la economía mundial cuando se analiza simultáneamente un conjunto amplio de 17 indicadores económicos, sociales, tecnológicos y ambientales? No se trata de responder cuál país es más "rico", sino algo más profundo, descubrir si existen estructuras ocultas en los datos que agrupen países con perfiles similares más allá de la geografía o las clasificaciones convencionales. Específicamente, la pregunta es, ¿Colombia y Uruguay podrían compartir más similitudes con algunos países asiáticos que con sus propios vecinos latinoamericanos? ¿Existe realmente un "grupo de países con baja renta pero alto acceso tecnológico"? ¿Las características ambientales y demográficas se alinean con la riqueza económica o presentan patrones independientes?
 
-Históricamente, el desarrollo internacional se ha medido mediante indicadores aislados. El PIB per cápita domina los rankings; la esperanza de vida se analiza independientemente; la conectividad digital se observa separadamente. Este enfoque fragmentado es problemático porque el desarrollo no es unidimensional: un país puede ser económicamente exitoso pero frágil en salud pública, o tener excelente conectividad digital pero vulnerabilidad ambiental crítica (Jolliffe, 2002; World Bank, 2023). Los datos del año 2022 capturan un momento único en la historia económica global: post-pandemia de COVID-19, con efectos heterogéneos según país. Algunos recuperaron rápidamente su dinamismo; otros enfrentaron cicatrices estructurales persistentes en empleo, salud y finanzas públicas (World Bank, 2023).
+Históricamente, el desarrollo internacional se ha medido mediante indicadores aislados. El PIB per cápita domina los rankings; la esperanza de vida se analiza independientemente; la conectividad digital se observa separadamente. Este enfoque fragmentado es problemático porque el desarrollo no es unidimensional, un país puede ser económicamente exitoso pero frágil en salud pública, o tener excelente conectividad digital pero vulnerabilidad ambiental crítica (Jolliffe, 2002; World Bank, 2023). Los datos del año 2022 capturan un momento único en la historia económica global, la cual es que post-pandemia de COVID-19, algunos países recuperaron rápidamente su dinamismo; otros enfrentaron cicatrices estructurales persistentes en empleo, salud y finanzas públicas (World Bank, 2023).
 
-El Banco Mundial proporciona 17 indicadores reconocidos internacionalmente que miden dimensiones distintas: factores económicos (PIB per cápita, crecimiento del PIB, inversión extranjera, remesas, industria, comercio), indicadores de salud y bienestar (esperanza de vida, mortalidad infantil, gasto en salud), variables de conectividad tecnológica (acceso a electricidad, uso de internet, suscripciones móviles) y aspectos ambientales y demográficos (área boscosa, tierra cultivable, crecimiento poblacional) (World Bank, 2023). Analizar estas 17 variables de forma independiente genera ruido; analizarlas de manera integrada puede revelar patrones coherentes que informan políticas públicas, estrategias de cooperación internacional y decisiones de inversión.
+El Banco Mundial proporciona 17 indicadores reconocidos internacionalmente que miden dimensiones distintas, entre ellas están factores económicos (PIB per cápita, crecimiento del PIB, inversión extranjera, remesas, industria, comercio), indicadores de salud y bienestar (esperanza de vida, mortalidad infantil, gasto en salud), variables de conectividad tecnológica (acceso a electricidad, uso de internet, suscripciones móviles) y aspectos ambientales y demográficos (área boscosa, tierra cultivable, crecimiento poblacional) (World Bank, 2023). Analizar estas 17 variables de forma independiente genera ruido; analizarlas de manera integrada puede revelar patrones coherentes que informan políticas públicas, estrategias de cooperación internacional y decisiones de inversión.
 
-El desafío es modelar una pregunta sin respuesta predefinida: ¿Qué agrupamientos naturales de países emergen cuando se analiza simultáneamente esta multiplicidad de indicadores? Este es precisamente el rol del aprendizaje no supervisado—un conjunto de técnicas que descubren patrones en datos sin etiquetas previas, sin clasificaciones arbitrarias impuestas externamente (Charrad et al., 2014; Jolliffe, 2002).
+El desafío es modelar una pregunta sin respuesta predefinida ¿qué agrupamientos naturales de países emergen cuando se analiza simultáneamente esta multiplicidad de indicadores? Este es precisamente el rol del aprendizaje no supervisado, un conjunto de técnicas que descubren patrones en datos sin etiquetas previas, sin clasificaciones arbitrarias impuestas externamente (Charrad et al., 2014; Jolliffe, 2002).
 
-Lo que sigue es una cartografía multidimensional de la economía global en el contexto post-pandemia: no solo se responde "¿en qué grupos se dividen los países?", sino, más profundamente, "¿qué revelan estos grupos sobre mecanismos reales del desarrollo, oportunidades compartidas, restricciones comunes y trayectorias viables para diferentes sociedades?" Los resultados no serán una clasificación administrativa sino un descubrimiento empírico basado en lo que los datos de 180 países en 2022 efectivamente revelan.
+Lo que sigue es una cartografía multidimensional de la economía global en el contexto post-pandemia, no solo se responde "¿en qué grupos se dividen los países?", sino, "¿qué revelan estos grupos sobre mecanismos reales del desarrollo, oportunidades compartidas, restricciones comunes y trayectorias viables para diferentes sociedades?" Los resultados no serán una clasificación administrativa sino un descubrimiento empírico basado en lo que los datos de 180 países en 2022 efectivamente revelan.
 
-# Metodologia
+# Metodología
 
 ## Base de datos
 
 La base de datos utilizada en este análisis proviene de la compilación World Development Indicators (WDI) del Banco Mundial, considerada la principal fuente internacional de estadísticas comparables sobre desarrollo económico y social (World Bank, 2023). Los WDI representan el esfuerzo más comprehensivo del Banco Mundial para consolidar indicadores de desarrollo de fuentes oficialmente reconocidas, incluyendo oficinas nacionales de estadística, bancos centrales, agencias de las Naciones Unidas, instituciones de investigación y contribuyentes del sector privado (World Bank, 2023; Jeanty, 2010).
 
-La base WDI contiene aproximadamente 1,600 indicadores de series temporales para 217 economías y más de 40 grupos de países, con datos para muchos indicadores que se remontan más de 50 años (World Bank, 2023). Los datos son compilados mediante metodologías estandarizadas que garantizan comparabilidad internacional, transparencia metodológica y robustez estadística (World Bank, 2019). El proceso de selección de indicadores del WDI sigue cuatro criterios fundamentales: facilidad de uso (accesibilidad y claridad para usuarios diversos), confiabilidad (reputación y credibilidad de la fuente), cobertura (amplitud geográfica y temporal), y calidad (rigor metodológico y precisión) (Behar & Mok, 2024).
+La base WDI contiene aproximadamente 1,600 indicadores de series temporales para 217 economías y más de 40 grupos de países, con datos para muchos indicadores que se remontan más de 50 años (World Bank, 2023). Los datos son compilados mediante metodologías estandarizadas que garantizan comparabilidad internacional, transparencia metodológica y robustez estadística (World Bank, 2019). El proceso de selección de indicadores del WDI sigue cuatro criterios fundamentales, el primero es la facilidad de uso (accesibilidad y claridad para usuarios diversos), el segundo es la confiabilidad (reputación y credibilidad de la fuente), el tercero es la cobertura (amplitud geográfica y temporal), y por último, la calidad (rigor metodológico y precisión) (Behar & Mok, 2024).
 
 Para este análisis, se filtro información exclusivamente para países individuales (eliminando bloques regionales o agrupaciones económicas) del año 2022. El dataset resultante contiene aproximadamente 180-200 países, según la disponibilidad de datos completos, donde cada observación representa una unidad soberana comparable en un único punto temporal.
 
-El año 2022 marca un punto de inflexión crítico en la economía global, representa el momento post-pandemia en que las trayectorias de recuperación de cada país se hacen visibles y diferenciadas. Mientras algunos países desarrollados con capacidad fiscal recuperaron o superaron niveles pre-COVID-19, economías emergentes enfrentaban cicatrices estructurales persistentes en empleo, inflación descontrolada, y aumento de deuda pública (Banco Mundial, 2022; FMI, 2023; CEPAL, 2023). La desigualdad global se amplió drásticamente: el crecimiento proyectado para América Latina en 2022 era apenas 2.6%, mientras la desigualdad de ingresos aumentó significativamente después de dos décadas de mejoras (BID, 2022).
+El año 2022 marca un punto de inflexión crítico en la economía global, representa el momento post-pandemia en que las trayectorias de recuperación de cada país se hacen visibles y diferenciadas. Mientras algunos países desarrollados con capacidad fiscal recuperaron o superaron niveles pre-COVID-19, economías emergentes enfrentaban cicatrices estructurales persistentes en empleo, inflación descontrolada, y aumento de deuda pública (Banco Mundial, 2022; FMI, 2023; CEPAL, 2023). La desigualdad global se amplió drásticamente, el crecimiento proyectado para América Latina en 2022 era apenas 2.6%, mientras la desigualdad de ingresos aumentó significativamente después de dos décadas de mejoras (BID, 2022).
 
-En este contexto, 2022 funciona como un "revelador" excepcional de vulnerabilidades y fortalezas estructurales subyacentes de los países: aquellos con sistemas de salud robustos, infraestructura tecnológica consolidada y economías diversificadas mostraron resiliencia; los que enfrentaban fragilidades estructurales experimentaron impactos persistentes (Banco Mundial, 2022; CIDOB, 2022). Por tanto, 2022 es un año extraordinariamente informativo para identificar perfiles reales de desarrollo, ya que las diferencias entre países se magnificaron visiblemente, permitiendo observar no clasificaciones arbitrarias sino estructuras auténticas de capacidad nacional.
-
-## Descripción de las variables
+En este contexto, 2022 funciona como un "revelador" excepcional de vulnerabilidades y fortalezas estructurales subyacentes de los países, ya que aquellos con sistemas de salud robustos, infraestructura tecnológica consolidada y economías diversificadas mostraron resiliencia; los que enfrentaban fragilidades estructurales experimentaron impactos persistentes (Banco Mundial, 2022; CIDOB, 2022). Por tanto, 2022 es un año extraordinariamente informativo para identificar perfiles reales de desarrollo, ya que las diferencias entre países se magnificaron visiblemente, permitiendo observar no clasificaciones arbitrarias sino estructuras auténticas de capacidad nacional.
 
 El dataset construido para este análisis integra 17 variables cuantitativas que capturan las múltiples dimensiones del desarrollo contemporáneo. Estas variables se organizan en cinco áreas temáticas que, en conjunto, ofrecen una perspectiva comprehensiva del desempeño socioeconómico, tecnológico y ambiental de cada país. A continuación, se presenta una descripción detallada de cada variable según su área temática.
 
 ### Dimensión economica
 
-La inclusión de variables económicas es fundamental porque el desarrollo ha sido históricamente conceptualizado como un proceso de transformación estructural impulsado por el crecimiento económico (World Bank, 2023; Piketty, 2022). Sin embargo, el crecimiento económico no es unidimensional: requiere tanto un nivel absoluto de riqueza (PIB per cápita) como dinamismo y expansión (crecimiento del PIB), diversificación productiva (industria), y capacidad de atracción de inversión internacional (IED) que transfiera conocimiento y capital (ECB, 2018). Además, las economías contemporáneas están integradas globalmente, por lo que exportaciones, importaciones y remesas son transmisores clave de oportunidades y vulnerabilidades económicas (World Bank, 2023)., en la tabla 1 las observamos.
+La inclusión de variables económicas es fundamental porque el desarrollo ha sido históricamente conceptualizado como un proceso de transformación estructural impulsado por el crecimiento económico (World Bank, 2023; Piketty, 2022). Sin embargo, el crecimiento económico no es unidimensional, requiere tanto un nivel absoluto de riqueza (PIB per cápita) como dinamismo y expansión (crecimiento del PIB), diversificación productiva (industria), y capacidad de atracción de inversión internacional (IED) que transfiera conocimiento y capital (ECB, 2018). Además, las economías contemporáneas están integradas globalmente, por lo que exportaciones, importaciones y remesas son transmisores clave de oportunidades y vulnerabilidades económicas (World Bank, 2023)., en la tabla 1 las observamos.
 
 ```{r Variables economicas}
 variables_economicas <- data.frame(
@@ -433,7 +431,7 @@ tabla_1 <- variables_economicas %>%
 tabla_1
 ```
 
-### Dimension de salud y bienestar
+### Dimensión de salud y bienestar
 
 La inclusión de variables sanitarias responde a que el desarrollo no es puramente económico sino que debe reflejarse en mejoras sustantivas en la calidad de vida, particularmente en indicadores de salud poblacional (Sachs et al., 2022; World Bank, 2023). La esperanza de vida es considerada por organismos internacionales como el indicador sintético más robusto de desarrollo humano, capturando tanto el acceso a servicios de salud como condiciones generales de vida (OECD, 2024). La mortalidad infantil es particularmente sensible a la calidad del sistema sanitario, y el gasto en salud refleja el esfuerzo institucional de un país por asegurar bienestar poblacional (World Bank, 2023)., en la tabla 2 las observamos.
 
@@ -540,9 +538,9 @@ tabla_2
 
 ```
 
-### Dimension tecnologica y de conectividad
+### Dimensión tecnológica y de conectividad
 
-La inclusión de variables tecnológicas es justificada por la importancia creciente de la transformación digital en el desarrollo contemporáneo (UNCTAD, 2021; World Bank, 2023). La acceso a electricidad, internet y telefonía móvil no son lujos sino infraestructuras esenciales que habilitan participación en la economía del conocimiento, acceso a información, servicios financieros y oportunidades económicas (UNCTAD, 2021). La brecha digital ha emergido como una nueva dimensión de desigualdad internacional, donde países con penetración digital menor enfrentan desventajas competitivas significativas (World Bank, 2023)., en la tabla 3 las observamos.
+La inclusión de variables tecnológicas es justificada por la importancia creciente de la transformación digital en el desarrollo contemporáneo (UNCTAD, 2021; World Bank, 2023). El acceso a electricidad, internet y telefonía móvil no son lujos sino infraestructuras esenciales que habilitan participación en la economía del conocimiento, acceso a información, servicios financieros y oportunidades económicas (UNCTAD, 2021). La brecha digital ha emergido como una nueva dimensión de desigualdad internacional, donde países con penetración digital menor enfrentan desventajas competitivas significativas (World Bank, 2023)., en la tabla 3 las observamos.
 
 ```{r Variables tecnologicas}
 variables_tecnologia <- data.frame(
@@ -649,7 +647,7 @@ tabla_3
 
 ```
 
-### Dimension ambiental y de recursos
+### Dimensión ambiental y de recursos
 
 La inclusión de variables ambientales responde al creciente reconocimiento de que el desarrollo sostenible debe integrar consideraciones ecológicas (PNUD, 2023; World Bank, 2023). Aunque el crecimiento económico tradicional ha sido alcanzado frecuentemente mediante degradación ambiental, la sostenibilidad del desarrollo requiere preservación de capital natural, particularmente bosques (para captura de carbono y biodiversidad) y tierra cultivable (para seguridad alimentaria) (PNUD, 2023; World Bank, 2023), en la tabla 4 las vemos.
 
@@ -763,9 +761,9 @@ tabla_4
 
 ```
 
-### Dimension demografica
+### Dimensión demográfica
 
-La inclusión de variables demográficas es justificada porque la dinámica poblacional condiciona fundamentalmente los desafíos y oportunidades de desarrollo: presión sobre recursos, mercado laboral, demanda por servicios públicos, y sostenibilidad fiscal (CEPAL, 2023; World Bank, 2023). Países con crecimiento poblacional acelerado enfrentan distintos desafíos que aquellos con envejecimiento poblacional, impactando tasas de ahorro, inversión, y provisión de servicios (CEPAL, 2023), vemos las variables en la tabla 5.
+La inclusión de variables demográficas es justificada porque la dinámica poblacional condiciona fundamentalmente los desafíos y oportunidades de desarrollo, como la presión sobre recursos, el mercado laboral, la demanda por servicios públicos, y la sostenibilidad fiscal (CEPAL, 2023; World Bank, 2023). Países con crecimiento poblacional acelerado enfrentan distintos desafíos que aquellos con envejecimiento poblacional, impactando tasas de ahorro, inversión, y provisión de servicios (CEPAL, 2023), vemos las variables en la tabla 5.
 
 ```{r Variables demograficas}
 variables_demograficas <- data.frame(
@@ -877,7 +875,7 @@ tabla_5
 
 ## Base de datos del modelo
 
-A continuacion, se muestra la base de datos que se usara para el modelo de aprendizaje no supervisado.
+A continuación, se muestra la base de datos que se usará para el modelo de aprendizaje no supervisado.
 
 ```{r Base de datos, warning=FALSE,message=FALSE}
 Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
@@ -1008,15 +1006,15 @@ La implementación del análisis se estructura en cuatro etapas secuenciales, ca
 
 Previo a cualquier análisis multivariado, es fundamental estandarizar las variables originales para garantizar que todas contribuyan en igualdad de condiciones al cálculo de componentes principales (KeepCoding, 2025). La estandarización se realizó mediante la transformación z-score: $Z_i = \frac{X_i - \mu_i}{\sigma_i}$ donde $Z_i$ es la variable estandarizada, $X_i$ la variable original, $\mu_i$ la media y $\sigma_i$ la desviación estándar.
 
-Esta estandarización es crítica porque el análisis de componentes principales se fundamenta en la varianza de los datos: sin estandarizar, variables con escalas numéricas mayores (como población total en millones) dominarían el cálculo de componentes, distorsionando la interpretación y otorgando influencia desproporcionada a magnitudes en lugar de patrones (LinkedIn, 2023; Ciencia de Datos, 2016). Adicionalmente, la estandarización garantiza que el análisis capture relaciones entre variables y no simplemente diferencias en escala.
+Esta estandarización es crítica porque el análisis de componentes principales se fundamenta en la varianza de los datos, sin estandarizar, variables con escalas numéricas mayores (como población total en millones) dominarían el cálculo de componentes, distorsionando la interpretación y otorgando influencia desproporcionada a magnitudes en lugar de patrones (LinkedIn, 2023; Ciencia de Datos, 2016). Adicionalmente, la estandarización garantiza que el análisis capture relaciones entre variables y no simplemente diferencias en escala.
 
 ### Análisis de Componentes Principales (ACP)
 
-Con las 17 variables estandarizadas, se aplica el Análisis de Componentes Principales para transformar el conjunto de variables originales, potencialmente correlacionadas, en un conjunto menor de componentes principales ortogonales (Jolliffe, 2002; OpenWebinars, 2025). El ACP identifica las direcciones en el espacio de datos donde la varianza es máxima, creando nuevas dimensiones (componentes) que son combinaciones lineales ponderadas de las variables originales (Jolliffe, 2002; KeepCoding, 2025).
+Con las 17 variables estandarizadas, se aplica el Análisis de Componentes Principales (ACP) para transformar el conjunto de variables originales potencialmente correlacionadas en un conjunto menor de componentes principales ortogonales (Jolliffe, 2002; OpenWebinars, 2025). El ACP identifica las direcciones en el espacio de datos donde la varianza es máxima, creando nuevas dimensiones (componentes) que son combinaciones lineales ponderadas de las variables originales (Jolliffe, 2002; KeepCoding, 2025).
 
 Matemáticamente, el ACP comienza construyendo la matriz de covarianza $C$ de las variables estandarizadas, cuyas entradas representan cómo varían conjuntamente pares de variables (KeepCoding, 2025). Los vectores propios de esta matriz de covarianza definen las direcciones principales (componentes), ordenados según sus correspondientes valores propios, que representan la cantidad de varianza explicada en cada dirección (Jolliffe, 2002). El primer componente principal captura la máxima varianza; el segundo, la máxima varianza restante sujeto a ortogonalidad respecto al primero; y así sucesivamente (Jolliffe, 2002).
 
-El criterio para determinar el número óptimo de componentes se basó en el principio de parsimonia, buscando maximizar la reducción dimensional manteniendo una representación significativa de la estructura original de los datos.
+El objetivo es identificar cuántos componentes son necesarios para capturar la mayor parte de la varianza total de los datos, típicamente entre 70-90% según el contexto (OpenWebinars, 2025). Esto permite reducir significativamente la dimensionalidad, en lugar de trabajar con 17 variables potencialmente redundantes, se trabaja con un número reducido de componentes sintéticos que capturan la esencia de la heterogeneidad internacional (Jolliffe, 2002).
 
 ### Cálculo de Distancias Euclidianas
 
@@ -1029,29 +1027,29 @@ $$ d_{ij} = \sqrt{\sum_{k=1}^{p} (PC_{ik} - PC_{jk})^2} $$ Donde:
 -   $PC_{ik}$ = Valor del $k$-ésimo componente principal para el país $i$
 -   $PC_{jk}$ = Valor del $k$-ésimo componente principal para el país $j$
 
-Esta distancia mide la proximidad multidimensional entre países: distancias pequeñas indican perfiles similares, distancias grandes indican disimilaridad (Universidad de Granada, 2016; ArcGIS, 2024).
+Esta distancia mide la proximidad multidimensional entre países, distancias pequeñas indican perfiles similares, distancias grandes indican disimilaridad (Universidad de Granada, 2016; ArcGIS, 2024).
 
-La distancia euclidiana es particularmente apropiada para el método de Ward porque, en su implementación aglomerativa, se utiliza el cuadrado de la distancia euclidiana—formalmente conocida como "distancia euclidiana semicuadrada"—como medida de disimilaridad (Ward, 1963; Wikipedia, 2013; TIBCO, 2024).
+La distancia euclidiana es particularmente apropiada para el método de Ward porque, en su implementación aglomerativa, se utiliza el cuadrado de la distancia euclidiana, formalmente conocida como "distancia euclidiana semicuadrada", como medida de disimilaridad (Ward, 1963; Wikipedia, 2013; TIBCO, 2024).
 
 ### Clusterización Jerárquica Aglomerativa con Método de Ward
 
-Tras la reducción dimensional mediante Análisis de Componentes Principales, se aplicó una clusterización jerárquica aglomerativa mediante el método de Ward sobre las coordenadas de los países en el espacio reducido de k componentes principales. Esta estrategia metodológica aplicar clustering sobre componentes principales en lugar de variables originales estándar en análisis multivariado porque ofrece ventajas técnicas significativas: elimina multicolinealidad entre variables, asegurando que cada componente captura variabilidad independiente; reduce ruido estadístico al descartar componentes posteriores que explican varianza residual mínima; mejora la estabilidad numérica del algoritmo de clustering al trabajar con matrices de dimensionalidad reducida.
+El método de Ward es un algoritmo jerárquico aglomerativo que opera iterativamente sobre el conjunto de países para formar una jerarquía de clusters (Ward, 1963). El procedimiento inicia considerando cada país como un cluster individual independiente, creando n grupos iniciales. En cada iteración subsecuente, se identifican los dos clusters más próximos según el criterio de Ward y se fusionan en un único cluster más grande (Ward, 1963; Universidad de Granada, 2016; ICESI, 2025).
 
-El método de Ward es un algoritmo jerárquico aglomerativo que opera iterativamente sobre el conjunto de observaciones para formar una jerarquía de clusters. El procedimiento inicia considerando cada país como un cluster individual independiente, creando aproximadamente 180 grupos iniciales. En cada iteración subsecuente, el algoritmo identifica el par de clusters más próximos y los fusiona en un único cluster más grande.
+El criterio de Ward minimiza específicamente la suma total de cuadrados dentro de los clusters (within-cluster sum of squares, WCSS). Matemáticamente, en cada paso, Ward selecciona el par de clusters cuya fusión produce el incremento mínimo en la varianza total intra-cluster (Ward, 1963; Wikipedia, 2013).
 
-El método de Ward minimiza específicamente la suma total de cuadrados dentro de los clusters (WCSS). Formalmente, en cada paso Ward selecciona el par de clusters cuya fusión produce el incremento mínimo en la varianza total intra-cluster. El algoritmo se ejecuta recursivamente hasta que todos los países quedan englobados en un único cluster jerárquico global.
+El algoritmo se ejecuta recursivamente hasta que todos los países quedan englobados en un único cluster. El resultado es un dendrograma (diagrama en forma de árbol invertido) que visualiza el proceso completo de fusión, cada rama representa un país individual, cada nodo de fusión representa la unión de dos clusters, y la altura de cada nodo indica el nivel de disimilaridad en el cual ocurrió la fusión (Universidad de Granada, 2016; ICESI, 2025). El dendrograma permite identificar visualmente el número óptimo de clusters "cortando" el árbol a un nivel específico de altura, determinando así cuántos grupos finales son más interpretables y útiles (Ward, 1963; Universidad de Granada, 2016).
 
-El resultado del método de Ward es un dendrograma—diagrama en forma de árbol invertido—que visualiza el proceso completo de fusión jerárquica. En el dendrograma, el eje horizontal representa la serie de países como hojas basales del árbol, el eje vertical representa la altura de fusión medida en unidades de distancia de Ward, las ramas internas conectan países o sub-clusters que se fusionan, y la altura de cada nodo indica el nivel de disimilaridad en el cual ocurrió esa fusión específica.
+En síntesis, el modelo integra: (1) estandarización para igualar contribuciones relativas, (2) reducción de dimensionalidad mediante ACP para simplificar sin perder información, (3) cálculo de distancias euclidianas para cuantificar disimilaridad, y (4) clusterización jerárquica Ward para crear una taxonomía multidimensional de desarrollo. Esta arquitectura metodológica asegura que los agrupamientos emergentes sean producto exclusivamente de los datos y no de imposiciones externas, permitiendo descubrimientos genuinos sobre la estructura del desarrollo internacional (Jolliffe, 2002; Charrad et al., 2014).
 
-### Prediccion
+### Predicción
 
 Con el objetivo de validar la robustez del modelo de clusterización y demostrar su capacidad predictiva, se procedió a proyectar cinco países adicionales no incluidos en el conjunto de entrenamiento original sobre el espacio factorial de componentes principales. Estos países fueron: Luxemburgo, Uruguay, Belice, Jordania y Angola. La proyección de nuevas observaciones sobre el espacio factorial permite evaluar cómo cada país se posiciona relativamente respecto a los clusters identificados, prediciendo su asignación más probable basada en similitud multidimensional (Hastie et al., 2009; Jolliffe, 2002).
 
-# Analisis descriptivo de los indicadores
+# Análisis descriptivo de los indicadores
 
 # Resultados del modelo
 
-## Analisis de componentes principales (ACP)
+## Análisis de componentes principales (ACP)
 
 ### Matriz de correlaciones
 
@@ -1303,7 +1301,7 @@ tabla_cor
 
 ```
 
-La matriz de correlación entre todas las variables de desarrollo es fundamental porque exhibe patrones predecibles: variables económicas tienden a correlacionarse positivamente entre sí (PIB per cápita, crecimiento del PIB, inversión extranjera), variables de bienestar social correlacionan positivamente (esperanza de vida, acceso a electricidad, uso de internet), y existe una correlación positiva sustancial entre estas dos dimensiones generales (Hastie et al., 2009). Adicionalmente, se observan correlaciones negativas entre indicadores de rezago (mortalidad infantil, tierra cultivable) y variables de desarrollo avanzado, reflejando que países con mayor riqueza y bienestar exhiben menores tasas de mortalidad y menor dependencia agrícola. La presencia de correlaciones altas (superiores a 0.7) entre múltiples pares de variables justifica plenamente la aplicación del ACP: la reducción dimensional elimina redundancia sin perder información esencial (Jolliffe, 2002; Hastie et al., 2009).
+La matriz de correlación entre todas las variables de desarrollo es fundamental porque exhibe patrones predecibles, como que las variables económicas tienden a correlacionarse positivamente entre sí (PIB per cápita, crecimiento del PIB, inversión extranjera), las variables de bienestar social correlacionan positivamente (esperanza de vida, acceso a electricidad, uso de internet), y existe una correlación positiva sustancial entre estas dos dimensiones generales (Hastie et al., 2009). Adicionalmente, se observan correlaciones negativas entre indicadores de rezago (mortalidad infantil, tierra cultivable) y variables de desarrollo avanzado, reflejando que países con mayor riqueza y bienestar exhiben menores tasas de mortalidad y menor dependencia agrícola. La presencia de correlaciones altas (superiores a 0.7) entre múltiples pares de variables justifica plenamente la aplicación del ACP, la cual es que la reducción dimensional elimina redundancia sin perder información esencial (Jolliffe, 2002; Hastie et al., 2009).
 
 ### ACP
 
@@ -1451,9 +1449,9 @@ pc6_acum <- round(varianza_df$VarianzaAcum[6], 1)
 
 ```
 
-En este análisis, el primer componente (**PC1**) capturó un **`r pc1_var`%** de la varianza total, lo que indica que existe una dimensión principal que diferencia fundamentalmente a los países. Los componentes posteriores capturan variabilidad subsidiaria: el segundo componente (**PC2**) explica **`r pc2_var`%** (acumulando **`r pc2_acum`%**), el tercero (**PC3**) **`r pc3_var`%** (acumulando **`r pc3_acum`%**), el cuarto (**PC4**) **`r pc4_var`%** (acumulando **`r pc4_acum`%**).
+En este análisis, el primer componente (**PC1**) capturó un **`r pc1_var`%** de la varianza total, lo que indica que existe una dimensión principal que diferencia fundamentalmente a los países. Los componentes posteriores capturan variabilidad subsidiaria, como que el segundo componente (**PC2**) explica **`r pc2_var`%** (acumulando **`r pc2_acum`%**), el tercero (**PC3**) **`r pc3_var`%** (acumulando **`r pc3_acum`%**), el cuarto (**PC4**) **`r pc4_var`%** (acumulando **`r pc4_acum`%**).
 
-### Grafico de sedimentacion
+### Gráfico de sedimentación
 
 El gráfico de sedimentación visualiza el concepto del "codo" (elbow) introducido por Kaiser (1960). La curva de los eigenvalores (representada como barras) exhibe un descenso pronunciado en los primeros componentes, indicando que capturan varianza sustancial. A partir de cierto componente, la pendiente se aplana significativamente, entrando en un régimen donde componentes posteriores explican proporciones cada vez menores de varianza residual (Hastie et al., 2009).
 
@@ -1494,13 +1492,13 @@ res.var$contrib
 res.var$cos2  
 ```
 
-El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). En este análisis, la línea verde punteada marca el umbral del 70%, y la intersección de la línea morada acumulada con este umbral define el número final de componentes 6 que será utilizado para la clusterización posterior.
+El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). En este análisis, la línea verde punteada marca el umbral del 70%, y la intersección de la línea morada acumulada con este umbral define el número final de componentes 4 que será utilizado para la clusterización posterior.
 
 ### Contribución de Variables a Componentes Principales
 
-La comprensión de cómo cada variable original contribuye a la definición de los componentes principales es esencial para interpretar las dimensiones latentes descubiertas. La contribución de una variable a un componente cuantifica el grado en el cual esa variable particular "explica" o "define" la dirección de ese componente en el espacio multidimensional original. Matemáticamente, la contribución se expresa como porcentaje de la varianza del componente que puede atribuirse a cada variable (Hastie et al., 2009; Jolliffe, 2002).
+La comprensión de cómo cada variable original contribuye a la definición de los componentes principales es esencial para interpretar las dimensiones latentes descubiertas. La contribución de una variable a una componente cuantifica el grado en el cual esa variable particular "explica" o "define" la dirección de ese componente en el espacio multidimensional original. Matemáticamente, la contribución se expresa como porcentaje de la varianza del componente que puede atribuirse a cada variable (Hastie et al., 2009; Jolliffe, 2002).
 
-Adicionalmente, la calidad de representación (cos²) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un cos² cercano a 1 significa que la variable está casi completamente explicada por ese componente; un cos² cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
+Adicionalmente, la calidad de representación (cos²) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un cos² cercano a 1 significa que la variable está casi completamente explicada por ese componente; un cos² cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas (contribución y $cos^2$) son complementarias, ya que la primera explica la importancia relativa de una variable en definir un componente; y la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
 
 ```{r contribucion}
 
@@ -1725,9 +1723,7 @@ p1 <- plot_ly(ind_df,
 p1
 ```
 
-Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11.66%, es algo esperable sabiendo que el país árabe tiene un gran comercio. Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariamente de su aporte en la dimensión 1 el cual es 3.14%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
-
-Al contrario podemos ver países como Niger el cual la dimensión 2 tiene un aporte de 0,64%, lo cual nos da a pensar que este país tiene deficiencia en lo económico
+En la dimensión 1, Níger emerge como el mayor contribuidor, posicionándose en el extremo negativo del eje que representa el déficit en desarrollo humano y conectividad tecnológica, reflejando severas limitaciones en acceso a servicios básicos, mortalidad infantil elevada y baja penetración digital. Le sigue San Marino, ubicado en el extremo positivo, representando un microestado con indicadores de bienestar consolidados en salud y esperanza de vida. En la dimensión 2, Qatar lidera como mayor contribuidor, posicionándose en el extremo inferior del eje, consolidándose como economía petroquímica ultraespecializada con estructura industrial dominada por hidrocarburos y dinámicas demográficas atípicas. Islas Marshall emerge como segundo mayor contribuidor, ubicándose en el extremo superior, caracterizándose como Estado insular vulnerable con alta dependencia de ayuda externa y servicios financieros.﻿
 
 ```{r individuos DIM 3 Y DIM 4}
 
@@ -1763,13 +1759,13 @@ p2 <- plot_ly(ind_df,
 p2
 ```
 
-Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 18,65% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable. Timor-leste tiene un aporte en la dimensión 4 de un 8.49% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa. Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 10.69% y en la 4 de 0,28%, lo cual refiere que es uno de los paises que menos exporta y más importa.
+En la dimensión 3, Malta emerge como el mayor contribuidor, posicionándose en el extremo positivo del eje que representa economías hiperglobalizadas con ratios comerciales excesivamente altos, reflejando su condición de centro financiero y comercial con flujos internacionales que superan significativamente su PIB. China se sitúa en el extremo negativo, evidenciando una estructura comercial más balanceada basada en exportaciones de manufactura y sostenida por una vasta base poblacional. En la dimensión 4, India se coloca en el extremo negativo, reflejando presión demográfica extrema sobre recursos naturales (1,400 millones de habitantes sobre territorio limitado generan demanda exponencial de tierra cultivable y agua). Timor-Leste se ubica en el extremo positivo, caracterizándose por baja densidad poblacional relativa y abundancia de cobertura forestal.
 
 ### Representación de Variables en el Plano de Componentes Principales
 
-El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por PC1 y PC2. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas en PC1-PC2, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
+El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por PC1 y PC2. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable, flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas en PC1-PC2, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
 
-La dirección de cada flecha—es decir, el ángulo que forma con los ejes PC1 y PC2—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
+La dirección de cada flecha, es decir, el ángulo que forma con los ejes PC1 y PC2, indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
 
 ```{r Variables DIM 1 Y DIM 2}
 
@@ -1834,7 +1830,7 @@ p1 <- plot_ly(var_df,
 p1
 ```
 
-Observamos en el gráfico que las variables que más contribuyen a la dimensión 1 son esperanza de vida positivamente (17.03%), uso de internet positivamente (16.88%) y mortalidad infantil negativamente (16.63%) A la dimensión 2 son la indutria negativamente (27.37%), el crecimiento poblacional negativamente (18.23%) y las remesas positivamente (13.15%)
+En la dimensión 1, la Esperanza de vida lidera, posicionándose en el extremo positivo, consolidando un eje que representa desarrollo humano y calidad de vida. Simultáneamente, la Mortalidad infantil se posiciona en el extremo negativo, estableciendo un contraste fundamental entre naciones con alta esperanza de vida versus aquellas con elevada mortalidad neonatal refleja de sistemas de salud deficitarios. En la dimensión 2, la Industria en el extremo negativo refleja economías donde la dependencia de una única rama industrial es REDUCIDA o donde la manufactura está integrada verticalmente de manera autónoma. Las Remesas emergen como segundo vector importante en el extremo positivo, capturando economías ALTAMENTE DEPENDIENTES de transferencias de capital internacional, caracterizadas por débil base productiva propia y vulnerabilidad a ciclos externos.
 
 ```{r Variables DIM 3 Y DIM 4}
 p2 <- plot_ly(var_df,
@@ -1873,7 +1869,7 @@ p2 <- plot_ly(var_df,
 p2
 ```
 
-A la dimensión 3 las variables que más contribuyen son las importaciones negativamente (26.78%), las exportaciones negativamente (26.43%) y la inversión extranjera negativamente (13.2%). En la dimensión 4 las variables que más contribuyen son el area boscosa negativamente (29.47%), la tierra cultivable positivamente (26.32%)y la población positivamente (19.51%).
+En la dimensión 3, las Importaciones se colocan en el extremo negativo del eje, que representa economías cerradas con baja intensidad comercial, reflejando limitadas importaciones, reducidas exportaciones y escasa inversión externa. Simultáneamente, el polo positivo representa el extremo opuesto, estableciendo un contraste fundamental entre economías cerradas versus aquellas altamente abiertas con flujos comerciales exponenciados e inversión transnacional abundante. En la dimensión 4, el Área boscosa se posiciona en el extremo negativo, reflejando deforestación severa donde bosques han sido masivamente convertidos en tierra cultivable. En contraste, Tierra cultivable y Población emergen en el extremo positivo, caracterizándose por equilibrio entre población y recursos territoriales, con alta disponibilidad de tierra cultivable y ausencia de presión deforestadora extrema.﻿
 
 ### Análisis Integrado de Variables y Países
 
@@ -1969,7 +1965,7 @@ p1
 
 Senegal y Burkina Faso se alinean con la flecha de mortalidad infantil, confirmando valores altos en esa variable. Egipto se alinea con crecimiento poblacional, indicando tasa de crecimiento demográfico elevada. Corea del Sur y Nueva Zelanda se alinean con exportaciones, indicando economías muy orientadas a comercio externo. Suiza se alinea con esperanza de vida, confirmando longevidad excepcional.
 
-En dirección opuesta: países desarrollados europeos se oponen a flechas de mortalidad y rezago, reflejando valores bajos en estos indicadores negativos. Honduras y República Kirguisa se alinean con remesas, indicando dependencia crítica de transferencias de migrantes.
+En dirección opuesta, países desarrollados europeos se oponen a flechas de mortalidad y rezago, reflejando valores bajos en estos indicadores negativos. Honduras y República Kirguisa se alinean con remesas, indicando dependencia crítica de transferencias de migrantes.
 
 ```{r Paises y variables DIM 3 Y DIM 4}
 p2 <- plot_ly() %>%
@@ -2029,7 +2025,7 @@ p2
 
 Guinea se posiciona en la dirección de crecimiento poblacional, indicando valores altos en esta variable. Kuwait y Djibouti se alinean con importaciones, indicando ratios elevados. Senegal e Irlanda se alinean con exportaciones, indicando orientación exportadora. Burkina Faso y Qatar se alinean con mortalidad infantil, indicando valores en esta variable. Macedonia del Norte se alinea con PIB per cápita, indicando ingreso por habitante en esa dirección.
 
-### Caracterizacion de los componentes principales
+### Caracterización de los componentes principales
 
 ```{r caracterizacion dimensiones}
 
@@ -2103,9 +2099,9 @@ clusters_asignados <- resultado_ACP$cluster
 NuevaBase <- data.frame(Cluster = clusters_asignados, datos_analisis)
 ```
 
-### Numero optimo de clusters
+### Número óptimo de clusters
 
-La selección del número óptimo de clusters k se realizó mediante la evaluación conjunta de tres criterios complementarios: análisis del dendrograma, método del codo, y coherencia interpretativa. El dendrograma revela visualmente la estructura jerárquica de fusiones: se identifican alturas donde las fusiones producen incrementos dramáticos en disimilaridad, sugiriendo que clusters diferenciados se están uniendo. Un corte horizontal del dendrograma a altura intermedia permite definir el número de clusters finales.
+La selección del número óptimo de clusters k se realizó mediante la evaluación conjunta de tres criterios complementarios, el análisis del dendrograma, el método del codo, y la coherencia interpretativa. El dendrograma revela visualmente la estructura jerárquica de fusiones, permitiendo identificar alturas donde las fusiones producen incrementos dramáticos en disimilaridad, sugiriendo cu´laes clusters diferenciados se están uniendo. Un corte horizontal del dendrograma a altura intermedia permite definir el número de clusters finales.
 
 El método del codo examina cómo disminuye WCSS (suma de cuadrados dentro de clusters) conforme aumenta el número de clusters desde $k=2$ hasta $k=10$ Inicialmente, incrementar $k$ reduce WCSS rápidamente porque se reduce heterogeneidad interna; sin embargo, a partir de cierto $k$ (el "codo"), la reducción adicional se vuelve marginal, sugiriendo que clusters posteriores no capturan estructura genuina sino que simplemente subdividen artificialmente. Típicamente, el codo se identifica en $k=3$ a $k=4$ para análisis de desarrollo internacional.
 
@@ -2151,7 +2147,7 @@ p1_interactive
 
 La coherencia interpretativa valida que los clusters identificados tienen significado económico y social claro. En este análisis, se seleccionó $k=3$ clusters porque esta segmentación produce tres grupos conceptualmente diferenciados.
 
-### Caracterizacion de los clusters
+### Caracterización de los clusters
 
 La segmentación produjo una distribución desigual de países entre clusters. El Cluster 1 agrupa 84 países (61.8% del total), el Cluster 2 agrupa 32 países (23.5%), y el Cluster 3 agrupa 20 países (14.7%). Esta distribución refuerza la interpretación de que existe un pequeño grupo de países ultra-desarrollados (Cluster 1), un grupo intermedio significativo de emergentes (Cluster 2), y un grupo minoritario pero vulnerable de países en rezago extremo (Cluster 3). La concentración de 61.8% en Cluster 1 sugiere que la mayoría de países han logrado algún nivel de desarrollo básico, mientras que la minoría de 14.7% en Cluster 3 representa casos de vulnerabilidad persistente y multidimensional.
 
@@ -2464,33 +2460,33 @@ tabla_estadisticas_mejorada
 
 #### Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada
 
-Perfil de variables: Cluster 1 se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
+Se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
 
-Simultáneamente, Cluster 1 muestra características económicas de economías maduras y globalizadas: exportaciones representan 55.30% del PIB (comercio orientado externamente), importaciones 54.55%, indicando que estos países son hubs comerciales internacionales. Crecimiento del PIB es 5.12% (moderado pero positivo), sugiriendo expansión económica sostenida. Industria representa 28.53% del PIB, confirmando que aunque estas economías son postindustriales (basadas en servicios), mantienen capacidad manufacturera significativa. Inversión extranjera directa es 5.08% del PIB, indicando que son destinos atractivos para capitales internacionales. Gasto en salud es 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales. Crecimiento poblacional es apenas 0.73% anual, reflejando que han completado transiciones demográficas con poblaciones envejecidas.
+Simultáneamente, muestra características económicas de economías maduras y globalizadas, las exportaciones representan 55.30% del PIB (comercio orientado externamente), las importaciones 54.55%, indicando que estos países son hubs comerciales internacionales. Crecimiento del PIB es 5.12% (moderado pero positivo), sugiriendo expansión económica sostenida. Industria representa 28.53% del PIB, confirmando que aunque estas economías son postindustriales (basadas en servicios), mantienen capacidad manufacturera significativa. Inversión extranjera directa es 5.08% del PIB, indicando que son destinos atractivos para capitales internacionales. Gasto en salud es 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales. Crecimiento poblacional es apenas 0.73% anual, reflejando que han completado transiciones demográficas con poblaciones envejecidas.
 
-Composición de países: Incluye principalmente naciones europeas desarrolladas (Alemania, Francia, Italia, España, Reino Unido, Suecia, Dinamarca, Finlandia, Noruega, Países Bajos), naciones norteamericanas (Estados Unidos, Canadá), economías asiáticas avanzadas (Japón, Corea del Sur, Singapur, Hong Kong), y destinos de desarrollo consolidado (Australia, Nueva Zelanda, Israel). La predominancia de economías OCDE valida que Cluster 1 captura efectivamente el grupo de desarrollo ultra-avanzado global (Banco Mundial, 2023).
+Incluye principalmente naciones europeas desarrolladas (Alemania, Francia, Italia, España, Reino Unido, Suecia, Dinamarca, Finlandia, Noruega, Países Bajos), naciones norteamericanas (Estados Unidos, Canadá), economías asiáticas avanzadas (Japón, Corea del Sur, Singapur, Hong Kong), y destinos de desarrollo consolidado (Australia, Nueva Zelanda, Israel). La predominancia de economías OCDE valida que Cluster 1 captura efectivamente el grupo de desarrollo ultra-avanzado global (Banco Mundial, 2023).
 
 #### Cluster 2: Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes
 
-Perfil de variables: Cluster 2 representa el grupo de países con desarrollo humano intermedio pero altamente heterogéneo internamente. Esperanza de vida promedio es 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), pero superior a Cluster 3, indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. Acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta especialmente en zonas rurales. Uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que brecha digital es significativa. Mortalidad infantil es 40.97 por 1,000, aproximadamente 5 veces mayor que Cluster 1, indicando que sistemas de salud materno-infantil enfrentan capacidades limitadas.
+Representa el grupo de países con desarrollo humano intermedio pero altamente heterogéneo internamente. Esperanza de vida promedio es 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), pero superior a Cluster 3, indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. Acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta especialmente en zonas rurales. Uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que brecha digital es significativa. Mortalidad infantil es 40.97 por 1,000, aproximadamente 5 veces mayor que Cluster 1, indicando que sistemas de salud materno-infantil enfrentan capacidades limitadas.
 
 PIB per cápita promedio es \$1,578.46 USD, dramáticamente menor que Cluster 1 (95% de diferencia), confirmando que estos son países de ingresos medios bajos a medios. Crecimiento poblacional es 2.31% anual, significativamente más alto que Cluster 1, reflejando que están en transiciones demográficas incompletas donde natalidad sigue siendo elevada. Remesas recibidas representan 4.94% del PIB, indicando dependencia moderada de transferencias de migrantes. Inversión extranjera es 3.65% del PIB (inferior a Cluster 1), sugiriendo que son menos atractivos para capitales internacionales. Gasto en salud es 5.10% del PIB (menor que Cluster 1), limitando recursos disponibles para sistemas de salud.
 
-Heterogeneidad interna: Este cluster contiene gran variación: desde países con desarrollo relativamente avanzado (México \~\$9,500 PIB per cápita, esperanza de vida \~75 años) hasta países con rezago moderado (Kenia, Ghana, Nigeria con esperanza de vida \~65 años). Tierra cultivable es 20.60%, la más alta entre clusters, reflejando que muchos son economías donde agricultura sigue siendo importante. Suscripciones móviles son 91.59 por cada 100 habitantes, indicando penetración de tecnología móvil como vector de inclusión financiera y digital.
+Este cluster contiene gran variación, desde países con desarrollo relativamente avanzado (México \~\$9,500 PIB per cápita, esperanza de vida \~75 años) hasta países con rezago moderado (Kenia, Ghana, Nigeria con esperanza de vida \~65 años). Tierra cultivable es 20.60%, la más alta entre clusters, reflejando que muchos son economías donde agricultura sigue siendo importante. Suscripciones móviles son 91.59 por cada 100 habitantes, indicando penetración de tecnología móvil como vector de inclusión financiera y digital.
 
-Composición de países: Incluye principalmente economías latinoamericanas emergentes (Brasil, México, Colombia, Argentina, Chile, Uruguay, Perú), economías asiáticas en transición (Vietnam, Tailandia, Indonesia, Filipinas, India en su mayoría), economías africanas moderadamente desarrolladas (Botswana, Mauricio, Sudáfrica), y países del Oriente Medio con ingresos medios (Turquía, Jordania, Líbano). La diversidad geográfica y económica confirma que Cluster 2 captura un espectro amplio de naciones en estado intermedio de desarrollo (Banco Mundial, 2023; PNUD, 2023).
+Incluye principalmente economías latinoamericanas emergentes (Brasil, México, Colombia, Argentina, Chile, Uruguay, Perú), economías asiáticas en transición (Vietnam, Tailandia, Indonesia, Filipinas, India en su mayoría), economías africanas moderadamente desarrolladas (Botswana, Mauricio, Sudáfrica), y países del Oriente Medio con ingresos medios (Turquía, Jordania, Líbano). La diversidad geográfica y económica confirma que Cluster 2 captura un espectro amplio de naciones en estado intermedio de desarrollo (Banco Mundial, 2023; PNUD, 2023).
 
 #### Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional
 
-Perfil de variables: Cluster 3 representa el grupo de rezago humano y económico extremo. Esperanza de vida promedio es apenas 71.59 años, superior a Cluster 2 en cifra pero esta cifra es engañosa porque oculta volatilidad extrema: mientras algunos países tienen \~75 años, otros tienen \~55-58 años, y mortalidad adulta es severamente elevada por VIH, conflictos armados, y enfermedades tropicales. Acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona por algunos países con cobertura urbana buena; zonas rurales en muchos países están completamente sin electricidad.
+La esperanza de vida promedio es apenas 71.59 años, superior a Cluster 2 en cifra pero esta cifra es engañosa porque oculta volatilidad extrema: mientras algunos países tienen \~75 años, otros tienen \~55-58 años, y mortalidad adulta es severamente elevada por VIH, conflictos armados, y enfermedades tropicales. Acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona por algunos países con cobertura urbana buena; zonas rurales en muchos países están completamente sin electricidad.
 
 Mortalidad infantil es 18.11 por 1,000, intermedia entre Cluster 1 (7.85) y Cluster 2 (40.97), sugiriendo que este cluster, aunque llamado "rezago", contiene algunos países que han logrado mejoras en salud infantil. Uso de internet es 61.08%, sorprendentemente alto comparado con Cluster 2 (35.04%), pero se explica porque algunos países han adoptado tecnología móvil massivamente sin infraestructura de electricidad o salud consolidada. PIB per cápita es \$3,776.68 USD, intermedio entre Cluster 2 (\$1,578) y Cluster 1 (\$26,489), contradictorio con la caracterización de "rezago extremo", pero refleja que algunos países tienen petróleo (Angola) o recursos (Zambia) que generan ingresos nominales sin beneficios distributivos amplios.
 
 Crecimiento poblacional es 0.79% anual, el más bajo entre clusters, indicando que están completando transiciones demográficas pero desde bases de desarrollo muy rezagadas. Remesas recibidas son 22.09% del PIB, el porcentaje más alto, reflejando que economías están severamente dependientes de transferencias de diásporas en exterior. Gasto en salud es 7.44% del PIB (similar a Cluster 1), pero esta cifra es engañosa porque presupuestos limitados resultan en servicios muy deficientes. Tierra cultivable es 15.21%, indicando que agricultura es importante pero infraestructura agrícola y productividad están severamente limitadas.
 
-La paradoja de Cluster 3: A primera vista, algunas métricas (esperanza de vida 71.59, acceso electricidad 96.42, gasto salud 7.44%) parecen intermedias, no rezagadas. Esto refleja que el cluster contiene mezcla heterogénea: países como Angola (productor petrolero con ingresos altos nominales pero servicios colapsados) coexisten con países como Etiopía o Uganda. La vulnerabilidad real radica en fragilidad institucional, volatilidad, dependencia de remesas (22.09% vs. 2.47% en Cluster 1), y que indicadores altos coexisten con servicios públicos disfuncionales (Banco Mundial, 2023).
+Algunas métricas (esperanza de vida 71.59, acceso electricidad 96.42, gasto salud 7.44%) parecen intermedias, no rezagadas. Esto refleja que el cluster contiene mezcla heterogénea, países como Angola (productor petrolero con ingresos altos nominales pero servicios colapsados) coexisten con países como Etiopía o Uganda. La vulnerabilidad real radica en fragilidad institucional, volatilidad, dependencia de remesas (22.09% vs. 2.47% en Cluster 1), y que indicadores altos coexisten con servicios públicos disfuncionales (Banco Mundial, 2023).
 
-### Segmentacion de paises
+### Segmentación de países
 
 Plano PC1-PC2 (Desarrollo Humano vs. Modelo Económico-Institucional): El gráfico PC1-PC2 muestra la distribución de clusters en el plano que explica la mayor proporción de varianza (37.8% combinada). El Cluster 1 (puntos rojos) se concentra predominantemente en el cuadrante central-derecho y ligeramente disperso verticalmente, reflejando que estos países comparten desarrollo humano avanzado (PC1 positivo moderado a alto) pero varían en estructura económica institucional (PC2 desde -4 hasta +4). Países con PC2 extremadamente negativo (como Qatar, Kuwait) representan economías petroleras industrializadas; países con PC2 cercano a cero representan economías postindustriales diversificadas europeas; países con PC2 ligeramente positivo representan economías con gasto social elevado.
 
@@ -2635,7 +2631,7 @@ leaflet(Base_con_mapa) %>%
 
 ```
 
-El mapa mundial con países coloreados según cluster confirma visualmente los patrones geográficos. Europa aparece predominantemente en Cluster 1 (azul oscuro) y parcialmente Cluster 2 (verde), reflejando consolidación de desarrollo en occidente y transición en oriente. América del Norte aparece Cluster 1 (Estados Unidos, Canadá); América Latina aparece mezcla de Cluster 2 (verde: Brasil, México, Argentina, Chile) y algunos Cluster 1 si países caribeños pequeños están incluidos. Asia muestra heterogeneidad extrema: Japón, Corea del Sur en Cluster 1; China, India, Sudeste Asiático en Cluster 2; Asia Sur/Central potencialmente en Cluster 3. África subsahariana aparece predominantemente Cluster 3 (morado/rosa), con casos aislados de Cluster 2 en sur y este (Botswana, Mauricio, Sudáfrica verde). Oceanía muestra Australia-Nueva Zelanda en Cluster 1; islas del Pacífico potencialmente Cluster 2-3.
+El mapa mundial con países coloreados según cluster confirma visualmente los patrones geográficos. Europa aparece predominantemente en Cluster 1 (azul oscuro) y parcialmente Cluster 2 (verde), reflejando consolidación de desarrollo en occidente y transición en oriente. América del Norte aparece Cluster 1 (Estados Unidos, Canadá); América Latina aparece mezcla de Cluster 2 (verde: Brasil, México, Argentina, Chile) y algunos Cluster 1 si países caribeños pequeños están incluidos. Asia muestra heterogeneidad extrema, Japón, Corea del Sur en Cluster 1; China, India, Sudeste Asiático en Cluster 2; Asia Sur/Central potencialmente en Cluster 3. África subsahariana aparece predominantemente Cluster 3 (morado/rosa), con casos aislados de Cluster 2 en sur y este (Botswana, Mauricio, Sudáfrica verde). Oceanía muestra Australia-Nueva Zelanda en Cluster 1; islas del Pacífico potencialmente Cluster 2-3.
 
 Esta distribución geográfica valida que desarrollo no es aleatoriamente distribuido sino que presenta patrones espaciales claros asociados con historia económica, instituciones, geografía física, y legados coloniales. La concentración de Cluster 3 en África subsahariana y la consolidación de Cluster 1 en Europa Occidental-América del Norte-Asia Oriental confirma la persistencia de brechas globales estructurales (Banco Mundial, 2023; Acemoglu & Robinson, 2012).
 
@@ -2645,7 +2641,7 @@ Esta distribución geográfica valida que desarrollo no es aleatoriamente distri
 
 #### Componente Principal 1: "Desarrollo Humano y Conectividad Digital" (24.3% de varianza)
 
-El primer componente principal explica casi un cuarto de toda la variabilidad en desarrollo internacional, capturando la dimensión más fundamental que diferencia a países ricos de pobres. Se define por esperanza de vida (loading: 0.413), uso de internet (0.4126), acceso a electricidad (0.3709) contrapuestos a mortalidad infantil (-0.4083). Estas variables covarían porque todas requieren sistemas de salud consolidados, riqueza económica, infraestructura tecnológica y estabilidad política—es decir, reflejan la capacidad institucional de una sociedad para garantizar bienestar multidimensional. Países que han logrado esperanzas de vida de 80+ años han realizado décadas de inversión en salud pública, educación universal y desarrollo económico; simultáneamente, estos mismos países inevitablemente desarrollaron infraestructuras digitales avanzadas porque sus economías postindustriales dependen de servicios e innovación tecnológica.
+Explica casi un cuarto de toda la variabilidad en desarrollo internacional, capturando la dimensión más fundamental que diferencia a países ricos de pobres. Se define por esperanza de vida (0.413), uso de internet (0.4126), acceso a electricidad (0.3709) contrapuestos a mortalidad infantil (-0.4083). Estas variables covarían porque todas requieren sistemas de salud consolidados, riqueza económica, infraestructura tecnológica y estabilidad política, es decir, reflejan la capacidad institucional de una sociedad para garantizar bienestar multidimensional. Países que han logrado esperanzas de vida de 80+ años han realizado décadas de inversión en salud pública, educación universal y desarrollo económico; simultáneamente, estos mismos países inevitablemente desarrollaron infraestructuras digitales avanzadas porque sus economías postindustriales dependen de servicios e innovación tecnológica.
 
 San Marino lidera el extremo positivo de PC1 con coordenada 4.609, siendo una micro-república de 34,000 habitantes enclavada en Italia con esperanza de vida de \~85 años, PIB per cápita superior a \$50,000 USD, mortalidad infantil menor a 5 por 1,000, y acceso digital prácticamente universal. Malta (3.608) es otro micro-Estado mediterráneo con esperanza de vida de \~83 años que transitó desde economía agraria a hub financiero y tecnológico. Irlanda (3.457) representa el "milagro celta" que transformó una economía de subsistencia agraria en los 1950s hacia hub tecnológico global con esperanza de vida de \~82 años. Suiza (3.444) y Noruega (2.913) completan el quinteto de élite con sus sistemas de salud universales, educación de calidad, estabilidad política, y economías basadas en servicios financieros, manufactura de precisión, tecnología y recursos petroleros.
 
@@ -2653,7 +2649,7 @@ En el extremo opuesto, Níger encabeza con coordenada -5.599, siendo un país sa
 
 #### Componente Principal 2: "Modelo Económico-Institucional" (13.5% de varianza)
 
-El segundo componente, ortogonal al primero, captura una dimensión más sutil: la estructura económica independiente del nivel absoluto de riqueza. Se define por industria negativa (-0.5145, cos²: 0.2648), crecimiento poblacional negativo (-0.4365, cos²: 0.1906), contrapuestos a remesas (0.3465, cos²: 0.12), gasto en salud (0.3038, cos²: 0.0923), importaciones (0.2842, cos²: 0.0808) y tierra cultivable (0.2415, cos²: 0.0583). Esta estructura revela un contraste profundo: el extremo negativo representa economías industrializadas maduras que han completado transiciones demográficas con capacidad productiva autónoma; el extremo positivo representa economías pequeñas vulnerables dependientes de transferencias externas de población emigrada.
+El segundo componente, ortogonal al primero, captura una dimensión más sutil, estructura económica independiente del nivel absoluto de riqueza. Se define por industria negativa (-0.5145, cos²: 0.2648), crecimiento poblacional negativo (-0.4365, cos²: 0.1906), contrapuestos a remesas (0.3465, cos²: 0.12), gasto en salud (0.3038, cos²: 0.0923), importaciones (0.2842, cos²: 0.0808) y tierra cultivable (0.2415, cos²: 0.0583). Esta estructura revela un contraste profundo: el extremo negativo representa economías industrializadas maduras que han completado transiciones demográficas con capacidad productiva autónoma; el extremo positivo representa economías pequeñas vulnerables dependientes de transferencias externas de población emigrada.
 
 Qatar encabeza el extremo negativo con coordenada -5.768 como pequeño emirato con población de 2.9 millones (90% migrantes temporales) donde la industria petrolera representa 66% del PIB, generando PIB per cápita de \~\$61,000 USD a través de extracción de gas natural licuado. Kuwait (-5.102) y Arabia Saudita (-4.487) presentan patrones similares de economías extractivas con industria petroquímica representando 50-70% del PIB, crecimiento poblacional controlado artificialmente mediante políticas migratorias restrictivas, y no reciben remesas porque funcionan como exportadores netos de trabajadores. Omán (-4.455) e Iraq (-3.224), a pesar de la inestabilidad que afecta a Iraq, mantienen industria petrolera significativa que define sus estructuras económicas.
 
@@ -2769,7 +2765,7 @@ tabla_componentes <- caracterizacion_componentes %>%
 tabla_componentes
 ```
 
-### Prediccion
+### Predicción
 
 Tras construir el modelo ACP con aproximadamente 180 países de entrenamiento, se proyectaron cinco países adicionales (Angola, Belice, Jordania, Luxemburgo, Uruguay) sobre el espacio factorial ya definido. La proyección utiliza las medias y varianzas del conjunto de entrenamiento para estandarizar los nuevos datos, evitando que cambien la estructura de componentes. Se calcularon las coordenadas de estos cinco países en los cuatro primeros componentes principales, cuantificando su posición relativa respecto al espacio multidimensional de desarrollo ya identificado (Hastie et al., 2009).
 
