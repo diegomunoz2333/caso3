@@ -1900,7 +1900,9 @@ p2
 <!-- cambios -->
 ```
 
-En la dimensión 3, las Importaciones se colocan en el extremo negativo del eje, que representa economías cerradas con baja intensidad comercial, reflejando limitadas importaciones, reducidas exportaciones y escasa inversión externa. Simultáneamente, el polo positivo representa el extremo opuesto, estableciendo un contraste fundamental entre economías cerradas versus aquellas altamente abiertas con flujos comerciales exponenciados e inversión transnacional abundante. En la dimensión 4, el Área boscosa se posiciona en el extremo negativo, reflejando deforestación severa donde bosques han sido masivamente convertidos en tierra cultivable. En contraste, Tierra cultivable y Población emergen en el extremo positivo, caracterizándose por equilibrio entre población y recursos territoriales, con alta disponibilidad de tierra cultivable y ausencia de presión deforestadora extrema.﻿
+EEn la dimensión 3, las Importaciones, Exportaciones e Inversión extranjera se posicionan en el extremo positivo, caracterizando economías altamente integradas en cadenas de valor globales con comercio y flujos de inversión exponenciados. Malta (comercio >260% del PIB), Singapur, Irlanda y otros micro-Estados/hubs financieros ocupan este polo.
+
+En el extremo negativo se ubican Área boscosa﻿] y Población, países que preservan ecosistemas naturales tienden a tener menor integración comercial. Esto refleja que naciones con biodiversidad conservada (Timor-Leste, algunos países amazónicos con 70%+ bosques) típicamente tienen economías más locales, menos insertadas en globalización, y mercados más pequeños.
 
 ### Análisis Integrado de Variables y Países
 
