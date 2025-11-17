@@ -5244,10 +5244,11 @@ En la dimensión 3, Malta emerge como el mayor contribuidor, posicionándose en 
 
 ### Representación de Variables en el Plano de Componentes Principales
 
-El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por PC1 y PC2. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas en PC1-PC2, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
+El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por los componentes principales. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas los componentes principales, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
 
-La dirección de cada flecha—es decir, el ángulo que forma con los ejes PC1 y PC2—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
+La dirección de cada flecha—es decir, el ángulo que forma con los ejes—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
 
+En la Gráfica 2, correspondiente al círculo de correlaciones, observamos la proyección de las 17 variables originales en el plano definido por los dos primeros componentes principales.
 ```{r Variables DIM 1 Y DIM 2., fig.height=7, fig.width=12, out.width="100%"}
 var_data <- get_pca_var(res.pca)
 
@@ -5392,8 +5393,10 @@ p1 <- plot_ly(var_df,
 p1
 
 ```
-Observamos en el gráfico que las variables que más contribuyen a la dimensión 1 son esperanza de vida positivamente (17.03%), uso de internet positivamente (16.88%) y mortalidad infantil negativamente (16.63%)
-A la dimensión 2 son la indutria negativamente (27.37%), el crecimiento poblacional negativamente (18.23%) y las remesas positivamente (13.15%)
+
+En la dimensión 1, la Esperanza de vida lidera, posicionándose en el extremo positivo, consolidando un eje que representa desarrollo humano y calidad de vida. Simultáneamente, la Mortalidad infantil se posiciona en el extremo negativo, estableciendo un contraste fundamental entre naciones con alta esperanza de vida versus aquellas con elevada mortalidad neonatal refleja de sistemas de salud deficitarios. En la dimensión 2, la Industria en el extremo negativo refleja economías donde la dependencia de una única rama industrial es REDUCIDA o donde la manufactura está integrada verticalmente de manera autónoma. Las Remesas emergen como segundo vector importante en el extremo positivo, capturando economías ALTAMENTE DEPENDIENTES de transferencias de capital internacional, caracterizadas por débil base productiva propia y vulnerabilidad a ciclos externos.
+
+En la Gráfica 2, correspondiente al círculo de correlaciones, observamos la proyección de las 17 variables originales en el plano definido por los componentes principales 3 y 4.
 
 
 ```{r Variables DIM 3 Y DIM 4, fig.height=7, fig.width=12, out.width="100%"}
