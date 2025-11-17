@@ -1783,6 +1783,8 @@ El círculo de correlaciones es una herramienta fundamental para interpretar las
 
 La dirección de cada flecha—es decir, el ángulo que forma con los ejes—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
 
+En la Gráfica 2, correspondiente al círculo de correlaciones, observamos la proyección de las 17 variables originales en el plano definido por los dos primeros componentes principales.
+
 ```{r Variables DIM 1 Y DIM 2}
 
 var_data <- get_pca_var(res.pca)
@@ -1849,6 +1851,10 @@ p1
 <!-- cambios -->
 
 En la dimensión 1, la Esperanza de vida lidera, posicionándose en el extremo positivo, consolidando un eje que representa desarrollo humano y calidad de vida. Simultáneamente, la Mortalidad infantil se posiciona en el extremo negativo, estableciendo un contraste fundamental entre naciones con alta esperanza de vida versus aquellas con elevada mortalidad neonatal refleja de sistemas de salud deficitarios. En la dimensión 2, la Industria en el extremo negativo refleja economías donde la dependencia de una única rama industrial es REDUCIDA o donde la manufactura está integrada verticalmente de manera autónoma. Las Remesas emergen como segundo vector importante en el extremo positivo, capturando economías ALTAMENTE DEPENDIENTES de transferencias de capital internacional, caracterizadas por débil base productiva propia y vulnerabilidad a ciclos externos.
+
+<!-- cambios -->
+
+En la Gráfica 2, correspondiente al círculo de correlaciones, observamos la proyección de las 17 variables originales en el plano definido por los componentes principales 3 y 4.
 
 ```{r Variables DIM 3 Y DIM 4}
 p2 <- plot_ly(var_df,
