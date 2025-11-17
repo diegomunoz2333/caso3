@@ -6405,14 +6405,15 @@ NuevaBase <- data.frame(Cluster = clusters_asignados, datos_analisis)
 
 La selección del número óptimo de clusters k se realizó mediante la evaluación conjunta de tres criterios complementarios: análisis del dendrograma, método del codo, y coherencia interpretativa. El dendrograma revela visualmente la estructura jerárquica de fusiones: se identifican alturas donde las fusiones producen incrementos dramáticos en disimilaridad, sugiriendo que clusters diferenciados se están uniendo. Un corte horizontal del dendrograma a altura intermedia permite definir el número de clusters finales.
 
-```{r DENDO}
+```{r DENDO, fig.height=7, fig.width=12, out.width="100%"}
 coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
 distancias <- dist(coordenadas_pca)
 hc <- hclust(distancias, method = "ward.D2")
 k <- 3
-cluster_colors <- c("1" = "#0057B8", 
-                    "2" = "#CE1126",  
-                    "3" = "#FFD700")  
+
+cluster_colors <- c("1" = "#00e676",   
+                    "2" = "#0084ff",    
+                    "3" = "#ffd600")  
 
 clusters <- cutree(hc, k = k)
 dend <- as.dendrogram(hc)
@@ -6420,14 +6421,15 @@ dend_data <- dendro_data(dend)
 leaf_x <- dend_data$labels$x
 leaf_names <- as.character(dend_data$labels$label)
 names(clusters) <- rownames(coordenadas_pca)
-
 label_clusters <- clusters[match(leaf_names, names(clusters))]
+
 if (any(is.na(label_clusters))) {
   idx_num <- suppressWarnings(as.integer(leaf_names))
   if (!all(is.na(idx_num))) {
     label_clusters[is.na(label_clusters)] <- clusters[idx_num[is.na(label_clusters)]]
   }
 }
+
 label_clusters <- as.integer(label_clusters)
 dxs <- sort(unique(diff(sort(leaf_x))))
 pad <- ifelse(length(dxs) > 0, dxs[1] / 2, 0.5)
@@ -6458,10 +6460,13 @@ for (cl in 1:k) {
       )
   }
 }
-tree_color <- "#0057B8"
+
+tree_color <- "#00e5ff"
 seg_df <- dend_data$segments
 seg_df$seg_col <- tree_color
+
 dend_interactive <- plot_ly()
+
 dend_interactive <- dend_interactive %>%
   add_segments(
     data = seg_df,
@@ -6471,6 +6476,7 @@ dend_interactive <- dend_interactive %>%
     hoverinfo = "none",
     showlegend = FALSE
   )
+
 labels_df <- dend_data$labels %>%
   mutate(cluster = label_clusters,
          color = cluster_colors[as.character(cluster)])
@@ -6479,12 +6485,17 @@ dend_interactive <- dend_interactive %>%
   add_markers(
     data = labels_df,
     x = ~x, y = ~y,
-    text = ~paste0("Etiqueta: ", label, "<br>Cluster: ", cluster),
+    text = ~paste0(
+      "<b style='color:#00e5ff; font-size:13px;'>", label, "</b><br>",
+      "<span style='color:#a259ff; font-size:12px;'><b>Cluster:</b> ", cluster, "</span>"
+    ),
     hoverinfo = "text",
-    marker = list(size = 9, line = list(width = 1, color = "black")),
+    marker = list(size = 9, line = list(width = 1.5, color = "#ffffff")),
     color = ~I(color),
-    showlegend = FALSE
+    showlegend = FALSE,
+    hovertemplate = "%{text}<extra></extra>"
   )
+
 shapes_list <- lapply(seq_len(nrow(cluster_rectangles)), function(i) {
   list(
     type = "rect",
@@ -6493,103 +6504,253 @@ shapes_list <- lapply(seq_len(nrow(cluster_rectangles)), function(i) {
     y0 = cluster_rectangles$y0[i],
     y1 = cluster_rectangles$y1[i],
     fillcolor = cluster_rectangles$color[i],
-    line = list(color = "black", width = 3),
-    opacity = 0.18,
+    line = list(color = cluster_rectangles$color[i], width = 2),
+    opacity = 0.15,
     layer = "below"
   )
 })
+
 linea_corte <- list(
   type = "line",
   x0 = min(dend_data$segments$x, na.rm = TRUE),
   x1 = max(dend_data$segments$x, na.rm = TRUE),
   y0 = 15,
   y1 = 15,
-  line = list(color = "#B22222", width = 3, dash = "solid"),  
+  line = list(color = "#ff1744", width = 2.5, dash = "solid"),
   layer = "above"
 )
 
 shapes_list <- append(shapes_list, list(linea_corte))
+
 dend_interactive <- dend_interactive %>%
   layout(
-    title = list(text = "Dendrograma interactivo </b>", x = 0.01),
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:18px;'>Figura 16: Dendrograma Jerárquico - Clusterización Ward</b><br>
+              <span style='color:#8b92a0; font-size:12px;'>Distancia Euclidiana | Método de Ward | k = 3 clusters óptimos</span>",
+      x = 0.5,
+      xanchor = "center",
+      y = 0.98
+    ),
     shapes = shapes_list,
-    xaxis = list(title = "", showticklabels = FALSE, zeroline = FALSE, showgrid = FALSE),
-    yaxis = list(title = "Distancia", zeroline = FALSE, showgrid = TRUE),
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
+    xaxis = list(
+      title = "",
+      showticklabels = FALSE,
+      zeroline = FALSE,
+      showgrid = FALSE,
+      color = "#8b92a0"
+    ),
+    yaxis = list(
+      title = "<b style='font-size:13px; color:#e0e6ed;'>Distancia Euclidiana</b>",
+      zeroline = FALSE,
+      showgrid = TRUE,
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12)
+    ),
+    plot_bgcolor = "#000000",
+    paper_bgcolor = "#0a0e1a",
+    font = list(family = "Arial, sans-serif", color = "#e0e6ed", size = 11),
     hovermode = "closest",
-    margin = list(l = 80, r = 180, t = 80, b = 80)
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12)
+    ),
+    margin = list(l = 80, r = 50, t = 120, b = 80)
   ) %>%
-  config(displayModeBar = TRUE, scrollZoom = TRUE, displaylogo = FALSE)
+  config(
+    displayModeBar = TRUE,
+    scrollZoom = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "dendrograma_clustering",
+      width = 1200,
+      height = 900
+    )
+  )
+
 dend_interactive
 ```
-
 El método del codo examina cómo disminuye WCSS (suma de cuadrados dentro de clusters) conforme aumenta el número de clusters desde $k=2$ hasta $k=10$ Inicialmente, incrementar $k$ reduce WCSS rápidamente porque se reduce heterogeneidad interna; sin embargo, a partir de cierto $k$ (el "codo"), la reducción adicional se vuelve marginal, sugiriendo que clusters posteriores no capturan estructura genuina sino que simplemente subdividen artificialmente. Típicamente, el codo se identifica en $k=3$ a $k=4$ para análisis de desarrollo internacional.
 
-```{r dendograma-corregido, message=FALSE, warning=FALSE}
-
-# Método del codo para determinar el número óptimo de clusters
-library(factoextra)
-library(ggplot2)
-
-# Calcular la suma de cuadrados within (WCSS) para diferentes números de clusters
+```{r metodo-codo-cyber, message=FALSE, warning=FALSE,fig.height=7.5, fig.width=12, out.width="100%"}
 wss <- function(k) {
   kmeans(coordenadas_pca, k, nstart = 25)$tot.withinss
 }
 
-# Valores de k a probar
 k.values <- 1:10
-
-# Extraer valores de WCSS
 wss_values <- map_dbl(k.values, wss)
 
-# Crear data frame para el gráfico
 elbow_data <- data.frame(
   k = k.values,
   wss = wss_values
 )
 
-# Gráfico del método del codo
+# ========== GRÁFICO CON GGPLOT2 ==========
 elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
-  geom_line(size = 1.2, color = "#2E9FDF") +
-  geom_point(size = 3, color = "#2E9FDF") +
-  geom_vline(xintercept = 3, linetype = "dashed", color = "#FC4E07", size = 1) +
+  geom_line(size = 1.3, color = "#00e5ff") +
+  geom_point(size = 4, color = "#00e5ff", alpha = 0.85) +
+  geom_vline(xintercept = 3, linetype = "dashed", color = "#ff1744", size = 1.2) +
   labs(
-    title = "Método del Codo para Determinar Número Óptimo de Clusters",
-    subtitle = "Análisis basado en la suma de cuadrados within-cluster (WCSS)",
+    title = "",
+    subtitle = "",
     x = "Número de Clusters (k)",
     y = "Suma de Cuadrados Within-Cluster (WCSS)"
   ) +
   scale_x_continuous(breaks = 1:10) +
-  theme_minimal() +
+  theme_minimal(base_size = 12) +
   theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
-    plot.subtitle = element_text(size = 12, hjust = 0.5),
-    axis.title = element_text(face = "bold")
+    # ========== FONDOS ==========
+    plot.background = element_rect(fill = "#000000", color = NA),
+    panel.background = element_rect(fill = "#0a0e1a", color = NA),
+    panel.grid.major = element_line(color = "#12161f", size = 0.4),
+    panel.grid.minor = element_line(color = "#12161f", size = 0.2),
+    
+    # ========== EJES ==========
+    axis.title = element_text(
+      face = "bold",
+      color = "#e0e6ed",
+      size = 13
+    ),
+    axis.text = element_text(
+      color = "#8b92a0",
+      size = 11
+    ),
+    axis.line = element_line(
+      color = "#00e5ff",
+      size = 0.6
+    ),
+    
+    # ========== TÍTULOS ==========
+    plot.title = element_text(
+      face = "bold",
+      size = 16,
+      hjust = 0.5,
+      color = "#00e5ff"
+    ),
+    plot.subtitle = element_text(
+      size = 12,
+      hjust = 0.5,
+      color = "#8b92a0"
+    ),
+    
+    # ========== BORDES ==========
+    panel.border = element_rect(
+      color = "#00e5ff",
+      fill = NA,
+      size = 0.8
+    ),
+    
+    plot.margin = margin(20, 20, 20, 20)
   )
 
-# Versión interactiva
-elbow_plot_interactive <- ggplotly(elbow_plot) %>%
+# ========== CONVERSIÓN A PLOTLY CON ESTILOS CYBER ==========
+elbow_plot_interactive <- ggplotly(
+  elbow_plot,
+  tooltip = c("x", "y")
+) %>%
   layout(
+    # ========== TÍTULOS ==========
     title = list(
-      text = "<b>Método del Codo para Determinar Número Óptimo de Clusters</b>",
-      x = 0.05
+      text = "<b style='color:#00e5ff; font-size:18px;'>Figura 17: Método del Codo</b><br>
+              <span style='color:#8b92a0; font-size:12px;'>Determinación del número óptimo de clusters | WCSS por k</span>",
+      x = 0.5,
+      xanchor = "center",
+      y = 0.98
     ),
+    
+    # ========== EJES ==========
+    xaxis = list(
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Número de Clusters (k)</b>",
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      showgrid = TRUE,
+      zeroline = FALSE,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12),
+      linecolor = "#00e5ff",
+      linewidth = 1
+    ),
+    
+    yaxis = list(
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Suma de Cuadrados Within-Cluster (WCSS)</b>",
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      showgrid = TRUE,
+      zeroline = FALSE,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12),
+      linecolor = "#00e5ff",
+      linewidth = 1
+    ),
+    
+    # ========== FONDOS ==========
+    plot_bgcolor = "#000000",
+    paper_bgcolor = "#0a0e1a",
+    
+    # ========== ANOTACIONES ==========
     annotations = list(
+      # Anotación del codo (solo esto, sin interpretación)
       list(
         x = 3,
-        y = max(wss_values),
-        text = "Codo sugerido: k=3",
+        y = max(wss_values) * 0.85,
+        text = "<b style='color:#ff1744; font-size:12px;'>⚠ Codo Óptimo</b><br>
+               <span style='color:#00e676; font-size:11px;'>k = 3 clusters</span>",
         showarrow = TRUE,
         arrowhead = 4,
-        ax = 0,
-        ay = -40
+        arrowsize = 1.5,
+        arrowcolor = "#ff1744",
+        arrowwidth = 2.5,
+        ax = -50,
+        ay = -60,
+        bgcolor = "rgba(10, 14, 26, 0.9)",
+        bordercolor = "#ff1744",
+        borderwidth = 1.5,
+        borderpad = 8,
+        font = list(size = 11)
       )
+    ),
+    
+    # ========== HOVER ==========
+    hovermode = "closest",
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(
+        color = "#e0e6ed",
+        size = 12,
+        family = "Arial"
+      ),
+      align = "left"
+    ),
+    
+    # ========== MÁRGENES ==========
+    margin = list(l = 100, r = 50, b = 100, t = 160),
+    
+    # ========== FUENTE ==========
+    font = list(
+      family = "Arial, sans-serif",
+      color = "#e0e6ed",
+      size = 12
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "metodo_codo_clustering",
+      width = 1400,
+      height = 800
     )
   )
 
 elbow_plot_interactive
-
 ```
 
 La coherencia interpretativa valida que los clusters identificados tienen significado económico y social claro. En este análisis, se seleccionó $k=3$ clusters porque esta segmentación produce tres grupos conceptualmente diferenciados.
