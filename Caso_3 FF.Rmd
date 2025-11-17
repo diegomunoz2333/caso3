@@ -4801,7 +4801,7 @@ res.var$cos2
 ```
 
 
-El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). En este análisis, la línea verde punteada marca el umbral del 70%, y la intersección de la línea morada acumulada con este umbral define el número final de componentes 6 que será utilizado para la clusterización posterior.
+El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). Y se selecciona 4 componentes ya que a partir de $k=4$ se comienza a aplanar la varianza explicada.
 
 ### Contribución de Variables a Componentes Principales
 
