@@ -1494,13 +1494,15 @@ res.var$contrib
 res.var$cos2  
 ```
 
-El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). Y se selecciona 4 componentes.
+El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). Y se selecciona 4 componentes ya que a partir de $k=4$ se comienza a aplanar la varianza explicada.
 
 ### Contribución de Variables a Componentes Principales
 
 La comprensión de cómo cada variable original contribuye a la definición de los componentes principales es esencial para interpretar las dimensiones latentes descubiertas. La contribución de una variable a un componente cuantifica el grado en el cual esa variable particular "explica" o "define" la dirección de ese componente en el espacio multidimensional original. Matemáticamente, la contribución se expresa como porcentaje de la varianza del componente que puede atribuirse a cada variable (Hastie et al., 2009; Jolliffe, 2002).
 
-Adicionalmente, la calidad de representación (cos²) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un cos² cercano a 1 significa que la variable está casi completamente explicada por ese componente; un cos² cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
+<!-- cambios -->
+
+Adicionalmente, la calidad de representación ( $cos²$ ) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un $cos²$ cercano a 1 significa que la variable está casi completamente explicada por ese componente; un $cos²$ cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
 
 ```{r contribucion}
 
@@ -1673,6 +1675,10 @@ tabla_pc4
 
 Una vez identificados los componentes principales y cuantificadas las contribuciones de cada variable, es fundamental realizar un análisis multivariado que permita interpretar simultáneamente las relaciones entre países y variables en el espacio reducido de componentes principales. Este análisis se fundamenta en visualizaciones bidimensionales que proyectan tanto países (individuos) como variables sobre los planos definidos por pares de componentes principales, revelando patrones de similitud, agrupamientos naturales y características diferenciadoras entre grupos de países (Jolliffe, 2002; Hastie et al., 2009).
 
+<!-- cambios -->
+
+En la Gráfica 1 observamos la proyección de los países en el espacio reducido de las dos primeras dimensiones del análisis de componentes principales.
+
 ```{r individuos DIM 1 Y DIM 2}
 ind_data <- get_pca_ind(res.pca)
 
@@ -1729,6 +1735,8 @@ p1
 
 En la dimensión 1, Níger emerge como el mayor contribuidor, posicionándose en el extremo negativo del eje que representa el déficit en desarrollo humano y conectividad tecnológica, reflejando severas limitaciones en acceso a servicios básicos, mortalidad infantil elevada y baja penetración digital. Le sigue San Marino, ubicado en el extremo positivo, representando un microestado con indicadores de bienestar consolidados en salud y esperanza de vida. En la dimensión 2, Qatar lidera como mayor contribuidor, posicionándose en el extremo inferior del eje, consolidándose como economía petroquímica ultraespecializada con estructura industrial dominada por hidrocarburos y dinámicas demográficas atípicas. Islas Marshall emerge como segundo mayor contribuidor, ubicándose en el extremo superior, caracterizándose como Estado insular vulnerable con alta dependencia de ayuda externa y servicios financieros.﻿
 
+En la Gráfica 2 observamos la proyección de los países en el espacio reducido de las dos ultimas dimensiones del análisis de componentes principales.
+
 ```{r individuos DIM 3 Y DIM 4}
 
 p2 <- plot_ly(ind_df,
@@ -1769,9 +1777,11 @@ En la dimensión 3, Malta emerge como el mayor contribuidor, posicionándose en 
 
 ### Representación de Variables en el Plano de Componentes Principales
 
-El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por PC1 y PC2. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas en PC1-PC2, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
+<!-- cambios -->
 
-La dirección de cada flecha—es decir, el ángulo que forma con los ejes PC1 y PC2—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
+El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por los componentes principales. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas los componentes principales, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
+
+La dirección de cada flecha—es decir, el ángulo que forma con los ejes—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
 
 ```{r Variables DIM 1 Y DIM 2}
 
