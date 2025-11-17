@@ -5240,9 +5240,7 @@ p2 <- plot_ly(ind_df,
 p2
 ```
 
-Al observar el grafico podemos identificar algunos datos, casos como la India donde su aporte en la dimensión 4 es de 18,65% lo cual nos demuestra su gran tasa poblacional y de tierra cultivable.
-Timor-leste tiene un aporte en la dimensión 4 de un 8.49% el cual refiere que tiene poca tendencia de uso de internet y un alta área boscosa.
-Otro caso a referir Djibouti tiene dos valores importantes en la dimensión 3 tiene un aporte de 10.69% y en la 4 de 0,28%, lo cual refiere que es uno de los paises que menos exporta y más importa.
+En la dimensión 3, Malta emerge como el mayor contribuidor, posicionándose en el extremo positivo del eje que representa economías hiperglobalizadas con ratios comerciales excesivamente altos, reflejando su condición de centro financiero y comercial con flujos internacionales que superan significativamente su PIB. China se sitúa en el extremo negativo, evidenciando una estructura comercial más balanceada basada en exportaciones de manufactura y sostenida por una vasta base poblacional. En la dimensión 4, India se coloca en el extremo negativo, reflejando presión demográfica extrema sobre recursos naturales (1,400 millones de habitantes sobre territorio limitado generan demanda exponencial de tierra cultivable y agua). Timor-Leste se ubica en el extremo positivo, caracterizándose por baja densidad poblacional relativa y abundancia de cobertura forestal.
 
 ### Representación de Variables en el Plano de Componentes Principales
 
