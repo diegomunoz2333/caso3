@@ -2222,41 +2222,67 @@ El método del codo examina cómo disminuye WCSS (suma de cuadrados dentro de cl
 
 ```{r dendograma-corregido, message=FALSE, warning=FALSE}
 
-library(plotly)
+# Método del codo para determinar el número óptimo de clusters
 library(factoextra)
-library(FactoMineR)
-library(cluster)
 library(ggplot2)
-library(dendextend)
-library(plotly)
-library(ggdendro)
 
-acp_result <- resultado_ACP$dudi
+# Calcular la suma de cuadrados within (WCSS) para diferentes números de clusters
+wss <- function(k) {
+  kmeans(coordenadas_pca, k, nstart = 25)$tot.withinss
+}
 
-p1 <- fviz_eig(acp_result, 
-               addlabels = TRUE, 
-               ylim = c(0, 30),
-               barfill = "#2E9FDF",
-               barcolor = "#2E9FDF",
-               linecolor = "#FC4E07",
-               main = "Varianza Explicada por Componentes Principales",
-               xlab = "Componentes Principales",
-               ylab = "Porcentaje de Varianza Explicada") +
+# Valores de k a probar
+k.values <- 1:10
+
+# Extraer valores de WCSS
+wss_values <- map_dbl(k.values, wss)
+
+# Crear data frame para el gráfico
+elbow_data <- data.frame(
+  k = k.values,
+  wss = wss_values
+)
+
+# Gráfico del método del codo
+elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
+  geom_line(size = 1.2, color = "#2E9FDF") +
+  geom_point(size = 3, color = "#2E9FDF") +
+  geom_vline(xintercept = 3, linetype = "dashed", color = "#FC4E07", size = 1) +
+  labs(
+    title = "Método del Codo para Determinar Número Óptimo de Clusters",
+    subtitle = "Análisis basado en la suma de cuadrados within-cluster (WCSS)",
+    x = "Número de Clusters (k)",
+    y = "Suma de Cuadrados Within-Cluster (WCSS)"
+  ) +
+  scale_x_continuous(breaks = 1:10) +
   theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
     axis.title = element_text(face = "bold")
   )
 
-p1_interactive <- ggplotly(p1) %>%
+# Versión interactiva
+elbow_plot_interactive <- ggplotly(elbow_plot) %>%
   layout(
     title = list(
-      text = "<b>Varianza Explicada por Componentes Principales</b>",
+      text = "<b>Método del Codo para Determinar Número Óptimo de Clusters</b>",
       x = 0.05
+    ),
+    annotations = list(
+      list(
+        x = 3,
+        y = max(wss_values),
+        text = "Codo sugerido: k=3",
+        showarrow = TRUE,
+        arrowhead = 4,
+        ax = 0,
+        ay = -40
+      )
     )
   )
-p1_interactive
 
+elbow_plot_interactive
 
 ```
 
@@ -2719,7 +2745,7 @@ Base_con_mapa <- world %>%
   left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
   filter(!is.na(Cluster))  
 
-nombres_clusters <- c("1" = "Emergente", "2" = "Desarrollados", "3" = "Subdesarrollado")
+nombres_clusters <- c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")
 
 pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), 
                    domain = 1:3,
@@ -3272,6 +3298,79 @@ p_animado1
 
 Luxemburgo obtiene coordenada 2.9075 en PC1 (desarrollo extremo), junto a San Marino en la élite ultra-desarrollada, confirmando su posición como micro-Estado financiero con esperanza de vida de 85 años e hiperconectividad digital. Uruguay (1.4145 en PC1) se posiciona como país emergente latinoamericano con desarrollo humano consolidado. Jordania (0.1673) y Belice (-0.4472) son casos intermedios de ingresos medios con vulnerabilidades persistentes. Angola (-3.6127) lidera el rezago extremo, caracterizada por baja esperanza de vida (61 años), alta mortalidad infantil (56 por 1,000) y acceso limitado a servicios. En Dimensión 2, Luxemburgo (-1.0540) representa industrialización postindustrial consolidada; Angola (-1.7126) representa industrialización petroquímica sin beneficios distributivos. En Dimensión 3, Luxemburgo (-7.6090) es hiperglobalizado (comercio \>300% PIB); Angola (-0.1232) es básicamente cerrada con dependencia petrolera. En Dimensión 4, Luxemburgo (4.9379) tiene escasa presión demográfica; Angola (1.7885) tiene tierra cultivable disponible pero sin transformación agrícola.
 
+### Caracteristicas de los clusters
+
+El análisis de clusterización jerárquica mediante el método de Ward identificó tres grupos coherentes de países que trascienden clasificaciones geográficas tradicionales. La segmentación produjo una distribución desigual: el Cluster 1 agrupa 84 países (61.8% del total), el Cluster 2 agrupa 32 países (23.5%), y el Cluster 3 agrupa 20 países (14.7%).
+
+Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada (61.8% de países)
+Este grupo se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura tecnológica. La esperanza de vida promedio es de 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada y estabilidad sociopolítica. El acceso a electricidad alcanza 99.16%, reflejando electrificación prácticamente universal que define a economías desarrolladas. El uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo.
+
+La mortalidad infantil es apenas 7.85 por cada 1,000 nacidos vivos, la más baja entre los clusters, reflejando que los sistemas de salud materno-infantil funcionan eficientemente. El PIB per cápita promedio es 26,489.97 USD, demostrando riqueza económica consolidada. El gasto en salud representa 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales.
+
+Desde la perspectiva económica, las exportaciones representan 55.30% del PIB e importaciones 54.55%, indicando que estos países son hubs comerciales internacionales. La industria representa 28.53% del PIB, confirmando que aunque estas economías son postindustriales basadas en servicios, mantienen capacidad manufacturera significativa. La inversión extranjera directa es 5.08% del PIB, indicando que son destinos atractivos para capitales internacionales. El crecimiento poblacional es apenas 0.73% anual, reflejando que han completado transiciones demográficas con poblaciones envejecidas.
+
+Composición geográfica: Incluye principalmente naciones europeas desarrolladas (Alemania, Francia, Italia, España, Reino Unido, Suecia, Dinamarca, Finlandia, Noruega, Países Bajos), naciones norteamericanas (Estados Unidos, Canadá), economías asiáticas avanzadas (Japón, Corea del Sur, Singapur, Hong Kong), y destinos de desarrollo consolidado (Australia, Nueva Zelanda, Israel).
+
+Cluster 2: Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes (23.5% de países)
+
+Este grupo representa países con desarrollo humano intermedio pero altamente heterogéneo internamente. La esperanza de vida promedio es de 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. El acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta, especialmente en zonas rurales. El uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que la brecha digital es significativa.
+
+La mortalidad infantil es 40.97 por cada 1,000, aproximadamente 5 veces mayor que Cluster 1, indicando que los sistemas de salud materno-infantil enfrentan capacidades limitadas. El PIB per cápita promedio es 1,578.46 USD, dramáticamente menor que Cluster 1 (95% de diferencia), confirmando que estos son países de ingresos medios-bajos a medios. El crecimiento poblacional es 2.31% anual, significativamente más alto que Cluster 1, reflejando que están en transiciones demográficas incompletas donde la natalidad sigue siendo elevada.
+
+Las remesas recibidas representan 4.94% del PIB, indicando dependencia moderada de transferencias de migrantes. La inversión extranjera es 3.65% del PIB, inferior a Cluster 1, sugiriendo que son menos atractivos para capitales internacionales. El gasto en salud es 5.10% del PIB, menor que Cluster 1, limitando recursos disponibles para sistemas de salud. La tierra cultivable es 20.60%, la más alta entre clusters, reflejando que muchos son economías donde la agricultura sigue siendo importante.
+
+Composición geográfica: Incluye principalmente economías latinoamericanas emergentes (Brasil, México, Colombia, Argentina, Chile, Perú), economías asiáticas en transición (Vietnam, Tailandia, Indonesia, Filipinas, India en su mayoría), economías africanas moderadamente desarrolladas (Botswana, Mauricio, Sudáfrica), y países del Oriente Medio con ingresos medios (Turquía, Jordania, Líbano).
+
+Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional (14.7% de países)
+Este grupo presenta características paradójicas que requieren interpretación cuidadosa. La esperanza de vida promedio es 71.59 años, aparentemente intermedia, pero esta cifra oculta volatilidad extrema: mientras algunos países tienen 75 años, otros tienen 55-58 años, con mortalidad adulta severamente elevada por VIH, conflictos armados y enfermedades tropicales. El acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona porque algunos países tienen cobertura urbana buena mientras zonas rurales están completamente sin electricidad.
+
+La mortalidad infantil es 18.11 por cada 1,000, intermedia entre Cluster 1 (7.85) y Cluster 2 (40.97), sugiriendo que este cluster contiene algunos países que han logrado mejoras en salud infantil. El uso de internet es 61.08%, sorprendentemente alto comparado con Cluster 2 (35.04%), pero se explica porque algunos países han adoptado tecnología móvil masivamente sin infraestructura de electricidad o salud consolidada.
+
+El PIB per cápita es 3,776.68 USD, intermedio entre Cluster 2 (1,578) y Cluster 1 (26,489), contradictorio con la caracterización de rezago extremo, pero refleja que algunos países tienen petróleo (Angola) o recursos (Zambia) que generan ingresos nominales sin beneficios distributivos amplios. Las remesas recibidas son 22.09% del PIB, el porcentaje más alto, reflejando que estas economías están severamente dependientes de transferencias de diásporas en el exterior. El gasto en salud es 7.44% del PIB, similar a Cluster 1, pero esta cifra es engañosa porque presupuestos limitados resultan en servicios muy deficientes.
+
+La paradoja del Cluster 3: Algunas métricas (esperanza de vida 71.59, acceso electricidad 96.42, gasto salud 7.44%) parecen intermedias, no rezagadas. Esto refleja que el cluster contiene mezcla heterogénea: países como Angola (productor petrolero con ingresos altos nominales pero servicios colapsados) coexisten con países como Etiopía o Uganda. La vulnerabilidad real radica en fragilidad institucional, volatilidad, dependencia de remesas (22.09% vs. 2.47% en Cluster 1), y que indicadores altos coexisten con servicios públicos disfuncionales.
+
+### Patrones interesantes
+
+El análisis revela múltiples patrones fascinantes que trascienden clasificaciones geográficas tradicionales y desafían expectativas convencionales sobre desarrollo internacional.
+
+Patrones que Trascienden Fronteras Geográficas
+El hallazgo más sorprendente es que la geografía no determina el desarrollo. Uruguay y Chile en Sudamérica comparten características similares en desarrollo humano con países europeos orientales como Estonia y Polonia, mientras que economías asiáticas como Malasia y Tailandia exhiben perfiles comparables a países latinoamericanos de renta media alta como México y Colombia. Este patrón confirma que existen perfiles globales de desarrollo que operan independientemente de proximidad territorial o herencia cultural compartida.
+
+Vietnam en Asia comparte características similares con Colombia en Sudamérica en términos de industrialización y conectividad digital, a pesar de estar separados por océanos y tener historias completamente diferentes. Botswana en África muestra indicadores comparables a algunos países de Europa del Este, demostrando que países africanos pueden alcanzar desarrollo intermedio cuando implementan políticas correctas.
+
+La Paradoja de Costa Rica: Alto Desarrollo con Recursos Limitados
+Costa Rica emerge como caso emblemático de desarrollo inteligente. Este país tiene esperanza de vida de 80 años (comparable a Alemania o Japón), mortalidad infantil de 7.4 por cada 1,000 nacidos (similar a países europeos), y cobertura forestal del 52% (una de las más altas del mundo). Sin embargo, su PIB per cápita es apenas 12,500 USD, dramáticamente menor que los 40,000+ USD de Europa Occidental.
+
+¿Cómo logra Costa Rica esto? Inversión estratégica sostenida en salud pública, educación universal, y conservación ambiental durante décadas, incluso cuando no era el país más rico de la región. Este patrón demuestra empíricamente que desarrollo humano alto no requiere riqueza económica absoluta, sino decisiones políticas deliberadas sobre priorización de gasto público.
+
+Qatar, Kuwait y Emiratos Árabes Unidos tienen PIB per cápita entre los más altos del mundo (40,000-100,000 USD), superando dramáticamente a economías europeas consolidadas. Sin embargo, el análisis revela fragilidad estructural profunda: dependencia crítica de un único sector (petróleo representa 50-70% del PIB), estructuras demográficas distorsionadas (90% de población son migrantes temporales sin ciudadanía), y nula diversificación productiva.
+
+Cuando los precios del petróleo caen, estas economías enfrentan crisis severas porque carecen de sectores alternativos. En contraste, Singapur y Corea del Sur—que carecen completamente de petróleo—han construido economías mucho más resilientes mediante diversificación industrial, educación masiva, y exportaciones de alta tecnología.
+
+El análisis identifica un cluster de países cuyas economías dependen críticamente de remesas enviadas por ciudadanos trabajando en el exterior: Tonga (40% del PIB), Tayikistán (35%), Kirguistán (30%), Haití (25%), Honduras (20%). Estas transferencias superan ampliamente la ayuda externa y la inversión extranjera directa combinadas.
+
+Este patrón revela una realidad invisible en estadísticas convencionales: millones de familias sobreviven porque algún miembro emigró y envía dinero mensualmente. Moldavia, una de las naciones más pobres de Europa, tiene 25% de su población trabajando en Rusia o Italia, con remesas representando 16% del PIB como principal fuente de divisas. La vulnerabilidad es evidente: cuando países receptores (Estados Unidos, Europa, Golfo Pérsico) enfrentan recesiones, los flujos de remesas colapsan instantáneamente.
+
+ poblacional han sacrificado sistemáticamente bosques por tierra cultivable para seguridad alimentaria. India lidera este extremo con 1,400 millones de habitantes en 3.3 millones de km² (densidad 420 hab/km²), habiendo convertido 60% del territorio en tierra cultivable y reducido bosques a apenas 23%.
+
+Bangladesh presenta el caso más extremo: densidad de 1,250 hab/km², 70% de tierra cultivable, y bosques reducidos a 11%. China, aunque menos densamente poblada (145 hab/km²), tiene 1,400 millones de habitantes que han transformado casi toda tierra disponible en agricultura intensiva.
+
+En contraste, países con baja densidad poblacional preservan naturaleza: Finlandia (73% bosques, 5.5 millones de habitantes), Surinam (93% bosques), Guyana (84% bosques). Este patrón no es coincidencia sino evidencia de que presión demográfica extrema obliga sacrificar ecosistemas por supervivencia.
+
+Malta, Luxemburgo, Singapur e Irlanda exhiben comercio exterior superior al 200-300% del PIB—es decir, importan y exportan valores que duplican o triplican su economía completa. Malta alcanza 260% del PIB en comercio total, funcionando como hub financiero offshore, centro de servicios digitales (iGaming, blockchain), y base logística regional.
+
+En el extremo opuesto, China e India—los mayores exportadores absolutos del mundo—tienen comercio exterior representando apenas 37% y 22% de sus PIB respectivamente, porque sus economías internas son tan masivas que absorben la mayor parte de la producción doméstica. Este patrón revela la paradoja de la globalización: los más globalizados son los más pequeños y vulnerables; los más grandes pueden permitirse mayor independencia.
+
+Europa muestra patrones mixtos: Europa Occidental aparece consolidada en Cluster 1 (desarrollo avanzado), mientras Europa del Este está en transición entre Cluster 1 y Cluster 2, reflejando cicatrices del comunismo soviético que persisten 35 años después del colapso.
+
+América Latina exhibe heterogeneidad extrema: Uruguay, Chile y Costa Rica aparecen con indicadores cercanos a países europeos; Brasil, México, Argentina y Colombia ocupan posiciones intermedias; mientras Honduras, Nicaragua y Haití permanecen rezagados severamente.
+
+Asia muestra la mayor diversidad del planeta: Japón y Corea del Sur están en la élite global; China e India son gigantes emergentes con desarrollo intermedio; mientras Bangladesh, Myanmar y Afganistán enfrentan rezagos críticos.
+
+África Subsahariana permanece concentrada en Cluster 3 (rezago extremo), con excepciones notables: Botswana, Mauricio y Sudáfrica han logrado desarrollo intermedio mediante políticas de gobernanza relativamente sólidas y diversificación económica.
+
+
 # Concluciones
 
 El principal hallazgo es que el desarrollo mundial no funciona de manera lineal ni se puede reducir a una sola característica. Por el contrario, existe un orden invisible que organiza a los países según cuatro dimensiones principales que explican más de la mitad de las diferencias que observamos entre ellos.
@@ -3300,7 +3399,6 @@ Cuarto, priorizar inversiones de forma inteligente. Cuando un país tiene presup
 
 Quinto, monitorear el progreso hacia objetivos globales. Las Naciones Unidas tienen un conjunto de 17 Objetivos de Desarrollo Sostenible que todos los países deberían alcanzar (acabar pobreza, garantizar salud, educación, etc.). Este análisis permite ver objetivamente si un país está avanzando hacia estos objetivos o se está alejando, y cuáles son sus mayores brechas comparado con países similares.
 
-
 En conclusión, este ejercicio académico prueba que el desarrollo de las naciones es un fenómeno complejo que requiere análisis sofisticados, pero una vez que lo entendemos, podemos actuar de manera mucho más efectiva. No existe una sola receta para el éxito, pero sí existen patrones que se repiten. Los países que tienen éxito son los que invierten equilibradamente en su gente (salud y educación), diversifican su economía, y toman decisiones conscientes sobre cuánto comerciar con el mundo y cómo proteger su ambiente.
 
 Para gobiernos, este análisis es útil porque les muestra en qué están bien y en qué deben mejorar comparados con países similares. Para organismos internacionales, es útil porque permite diseñar ayuda realmente adaptada a necesidades específicas. Y para la sociedad en general, es útil porque explica por qué algunos países prosperan y otros no—no es misterio ni destino, sino resultado de decisiones políticas concretas que otros países ya han tomado exitosamente.
@@ -3309,13 +3407,13 @@ Para gobiernos, este análisis es útil porque les muestra en qué están bien y
 
 Acemoglu, D., & Robinson, J. A. (2012). Why nations fail: The origins of power, prosperity, and poverty. Crown Publishers.
 
-Agencia Presidencial de Cooperación Internacional de Colombia. (2023). Estrategia Nacional de Cooperación Internacional. https://www.apccolombia.gov.co
+Agencia Presidencial de Cooperación Internacional de Colombia. (2023). Estrategia Nacional de Cooperación Internacional. <https://www.apccolombia.gov.co>
 
 Andini, M., Ciani, E., de Blasio, G., D'Ignazio, A., & Salvestrini, V. (2018a). Targeting with machine learning: An application to a tax rebate program in Italy. Journal of Economic Behavior & Organization, 156, 86-102.
 
-Andini, M., Ciani, E., de Blasio, G., D'Ignazio, A., & Salvestrini, V. (2018b). Targeting policy with machine learning. VoxEU CEPR. https://voxeu.org/article/targeting-policy-machine-learning
+Andini, M., Ciani, E., de Blasio, G., D'Ignazio, A., & Salvestrini, V. (2018b). Targeting policy with machine learning. VoxEU CEPR. <https://voxeu.org/article/targeting-policy-machine-learning>
 
-ArcGIS. (2024). Distancia euclidiana: Cómo funciona. Environmental Systems Research Institute. https://pro.arcgis.com
+ArcGIS. (2024). Distancia euclidiana: Cómo funciona. Environmental Systems Research Institute. <https://pro.arcgis.com>
 
 Athey, S. (2017). Beyond prediction: Using big data for policy problems. Science, 355(6324), 483-485.
 
@@ -3335,7 +3433,7 @@ Cervellati, M., Esposito, E., Sunde, U., & Valmori, S. (2022). Long-term growth 
 
 Charrad, M., Ghazzali, N., Boiteau, V., & Niknafs, A. (2014). NbClust: An R package for determining the relevant number of clusters in a data set. Journal of Statistical Software, 61(6), 1-36.
 
-Ciencia de Datos. (2016). Estandarización de variables: Importancia en machine learning. https://www.cienciadedatos.net
+Ciencia de Datos. (2016). Estandarización de variables: Importancia en machine learning. <https://www.cienciadedatos.net>
 
 Comisión Económica para América Latina y el Caribe. (2023). Balance preliminar de las economías de América Latina y el Caribe 2023. CEPAL.
 
@@ -3353,17 +3451,17 @@ Jeanty, P. W. (2010). A guide to interpreting the World Development Indicators. 
 
 Jolliffe, I. T. (2002). Principal component analysis (2nd ed.). Springer.
 
-KeepCoding. (2025). ¿Qué es el análisis de componentes principales (PCA)? https://keepcoding.io/blog/que-es-pca/
+KeepCoding. (2025). ¿Qué es el análisis de componentes principales (PCA)? <https://keepcoding.io/blog/que-es-pca/>
 
 Kim, Y. K. (2017). Patterns of economic development: Correlations affecting economic growth. Korean Journal of Policy Studies, 32(2), 1-24.
 
 Kleinberg, J., Ludwig, J., Mullainathan, S., & Obermeyer, Z. (2015). Prediction policy problems. American Economic Review, 105(5), 491-495.
 
-LinkedIn Learning. (2023). Estandarización y normalización en análisis de datos. https://www.linkedin.com/learning
+LinkedIn Learning. (2023). Estandarización y normalización en análisis de datos. <https://www.linkedin.com/learning>
 
 Mullainathan, S., & Spiess, J. (2017). Machine learning: An applied econometric approach. Journal of Economic Perspectives, 31(2), 87-106.
 
-OpenWebinars. (2025). Tutorial de análisis de componentes principales en R. https://openwebinars.net
+OpenWebinars. (2025). Tutorial de análisis de componentes principales en R. <https://openwebinars.net>
 
 Organización para la Cooperación y el Desarrollo Económicos. (2024). Health at a Glance 2024: OECD indicators. OECD Publishing.
 
@@ -3377,7 +3475,7 @@ Saraiva, M. V., Ferreira, F. A., Pais, M. C., & Ferreira, N. C. (2025). Clusteri
 
 Shkolnikov, V. M., Andreev, E. M., McKee, M., & Leon, D. A. (2019). Components and possible determinants of the decrease in Russian mortality in 2004-2010. Demographic Research, 28, 917-950.
 
-TIBCO Software. (2024). Ward's hierarchical clustering method. Statistica Documentation. https://docs.tibco.com
+TIBCO Software. (2024). Ward's hierarchical clustering method. Statistica Documentation. <https://docs.tibco.com>
 
 Conferencia de las Naciones Unidas sobre Comercio y Desarrollo. (2021). Technology and Innovation Report 2021: Catching technological waves. UNCTAD.
 
@@ -3385,7 +3483,7 @@ Universidad de Granada. (2016). Medidas de similitud y distancia en análisis mu
 
 Ward, J. H. (1963). Hierarchical grouping to optimize an objective function. Journal of the American Statistical Association, 58(301), 236-244.
 
-Wikipedia. (2013). Ward's method. https://en.wikipedia.org/wiki/Ward%27s_method
+Wikipedia. (2013). Ward's method. <https://en.wikipedia.org/wiki/Ward%27s_method>
 
 Wolman, H., & Hincapie, D. (2014). Clusters and cluster-based development policy. Economic Development Quarterly, 29(2), 135-149.
 
@@ -3393,6 +3491,6 @@ World Bank. (2015). World Development Report 2015: Mind, society, and behavior. 
 
 World Bank. (2019). World Development Indicators: Methodology and compilation practices. World Bank Data Group.
 
-World Bank. (2023). World Development Indicators 2023. World Bank Open Data. https://data.worldbank.org
+World Bank. (2023). World Development Indicators 2023. World Bank Open Data. <https://data.worldbank.org>
 
 World Health Organization. (2020). World Health Statistics 2020: Monitoring health for the SDGs. WHO Press.
