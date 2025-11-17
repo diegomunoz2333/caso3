@@ -792,3 +792,423 @@ Base_2022 <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.cs
                       "Early-demographic dividend", "Late-demographic dividend", "Luxembourg")) %>% 
   mutate(across(3:19, as.numeric)) %>% drop_na()
 View(Base_2022)
+
+
+
+# ========== FUNCIÓN: Detectar outliers por grupo ==========
+
+
+
+# ========== FUNCIÓN: Asignar continentes ==========
+asignar_continentes <- function(data) {
+  continentes_map <- c(
+    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
+    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
+    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
+    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
+    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
+    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
+    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
+    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
+    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
+    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
+    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
+    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
+    
+    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
+    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
+    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
+    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
+    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
+    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
+    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
+    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
+    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
+    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
+    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
+    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
+    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
+    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
+    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
+    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
+    "San Marino" = "Europe",
+    
+    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
+    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
+    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
+    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
+    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
+    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
+    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
+    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
+    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
+    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
+    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
+    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
+    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
+    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
+    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
+    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
+    
+    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
+    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
+    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
+    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
+    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
+    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
+    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
+    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
+    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
+    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
+    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
+    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
+    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
+    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
+    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
+    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
+    "Zimbabwe" = "Africa",
+    
+    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
+    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
+    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
+    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
+  )
+  
+  data %>%
+    mutate(Continente = ifelse(Pais %in% names(continentes_map),
+                               continentes_map[Pais], NA))
+}
+
+# ========== FUNCIÓN: Detectar outliers por grupo ==========
+detectar_outliers <- function(data, var, grupo_col) {
+  data %>%
+    group_by(!!sym(grupo_col)) %>%
+    mutate(
+      Q1 = quantile(!!sym(var), 0.25, na.rm = TRUE),
+      Q3 = quantile(!!sym(var), 0.75, na.rm = TRUE),
+      IQR = Q3 - Q1,
+      limite_inferior = Q1 - 1.5 * IQR,
+      limite_superior = Q3 + 1.5 * IQR,
+      es_outlier = !!sym(var) < limite_inferior | !!sym(var) > limite_superior,
+      posicion_relativa = case_when(
+        !!sym(var) < limite_inferior ~ "Bajo",
+        !!sym(var) > limite_superior ~ "Alto",
+        TRUE ~ "Normal"
+      )
+    ) %>%
+    ungroup()
+}
+
+# ========== PREPARAR DATOS ==========
+datos_box <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(!is.na(Continente)) %>%
+  select(
+    Pais, Continente,
+    PIB_per, `Crecimiento PIB`, `Esperanza vida`,
+    `Mortalidad infantil`, `Acceso electricidad`, `Uso internet`,
+    `Inversion extranjera`, `Crecimiento poblacion`, `Gasto salud`, `Area boscosa`
+  )
+
+# ========== DEFINIR VARIABLES CON COLORES ==========
+vars_boxplot <- list(
+  list(var = "PIB_per", 
+       nombre = "PIB per cápita (US$)", 
+       color_box = "#00e676", 
+       color_outlier = "#76ff03"),
+  
+  list(var = "Crecimiento PIB", 
+       nombre = "Crecimiento PIB (% anual)", 
+       color_box = "#0084ff", 
+       color_outlier = "#00e5ff"),
+  
+  list(var = "Esperanza vida", 
+       nombre = "Esperanza de vida (años)", 
+       color_box = "#a259ff", 
+       color_outlier = "#ff00ff"),
+  
+  list(var = "Mortalidad infantil", 
+       nombre = "Mortalidad infantil (por 1,000)", 
+       color_box = "#ff1744", 
+       color_outlier = "#ff6b00"),
+  
+  list(var = "Acceso electricidad", 
+       nombre = "Acceso a electricidad (%)", 
+       color_box = "#00e5ff", 
+       color_outlier = "#ffd600"),
+  
+  list(var = "Uso internet", 
+       nombre = "Uso de internet (%)", 
+       color_box = "#00e676", 
+       color_outlier = "#ffeb3b"),
+  
+  list(var = "Inversion extranjera", 
+       nombre = "Inversión Extranjera (% PIB)", 
+       color_box = "#0084ff", 
+       color_outlier = "#ff9800"),
+  
+  list(var = "Crecimiento poblacion", 
+       nombre = "Crecimiento poblacional (% anual)", 
+       color_box = "#a259ff", 
+       color_outlier = "#ff5722"),
+  
+  list(var = "Gasto salud", 
+       nombre = "Gasto en salud (% PIB)", 
+       color_box = "#00e5ff", 
+       color_outlier = "#4caf50"),
+  
+  list(var = "Area boscosa", 
+       nombre = "Área boscosa (% tierra)", 
+       color_box = "#76ff03", 
+       color_outlier = "#8bc34a")
+)
+
+# ========== CREAR FIGURA ==========
+p <- plot_ly()
+
+for (i in seq_along(vars_boxplot)) {
+  config <- vars_boxplot[[i]]
+  var_name <- config$var
+  
+  # Detectar outliers
+  datos_con_outliers <- detectar_outliers(datos_box, var_name, "Continente")
+  
+  # ===== TRACE 1: BOXPLOT =====
+  p <- p %>%
+    add_boxplot(
+      data = datos_con_outliers,
+      x = ~Continente,
+      y = as.formula(paste0("~`", var_name, "`")),
+      name = "Boxplot",
+      marker = list(color = config$color_box),
+      line = list(color = config$color_box, width = 2.5),
+      boxmean = "sd",
+      visible = (i == 1),
+      showlegend = (i == 1),
+      hoverinfo = "y",
+      group = var_name,
+      quartilemethod = "inclusive"
+    )
+  
+  # ===== TRACE 2: SCATTER - PAÍSES NORMALES =====
+  datos_normales <- filter(datos_con_outliers, !es_outlier)
+  
+  p <- p %>%
+    add_trace(
+      data = datos_normales,
+      x = ~Continente,
+      y = as.formula(paste0("~`", var_name, "`")),
+      mode = "markers",
+      type = "scatter",
+      marker = list(
+        color = config$color_box,
+        size = 5,
+        opacity = 0.35,
+        line = list(color = "rgba(255,255,255,0.3)", width = 0.5)
+      ),
+      text = ~paste0(
+        "<b style='font-size:13px; color:#00e5ff;'>", Pais, "</b><br>",
+        "<span style='color:#8b92a0; font-size:11px;'>", Continente, "</span><br><br>",
+        "<b style='color:#e0e6ed;'>", var_name, ":</b><br>",
+        "<span style='color:#00e676; font-size:13px; font-weight:bold;'>",
+        round(get(var_name), 2),
+        "</span><br>",
+        "<span style='color:#a259ff; font-size:10px;'>✓ Dentro del rango normal</span>"
+      ),
+      hovertemplate = "%{text}<extra></extra>",
+      showlegend = FALSE,
+      visible = (i == 1),
+      group = var_name
+    )
+  
+  # ===== TRACE 3: SCATTER - OUTLIERS =====
+  datos_outliers <- filter(datos_con_outliers, es_outlier)
+  
+  if (nrow(datos_outliers) > 0) {
+    p <- p %>%
+      add_trace(
+        data = datos_outliers,
+        x = ~Continente,
+        y = as.formula(paste0("~`", var_name, "`")),
+        mode = "markers",
+        type = "scatter",
+        marker = list(
+          color = config$color_outlier,
+          size = 11,
+          opacity = 0.95,
+          symbol = "diamond",
+          line = list(color = "#ffffff", width = 2.5)
+        ),
+        text = ~paste0(
+          "<b style='font-size:13px; background-color:#ffeb3b; color:#000000; padding:4px; border-radius:3px;'> ⚠ OUTLIER</b><br>",
+          "<b style='font-size:12px; color:#00e5ff;'>", Pais, "</b><br>",
+          "<span style='color:#8b92a0; font-size:11px;'>", Continente, "</span><br><br>",
+          "<b style='color:#e0e6ed;'>", var_name, ":</b><br>",
+          "<span style='color:#ff1744; font-size:13px; font-weight:bold;'>",
+          round(get(var_name), 2),
+          "</span><br><br>",
+          "<span style='color:#ffd600; font-size:11px;'>",
+          "Posición: <b>", posicion_relativa, "</b></span><br>",
+          "<span style='color:#a259ff; font-size:10px;'>",
+          "Rango esperado: [", round(limite_inferior, 2), ", ", round(limite_superior, 2), "]",
+          "</span>"
+        ),
+        hovertemplate = "%{text}<extra></extra>",
+        showlegend = (i == 1),
+        name = "⚠ Outliers",
+        visible = (i == 1),
+        group = var_name
+      )
+  }
+}
+
+# ========== LAYOUT CON DROPDOWN ==========
+p %>%
+  layout(
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:20px;'>Distribución de Indicadores por Región</b><br>
+               <span style='color:#8b92a0; font-size:12px;'>Año 2022 | ◇ Diamantes = Outliers | Pasa el cursor para ver detalles</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.96
+    ),
+    
+    xaxis = list(
+      title = "<b style='font-size:13px; color:#e0e6ed;'>Continente</b>",
+      tickfont = list(color = '#e0e6ed', size = 11),
+      titlefont = list(color = '#e0e6ed', size = 12),
+      showgrid = FALSE,
+      showline = TRUE,
+      linewidth = 1.5,
+      linecolor = '#00e5ff',
+      categoryorder = "array",
+      categoryarray = c("Africa", "Americas", "Asia", "Europe", "Oceania")
+    ),
+    
+    yaxis = list(
+      title = "<b style='font-size:13px; color:#e0e6ed;'>PIB per cápita (US$)</b>",
+      tickfont = list(color = '#8b92a0', size = 10),
+      titlefont = list(color = '#e0e6ed', size = 12),
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      gridwidth = 0.5,
+      zeroline = FALSE
+    ),
+    
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 11),
+    
+    legend = list(
+      bgcolor = 'rgba(10,14,26,0.95)',
+      bordercolor = '#00e5ff',
+      borderwidth = 1.5,
+      x = 0.02,
+      y = 0.98,
+      font = list(size = 10, color = "#e0e6ed"),
+      orientation = "v"
+    ),
+    
+    margin = list(l = 80, r = 50, b = 70, t = 130),
+    hovermode = 'closest',
+    
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.98)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial"),
+      align = "left",
+      namelength = -1
+    ),
+    
+    updatemenus = list(
+      list(
+        buttons = lapply(seq_along(vars_boxplot), function(i) {
+          config <- vars_boxplot[[i]]
+          var_name <- config$var
+          
+          # Crear vector de visibilidad: 3 traces por variable
+          n_vars <- length(vars_boxplot)
+          visible_list <- rep(FALSE, n_vars * 3)
+          
+          # Posiciones: boxplot (1), scatter normal (2), scatter outliers (3)
+          visible_list[(i-1)*3 + 1] <- TRUE  # Boxplot
+          visible_list[(i-1)*3 + 2] <- TRUE  # Normal
+          visible_list[(i-1)*3 + 3] <- TRUE  # Outliers
+          
+          list(
+            label = strsplit(config$nombre, " \\(")[[1]][1],  # Solo el nombre, sin unidad
+            method = "update",
+            args = list(
+              list(visible = visible_list),
+              list(
+                title = paste0(
+                  "<b style='color:#00e5ff; font-size:20px;'>Distribución de Indicadores por Región</b><br>",
+                  "<span style='color:#8b92a0; font-size:12px;'>",
+                  config$nombre,
+                  " | ◇ Diamantes = Outliers | Pasa el cursor para ver detalles</span>"
+                ),
+                "yaxis.title" = paste0("<b style='font-size:13px; color:#e0e6ed;'>", config$nombre, "</b>")
+              )
+            )
+          )
+        }),
+        
+        direction = "down",
+        pad = list(r = 10, t = 10),
+        showactive = TRUE,
+        x = 0.01,
+        xanchor = "left",
+        y = 1.18,
+        yanchor = "top",
+        bgcolor = "rgba(162, 89, 255, 0.2)",
+        bordercolor = "#a259ff",
+        borderwidth = 2,
+        font = list(size = 10, color = "#a259ff", family = "Arial"),
+        active = 0
+      )
+    ),
+    
+    annotations = list(
+      list(
+        x = 0.01,
+        y = 1.24,
+        xref = "paper",
+        yref = "paper",
+        text = "<b style='color:#00e5ff; font-size:11px; text-transform:uppercase; letter-spacing:1px;'>📊 Selecciona indicador:</b>",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "top",
+        font = list(size = 11)
+      ),
+      list(
+        x = 0.5,
+        y = -0.12,
+        xref = "paper",
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:10px;'>
+                 <b>◆</b> = Valor dentro del rango esperado | 
+                 <b>◇</b> = Valor atípico (outlier) | 
+                 La caja = 50% central de datos (Q1-Q3) | 
+                 Las líneas = rango esperado
+               </span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "top",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "distribucion_continentes_outliers_2022",
+      width = 1600,
+      height = 900
+    )
+  )
