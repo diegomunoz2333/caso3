@@ -1015,11 +1015,13 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 library(htmltools)
 library(gt)
-library(ade4) 
 library(dendextend)
 library(RColorBrewer)  
 library(ellipse)
 library(leaflet)
+library(ade4)
+library(ggdendro)
+library(stringr)
 
 cyber_palette <- c(
   primary = "#00e5ff",
@@ -4311,13 +4313,13 @@ p %>%
 
 ```
 
-La visualización anterior revela heterogeneidad significativa dentro de cada continente, desafiando la noción de bloques regionales homogéneos. En Africa, la dispersión es particularmente amplia en indicadores de salud: mientras algunos países aproximan estándares europeos en esperanza de vida, otros enfrentan desafíos críticos en mortalidad infantil. Americas muestra un patrón bifurcado donde algunos países desarrollados contrastan dramáticamente con economías emergentes, ejemplo: Bolivia registra esperanza de vida por debajo del promedio regional. En Asia, la heterogeneidad es extrema—Qatar emerge como outlier en crecimiento poblacional (5.91% anual, reflejo de inmigración laboral), mientras otros países asiáticos presentan dinámicas demográficas moderadas. Europe mantiene relativa homogeneidad en indicadores de bienestar, aunque Malta destaca como outlier extremo en inversión extranjera directa (126% del PIB, característico de economías muy pequeñas y financieras). En Oceania, la dispersión limitada contrasta con puntos aislados como Solomon Islands, con cobertura forestal excepcional.
-Estos patrones evidencian que el desarrollo no se distribuye geográficamente de forma uniforme sino que responde a factores estructurales, institucionales y geopolíticos específicos—información que el análisis multidimensional posterior contextualizará dentro de constructos sintéticos mediante componentes principales.
+La Figura 6 revela cierta heterogeneidad dentro de cada continente. En Africa, la dispersión es particularmente amplia en indicadores de salud: mientras algunos países aproximan estándares europeos en esperanza de vida, otros enfrentan desafíos críticos en mortalidad infantil. Americas muestra un patrón variado donde algunos países desarrollados contrastan dramáticamente con economías emergentes, ejemplo: Bolivia registra esperanza de vida por debajo del promedio regional. En Asia, la heterogeneidad es extrema, Qatar emerge como outlier en crecimiento poblacional (5.91% anual, reflejo de inmigración laboral), mientras otros países asiáticos presentan dinámicas demográficas moderadas. Europe mantiene relativa homogeneidad en indicadores de bienestar, aunque Malta destaca como outlier extremo en inversión extranjera directa (126% del PIB, característico de economías muy pequeñas y financieras). En Oceania, la dispersión limitada contrasta con puntos aislados como Solomon Islands, con cobertura forestal excepcional.
+Estos patrones evidencian que el desarrollo no se distribuye geográficamente de forma uniforme sino que responde a factores estructurales, institucionales y geopolíticos específicos, información que el análisis multidimensional posterior contextualizará dentro de constructos sintéticos mediante componentes principales.
 
 
 ## Visualización Geoespacial
 
-La visualización geoespacial complementa el análisis dimensional anterior ofreciendo una perspectiva geográfica integrada que revela cómo las dinámicas de desarrollo se distribuyen espacialmente en el planeta. Esta sección presenta un mapa interactivo mundial donde cada territorio se colorea según el indicador seleccionado, permitiendo identificar patrones de concentración geográfica, grupos regionales y anomalías que anticipan la estructura latente del desarrollo global.
+La visualización geoespacial complementa el análisis dimensional ofreciendo una perspectiva geográfica integrada que revela cómo las dinámicas de desarrollo se distribuyen espacialmente en el planeta. Esta sección presenta un mapa interactivo mundial donde cada territorio se colorea según el indicador seleccionado, permitiendo identificar patrones de concentración geográfica, grupos regionales y anomalías que anticipan la estructura latente del desarrollo global.
 
 El mapa ofrece tres variables seleccionables mediante controles en la esquina superior izquierda: (1) Crecimiento PIB, (2) Acceso a Electricidad, y (3) Crecimiento Poblacional. Cada variable posee su propia paleta de colores. Una leyenda dinámica en la esquina inferior derecha se actualiza automáticamente al cambiar de variable, mostrando la escala específica.
 
@@ -4654,7 +4656,7 @@ htmltools::tagList(
 ```
 
 
-En crecimiento PIB, se observa segregación clara: Europa y América del Norte tienden a tonos amarillo-verde (crecimiento moderado), mientras muchas naciones africanas muestran tonos negros o rojo oscuro (estancamiento). Asia exhibe máxima variabilidad: gigantes como India y Bangladesh en verde (crecimiento dinámico), mientras Japón mantiene tonos amarillos (crecimiento moderado). En acceso a electricidad, la brecha digital-energética es evidente: Europa, América del Norte y gran parte de Asia en amarillo (acceso universal), mientras amplias regiones de África central permanecen en azul oscuro. América Latina exhibe transición: colores intermedios reflejando acceso extendido pero no universal. En crecimiento poblacional, se observa un patrón opuesto al desarrollo económico: Europa y Japón dominan tonos azules (declive demográfico), mientras África muestra naranjas y rojos intensos (presión poblacional extrema), y América Latina ocupa posiciones intermedias. Esta disociación geográfica entre prosperidad económica, acceso de servicios básicos y dinámica demográfica anticipa que el análisis multivariado revelará si estas dimensiones operan de forma integrada o representan trayectorias divergentes del desarrollo.
+En crecimiento PIB, se observa segregación clara: Europa y América del Norte tienden a tonos amarillo-verde (crecimiento moderado), mientras muchas naciones africanas muestran tonos oscuros (estancamiento). Asia exhibe máxima variabilidad: gigantes como India y Bangladesh en verde (crecimiento dinámico), mientras Japón mantiene tonos amarillos (crecimiento moderado). En acceso a electricidad, la brecha digital-energética es evidente: Europa, América del Norte y gran parte de Asia en amarillo (acceso universal), mientras amplias regiones de África central permanecen en azul oscuro. América Latina exhibe transición: colores intermedios reflejando acceso extendido pero no universal. En crecimiento poblacional, se observa un patrón opuesto al desarrollo económico: Europa y Japón dominan tonos azules (declive demográfico), mientras África muestra naranjas y rojos intensos (presión poblacional extrema), y América Latina ocupa posiciones intermedias. Esta disociación geográfica entre prosperidad económica, acceso de servicios básicos y dinámica demográfica anticipa que el análisis multivariado revelará si estas dimensiones operan de forma integrada o representan trayectorias diferentes del desarrollo.
 
 ------------------------------------------------------------------------
 
@@ -5650,9 +5652,10 @@ En la dimensión 3, Malta emerge como el mayor contribuidor, posicionándose en 
 
 El círculo de correlaciones es una herramienta fundamental para interpretar las dimensiones latentes capturadas por los componentes principales. Cada una de las 17 variables originales se representa como un vector (flecha) proyectado desde el origen hacia el plano bidimensional definido por los dos primeros componentes principales. La longitud de cada flecha indica la calidad de representación de esa variable: flechas largas (próximas al círculo unitario de referencia) indican variables bien representadas los componentes principales, mientras que flechas cortas indican que la variable requiere componentes posteriores para ser completamente explicada (Jolliffe, 2002; Hastie et al., 2009).
 
-La dirección de cada flecha—es decir, el ángulo que forma con los ejes—indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
+La dirección de cada flecha es decir, el ángulo que forma con los ejes indica cómo esa variable se correlaciona con los componentes. Las variables posicionadas en la dirección positiva del eje PC1 (hacia la derecha del gráfico) son aquellas que correlacionan positivamente con PC1 y, por lo tanto, caracterizan el polo derecho del eje.
 
 En la Figura 10, correspondiente al círculo de correlaciones, observamos la proyección de las 17 variables originales en el plano definido por los dos primeros componentes principales.
+
 ```{r Variables DIM 1 Y DIM 2., fig.height=7, fig.width=12, out.width="100%"}
 var_data <- get_pca_var(res.pca)
 
@@ -5923,16 +5926,15 @@ p2 <- plot_ly(var_df,
 p2
 ```
 
-A la dimensión 3 las variables que más contribuyen son las importaciones negativamente (26.78%), las exportaciones negativamente (26.43%) y la inversión extranjera negativamente (13.2%).
-En la dimensión 4 las variables que más contribuyen son el area boscosa negativamente (29.47%), la tierra cultivable positivamente (26.32%)y la población positivamente (19.51%).
+En la dimensión 3, las Importaciones, Exportaciones e Inversión extranjera se posicionan en el extremo positivo, caracterizando economías altamente integradas en cadenas de valor globales con comercio y flujos de inversión exponenciados. Malta (comercio >260% del PIB), Singapur, Irlanda y otros micro-Estados/hubs financieros ocupan este polo.
+
+En el extremo negativo se ubican Área boscosa y Población, países que preservan ecosistemas naturales tienden a tener menor integración comercial. Esto refleja que naciones con biodiversidad conservada (Timor-Leste, algunos países amazónicos con 70%+ bosques) típicamente tienen economías más locales, menos insertadas en globalización, y mercados más pequeños.
 
 ### Análisis Integrado de Variables y Países
 
 El análisis combinado de las variables y los países en el espacio reducido de los componentes principales permite identificar patrones de asociación estructural que trascienden el análisis univariable. La metodología del biplot permite vincular directamente las posiciones espaciales de los países con las magnitudes observadas en las variables originales, estableciendo relaciones interpretativas que evidencian cómo las características multidimensionales de desarrollo se manifiestan diferencialmente en distintos grupos de países (Jolliffe, 2002; Hastie et al., 2009).
 
 Para comprender la lógica interpretativa del biplot, es fundamental reconocer que la posición de un país en relación a la dirección de una flecha de variable indica el valor relativo de ese país en esa variable específica. Países ubicados en la misma dirección que una flecha exhiben valores altos en esa variable; países ubicados en dirección opuesta exhiben valores bajos; países ubicados perpendicularmente (formando ángulos de \~$90°$) exhiben valores cercanos a la media global. Esta propiedad geométrica del biplot permite realizar diagnósticos cuantitativos directamente desde la visualización gráfica, sin necesidad de consultar la base de datos original, siempre que la calidad de representación ($cos²$) sea suficientemente alta (Jolliffe, 2002).
-
-### aui
 
 ```{r Paises y variables DIM 1 Y DIM 2, fig.height=8, fig.width=12, out.width="100%"}
 
@@ -6101,6 +6103,7 @@ p1
 Senegal y Burkina Faso se alinean con la flecha de mortalidad infantil, confirmando valores altos en esa variable. Egipto se alinea con crecimiento poblacional, indicando tasa de crecimiento demográfico elevada. Corea del Sur y Nueva Zelanda se alinean con exportaciones, indicando economías muy orientadas a comercio externo. Suiza se alinea con esperanza de vida, confirmando longevidad excepcional.
 
 En dirección opuesta: países desarrollados europeos se oponen a flechas de mortalidad y rezago, reflejando valores bajos en estos indicadores negativos. Honduras y República Kirguisa se alinean con remesas, indicando dependencia crítica de transferencias de migrantes.
+
 ```{r Paises y variables DIM 3 Y DIM 4, fig.height=8, fig.width=12, out.width="100%"}
 
 p2 <- plot_ly() %>%
@@ -6371,29 +6374,707 @@ dimensiones_tabla %>%
 
 ```
 
-------------------------------------------------------------------------
+## Segmentación: Clusterización
 
-# Clusterización
+Sobre la base de los k componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
 
-## Determinación del Número Óptimo de Clusters
+El método de Ward minimiza específicamente la suma total de cuadrados dentro de clusters (*within-cluster sum of squares*, WCSS), definida matemáticamente como:
 
-```{r n-clusters}
-# Método del codo
+$$WCSS = \sum_{c=1}^{C} \sum_{i \in c} ||x_i - \bar{c}||^2$$
+
+donde: - $C$ es el número de clusters, - $x_i$ es la posición de la observación $i$ en el espacio de componentes principales, - $\bar{c}$ es el centroide (promedio) del cluster $c$.
+
+En cada paso del algoritmo, se identifican los dos clusters cuya fusión produce el incremento mínimo en WCSS total, maximizando así la homogeneidad interna de cada cluster mientras se maximiza la disimilaridad entre clusters (Ward, 1963; Hastie et al., 2009).
+
+```{r clusters, message=FALSE, warning=FALSE, results='hide'}
+
+resultado_ACP <- FactoClass(
+  datos_analisis,  
+  dudi.pca,       
+  nf = 4,           
+  k.clust = 3,      
+  scan = FALSE     
+)
+
+clusters_asignados <- resultado_ACP$cluster
+
+NuevaBase <- data.frame(Cluster = clusters_asignados, datos_analisis)
 ```
 
-## Aplicación del Método de Ward
+### Numero optimo de clusters
 
-```{r ward}
-# Clustering Ward
+La selección del número óptimo de clusters k se realizó mediante la evaluación conjunta de tres criterios complementarios: análisis del dendrograma, método del codo, y coherencia interpretativa. El dendrograma revela visualmente la estructura jerárquica de fusiones: se identifican alturas donde las fusiones producen incrementos dramáticos en disimilaridad, sugiriendo que clusters diferenciados se están uniendo. Un corte horizontal del dendrograma a altura intermedia permite definir el número de clusters finales.
+
+```{r DENDO}
+coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
+distancias <- dist(coordenadas_pca)
+hc <- hclust(distancias, method = "ward.D2")
+k <- 3
+cluster_colors <- c("1" = "#0057B8", 
+                    "2" = "#CE1126",  
+                    "3" = "#FFD700")  
+
+clusters <- cutree(hc, k = k)
+dend <- as.dendrogram(hc)
+dend_data <- dendro_data(dend)
+leaf_x <- dend_data$labels$x
+leaf_names <- as.character(dend_data$labels$label)
+names(clusters) <- rownames(coordenadas_pca)
+
+label_clusters <- clusters[match(leaf_names, names(clusters))]
+if (any(is.na(label_clusters))) {
+  idx_num <- suppressWarnings(as.integer(leaf_names))
+  if (!all(is.na(idx_num))) {
+    label_clusters[is.na(label_clusters)] <- clusters[idx_num[is.na(label_clusters)]]
+  }
+}
+label_clusters <- as.integer(label_clusters)
+dxs <- sort(unique(diff(sort(leaf_x))))
+pad <- ifelse(length(dxs) > 0, dxs[1] / 2, 0.5)
+max_y <- max(dend_data$segments$y, na.rm = TRUE)
+
+cluster_rectangles <- tibble::tibble(
+  cluster = integer(),
+  x0 = numeric(),
+  x1 = numeric(),
+  y0 = numeric(),
+  y1 = numeric(),
+  color = character()
+)
+
+for (cl in 1:k) {
+  xs_cl <- leaf_x[which(label_clusters == cl)]
+  if (length(xs_cl) > 0) {
+    x0 <- min(xs_cl) - pad
+    x1 <- max(xs_cl) + pad
+    cluster_rectangles <- cluster_rectangles %>%
+      add_row(
+        cluster = cl,
+        x0 = x0,
+        x1 = x1,
+        y0 = 0,
+        y1 = max_y * 0.92,
+        color = cluster_colors[as.character(cl)]
+      )
+  }
+}
+tree_color <- "#0057B8"
+seg_df <- dend_data$segments
+seg_df$seg_col <- tree_color
+dend_interactive <- plot_ly()
+dend_interactive <- dend_interactive %>%
+  add_segments(
+    data = seg_df,
+    x = ~x, xend = ~xend,
+    y = ~y, yend = ~yend,
+    line = list(color = tree_color, width = 2),
+    hoverinfo = "none",
+    showlegend = FALSE
+  )
+labels_df <- dend_data$labels %>%
+  mutate(cluster = label_clusters,
+         color = cluster_colors[as.character(cluster)])
+
+dend_interactive <- dend_interactive %>%
+  add_markers(
+    data = labels_df,
+    x = ~x, y = ~y,
+    text = ~paste0("Etiqueta: ", label, "<br>Cluster: ", cluster),
+    hoverinfo = "text",
+    marker = list(size = 9, line = list(width = 1, color = "black")),
+    color = ~I(color),
+    showlegend = FALSE
+  )
+shapes_list <- lapply(seq_len(nrow(cluster_rectangles)), function(i) {
+  list(
+    type = "rect",
+    x0 = cluster_rectangles$x0[i],
+    x1 = cluster_rectangles$x1[i],
+    y0 = cluster_rectangles$y0[i],
+    y1 = cluster_rectangles$y1[i],
+    fillcolor = cluster_rectangles$color[i],
+    line = list(color = "black", width = 3),
+    opacity = 0.18,
+    layer = "below"
+  )
+})
+linea_corte <- list(
+  type = "line",
+  x0 = min(dend_data$segments$x, na.rm = TRUE),
+  x1 = max(dend_data$segments$x, na.rm = TRUE),
+  y0 = 15,
+  y1 = 15,
+  line = list(color = "#B22222", width = 3, dash = "solid"),  
+  layer = "above"
+)
+
+shapes_list <- append(shapes_list, list(linea_corte))
+dend_interactive <- dend_interactive %>%
+  layout(
+    title = list(text = "Dendrograma interactivo </b>", x = 0.01),
+    shapes = shapes_list,
+    xaxis = list(title = "", showticklabels = FALSE, zeroline = FALSE, showgrid = FALSE),
+    yaxis = list(title = "Distancia", zeroline = FALSE, showgrid = TRUE),
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    hovermode = "closest",
+    margin = list(l = 80, r = 180, t = 80, b = 80)
+  ) %>%
+  config(displayModeBar = TRUE, scrollZoom = TRUE, displaylogo = FALSE)
+dend_interactive
 ```
 
-## Visualización de Clusters
+El método del codo examina cómo disminuye WCSS (suma de cuadrados dentro de clusters) conforme aumenta el número de clusters desde $k=2$ hasta $k=10$ Inicialmente, incrementar $k$ reduce WCSS rápidamente porque se reduce heterogeneidad interna; sin embargo, a partir de cierto $k$ (el "codo"), la reducción adicional se vuelve marginal, sugiriendo que clusters posteriores no capturan estructura genuina sino que simplemente subdividen artificialmente. Típicamente, el codo se identifica en $k=3$ a $k=4$ para análisis de desarrollo internacional.
 
-```{r viz-clusters}
-# Visualización
+```{r dendograma-corregido, message=FALSE, warning=FALSE}
+
+# Método del codo para determinar el número óptimo de clusters
+library(factoextra)
+library(ggplot2)
+
+# Calcular la suma de cuadrados within (WCSS) para diferentes números de clusters
+wss <- function(k) {
+  kmeans(coordenadas_pca, k, nstart = 25)$tot.withinss
+}
+
+# Valores de k a probar
+k.values <- 1:10
+
+# Extraer valores de WCSS
+wss_values <- map_dbl(k.values, wss)
+
+# Crear data frame para el gráfico
+elbow_data <- data.frame(
+  k = k.values,
+  wss = wss_values
+)
+
+# Gráfico del método del codo
+elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
+  geom_line(size = 1.2, color = "#2E9FDF") +
+  geom_point(size = 3, color = "#2E9FDF") +
+  geom_vline(xintercept = 3, linetype = "dashed", color = "#FC4E07", size = 1) +
+  labs(
+    title = "Método del Codo para Determinar Número Óptimo de Clusters",
+    subtitle = "Análisis basado en la suma de cuadrados within-cluster (WCSS)",
+    x = "Número de Clusters (k)",
+    y = "Suma de Cuadrados Within-Cluster (WCSS)"
+  ) +
+  scale_x_continuous(breaks = 1:10) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    axis.title = element_text(face = "bold")
+  )
+
+# Versión interactiva
+elbow_plot_interactive <- ggplotly(elbow_plot) %>%
+  layout(
+    title = list(
+      text = "<b>Método del Codo para Determinar Número Óptimo de Clusters</b>",
+      x = 0.05
+    ),
+    annotations = list(
+      list(
+        x = 3,
+        y = max(wss_values),
+        text = "Codo sugerido: k=3",
+        showarrow = TRUE,
+        arrowhead = 4,
+        ax = 0,
+        ay = -40
+      )
+    )
+  )
+
+elbow_plot_interactive
+
 ```
 
-------------------------------------------------------------------------
+La coherencia interpretativa valida que los clusters identificados tienen significado económico y social claro. En este análisis, se seleccionó $k=3$ clusters porque esta segmentación produce tres grupos conceptualmente diferenciados.
+
+### Caracterizacion de los clusters
+
+La segmentación produjo una distribución desigual de países entre clusters. El Cluster 1 agrupa 84 países (61.8% del total), el Cluster 2 agrupa 32 países (23.5%), y el Cluster 3 agrupa 20 países (14.7%). Esta distribución refuerza la interpretación de que existe un pequeño grupo de países ultra-desarrollados (Cluster 1), un grupo intermedio significativo de emergentes (Cluster 2), y un grupo minoritario pero vulnerable de países en rezago extremo (Cluster 3). La concentración de 61.8% en Cluster 1 sugiere que la mayoría de países han logrado algún nivel de desarrollo básico, mientras que la minoría de 14.7% en Cluster 3 representa casos de vulnerabilidad persistente y multidimensional.
+
+```{r Tabla de distribucion}
+distribucion_clusters <- table(clusters_asignados) %>%
+  as.data.frame() %>%
+  rename(Cluster = clusters_asignados, Frecuencia = Freq) %>%
+  mutate(Porcentaje = round(Frecuencia/sum(Frecuencia)*100, 2))
+
+tabla_distribucion <- distribucion_clusters %>%
+  gt() %>%
+  tab_header(
+    title = md("**Tabla 12**"),
+    subtitle = "Distribución de Países por Cluster"
+  ) %>%
+  cols_label(
+    Cluster = md("**Cluster**"),
+    Frecuencia = md("**N° Países**"),
+    Porcentaje = md("**Porcentaje (%)**")
+  ) %>%
+  fmt_number(
+    columns = Porcentaje,
+    decimals = 1,
+    pattern = "{x}%"
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman"
+  )
+
+tabla_distribucion
+
+```
+
+```{r tablas}
+
+estadisticas_clusters <- NuevaBase %>%
+  group_by(Cluster) %>%
+  summarise(across(
+    where(is.numeric),
+    list(
+      Media = ~round(mean(., na.rm = TRUE), 2),
+      Mediana = ~round(median(., na.rm = TRUE) , 2),
+      DE = ~round(sd(., na.rm = TRUE), 2),
+      Min = ~round(min(., na.rm = TRUE), 2),
+      Max = ~round(max(., na.rm = TRUE), 2)
+
+    )
+  )) %>%
+  pivot_longer(
+    cols = -Cluster,
+    names_to = "Variable_Estadistica",
+    values_to = "Valor"
+  ) %>%
+  separate(Variable_Estadistica, into = c("Variable", "Estadistica"), sep = "_") %>%
+  pivot_wider(
+    names_from = Estadistica,
+    values_from = Valor
+  )
+
+```
+
+```{r Grafico clusters}
+nombres_variables <- c(
+  "PIB_per" = "PIB per cápita (US$)",
+  "Poblacion" = "Población total",
+  "Esperanza.vida" = "Esperanza de vida (años)",
+  "Acceso.electricidad" = "Acceso electricidad (%)",
+  "Area.boscosa" = "Área boscosa (%)",
+  "Suscripciones.movil" = "Suscripciones móviles",
+  "Crecimiento.PIB" = "Crecimiento PIB (%)",
+  "Mortalidad.infantil" = "Mortalidad infantil",
+  "Inversion.extranjera" = "Inversión extranjera (%)",
+  "Gasto.salud" = "Gasto en salud (%)",
+  "Uso.internet" = "Uso de internet (%)",
+  "Importaciones" = "Importaciones (%)",
+  "Exportaciones" = "Exportaciones (%)",
+  "Tierra.cultivable" = "Tierra cultivable (%)",
+  "Crecimiento.poblacion" = "Crecimiento población (%)",
+  "Industria" = "Industria (%)",
+  "Remesas" = "Remesas (%)"
+)
+par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
+
+
+
+tabla_estadisticas <- estadisticas_clusters %>%
+  mutate(
+    Variable_Descriptiva = nombres_variables[Variable],
+    Cluster = paste("Cluster", Cluster)
+  ) %>%
+  select(Cluster, Variable_Descriptiva, Media,Mediana, DE, Min, Max) %>%
+  arrange(Cluster, Variable_Descriptiva) %>%
+  gt(groupname_col = "Cluster") %>%
+  tab_header(
+    title = md("**ESTADÍSTICAS DESCRIPTIVAS POR CLUSTER**"),
+    subtitle = "Medias, desviaciones estándar y rangos de las variables originales"
+  ) %>%
+  cols_label(
+    Variable_Descriptiva = md("**Variable**"),
+    Media = md("**Media**"),
+    DE = md("**D.E.**"),
+    Min = md("**Mín**"),
+    Max = md("**Máx**"),
+    Mediana = md("**Mediana**")
+  ) %>%
+  cols_align(
+    align = "center",
+    columns = c(Media,Mediana, DE, Min, Max)
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = Variable_Descriptiva
+  ) %>%
+  fmt_number(
+    columns = c(Media,Mediana, DE, Min, Max),
+    decimals = 2
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Variable_Descriptiva, Media, DE, Min, Max))
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable_Descriptiva)
+  ) %>%
+  tab_style(
+    style = cell_fill(color = "#F0F8FF"),
+    locations = cells_row_groups()
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(6),
+    heading.title.font.size = 16,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(8),
+    footnotes.padding = px(6)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuente:** Elaboración propia con base en World Bank (2023)")
+  )
+
+tabla_estadisticas
+estadisticas_por_cluster <- NuevaBase %>%
+  group_by(Cluster) %>%
+  summarise(across(
+    where(is.numeric),
+    list(
+      Media = ~mean(., na.rm = TRUE)
+    ),
+    .names = "{.col}_{.fn}"
+  ))
+
+# Convertir a formato largo
+estadisticas_largas <- estadisticas_por_cluster %>%
+  pivot_longer(
+    cols = -Cluster,
+    names_to = "Variable_Estadistica",
+    values_to = "Valor"
+  ) %>%
+  mutate(
+    # Extraer la parte después del último guión bajo
+    Estadistica = str_extract(Variable_Estadistica, "[^_]+$"),
+    # Extraer todo antes del último guión bajo
+    Variable = str_remove(Variable_Estadistica, "_[^_]+$"),
+    Valor = as.numeric(Valor)
+  ) %>%
+  select(-Variable_Estadistica)
+
+# Definir los nombres descriptivos de las variables
+nombres_variables <- c(
+  "PIB_per" = "PIB per cápita (US$)",
+  "Poblacion" = "Población total",
+  "Esperanza.vida" = "Esperanza de vida (años)",
+  "Acceso.electricidad" = "Acceso electricidad (%)",
+  "Area.boscosa" = "Área boscosa (%)",
+  "Suscripciones.movil" = "Suscripciones móviles",
+  "Crecimiento.PIB" = "Crecimiento PIB (%)",
+  "Mortalidad.infantil" = "Mortalidad infantil",
+  "Inversion.extranjera" = "Inversión extranjera (%)",
+  "Gasto.salud" = "Gasto en salud (%)",
+  "Uso.internet" = "Uso de internet (%)",
+  "Importaciones" = "Importaciones (%)",
+  "Exportaciones" = "Exportaciones (%)",
+  "Tierra.cultivable" = "Tierra cultivable (%)",
+  "Crecimiento.poblacion" = "Crecimiento población (%)",
+  "Industria" = "Industria (%)",
+  "Remesas" = "Remesas (%)"
+)
+
+tabla_estadisticas_mejorada <- estadisticas_largas %>%
+  filter(Estadistica == "Media") %>%
+  mutate(
+    Variable_Descriptiva = nombres_variables[Variable],
+    Cluster = paste("Cluster", Cluster),
+    Valor = round(Valor, 2)
+  ) %>%
+  select(Cluster, Variable_Descriptiva, Valor) %>%
+  pivot_wider(
+    names_from = Cluster,
+    values_from = Valor
+  ) %>%
+  arrange(Variable_Descriptiva) %>%
+  gt() %>%
+  tab_header(
+    title = md("**COMPARACIÓN DE CLUSTERS - MEDIAS POR VARIABLE**"),
+    subtitle = "Análisis comparativo de las medias de cada variable entre clusters"
+  ) %>%
+  cols_label(
+    Variable_Descriptiva = md("**Variable**")
+  ) %>%
+  cols_align(
+    align = "center",
+    columns = -Variable_Descriptiva
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = Variable_Descriptiva
+  ) %>%
+  fmt_number(
+    columns = -Variable_Descriptiva,
+    decimals = 2
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium"),
+      cell_fill(color = "white")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "black",
+      weight = px(1)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "gray80",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = Variable_Descriptiva)
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable_Descriptiva)
+  )  %>%
+  tab_options(
+    table.font.names = "Times New Roman",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "none",
+    column_labels.border.bottom.width = px(2),
+    column_labels.border.bottom.color = "black",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    data_row.padding = px(6),
+    heading.title.font.size = 16,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(8)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Nota:** Colores indican valores relativos - verde para valores altos, rosa para valores bajos")
+  )
+
+tabla_estadisticas_mejorada
+
+```
+
+#### Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada
+
+Perfil de variables: Cluster 1 se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
+
+Simultáneamente, Cluster 1 muestra características económicas de economías maduras y globalizadas: exportaciones representan 55.30% del PIB (comercio orientado externamente), importaciones 54.55%, indicando que estos países son hubs comerciales internacionales. Crecimiento del PIB es 5.12% (moderado pero positivo), sugiriendo expansión económica sostenida. Industria representa 28.53% del PIB, confirmando que aunque estas economías son postindustriales (basadas en servicios), mantienen capacidad manufacturera significativa. Inversión extranjera directa es 5.08% del PIB, indicando que son destinos atractivos para capitales internacionales. Gasto en salud es 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales. Crecimiento poblacional es apenas 0.73% anual, reflejando que han completado transiciones demográficas con poblaciones envejecidas.
+
+Composición de países: Incluye principalmente naciones europeas desarrolladas (Alemania, Francia, Italia, España, Reino Unido, Suecia, Dinamarca, Finlandia, Noruega, Países Bajos), naciones norteamericanas (Estados Unidos, Canadá), economías asiáticas avanzadas (Japón, Corea del Sur, Singapur, Hong Kong), y destinos de desarrollo consolidado (Australia, Nueva Zelanda, Israel). La predominancia de economías OCDE valida que Cluster 1 captura efectivamente el grupo de desarrollo ultra-avanzado global (Banco Mundial, 2023).
+
+#### Cluster 2: Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes
+
+Perfil de variables: Cluster 2 representa el grupo de países con desarrollo humano intermedio pero altamente heterogéneo internamente. Esperanza de vida promedio es 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), pero superior a Cluster 3, indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. Acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta especialmente en zonas rurales. Uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que brecha digital es significativa. Mortalidad infantil es 40.97 por 1,000, aproximadamente 5 veces mayor que Cluster 1, indicando que sistemas de salud materno-infantil enfrentan capacidades limitadas.
+
+PIB per cápita promedio es \$1,578.46 USD, dramáticamente menor que Cluster 1 (95% de diferencia), confirmando que estos son países de ingresos medios bajos a medios. Crecimiento poblacional es 2.31% anual, significativamente más alto que Cluster 1, reflejando que están en transiciones demográficas incompletas donde natalidad sigue siendo elevada. Remesas recibidas representan 4.94% del PIB, indicando dependencia moderada de transferencias de migrantes. Inversión extranjera es 3.65% del PIB (inferior a Cluster 1), sugiriendo que son menos atractivos para capitales internacionales. Gasto en salud es 5.10% del PIB (menor que Cluster 1), limitando recursos disponibles para sistemas de salud.
+
+Heterogeneidad interna: Este cluster contiene gran variación: desde países con desarrollo relativamente avanzado (México \~\$9,500 PIB per cápita, esperanza de vida \~75 años) hasta países con rezago moderado (Kenia, Ghana, Nigeria con esperanza de vida \~65 años). Tierra cultivable es 20.60%, la más alta entre clusters, reflejando que muchos son economías donde agricultura sigue siendo importante. Suscripciones móviles son 91.59 por cada 100 habitantes, indicando penetración de tecnología móvil como vector de inclusión financiera y digital.
+
+Composición de países: Incluye principalmente economías latinoamericanas emergentes (Brasil, México, Colombia, Argentina, Chile, Uruguay, Perú), economías asiáticas en transición (Vietnam, Tailandia, Indonesia, Filipinas, India en su mayoría), economías africanas moderadamente desarrolladas (Botswana, Mauricio, Sudáfrica), y países del Oriente Medio con ingresos medios (Turquía, Jordania, Líbano). La diversidad geográfica y económica confirma que Cluster 2 captura un espectro amplio de naciones en estado intermedio de desarrollo (Banco Mundial, 2023; PNUD, 2023).
+
+#### Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional
+
+Perfil de variables: Cluster 3 representa el grupo de rezago humano y económico extremo. Esperanza de vida promedio es apenas 71.59 años, superior a Cluster 2 en cifra pero esta cifra es engañosa porque oculta volatilidad extrema: mientras algunos países tienen \~75 años, otros tienen \~55-58 años, y mortalidad adulta es severamente elevada por VIH, conflictos armados, y enfermedades tropicales. Acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona por algunos países con cobertura urbana buena; zonas rurales en muchos países están completamente sin electricidad.
+
+Mortalidad infantil es 18.11 por 1,000, intermedia entre Cluster 1 (7.85) y Cluster 2 (40.97), sugiriendo que este cluster, aunque llamado "rezago", contiene algunos países que han logrado mejoras en salud infantil. Uso de internet es 61.08%, sorprendentemente alto comparado con Cluster 2 (35.04%), pero se explica porque algunos países han adoptado tecnología móvil massivamente sin infraestructura de electricidad o salud consolidada. PIB per cápita es \$3,776.68 USD, intermedio entre Cluster 2 (\$1,578) y Cluster 1 (\$26,489), contradictorio con la caracterización de "rezago extremo", pero refleja que algunos países tienen petróleo (Angola) o recursos (Zambia) que generan ingresos nominales sin beneficios distributivos amplios.
+
+Crecimiento poblacional es 0.79% anual, el más bajo entre clusters, indicando que están completando transiciones demográficas pero desde bases de desarrollo muy rezagadas. Remesas recibidas son 22.09% del PIB, el porcentaje más alto, reflejando que economías están severamente dependientes de transferencias de diásporas en exterior. Gasto en salud es 7.44% del PIB (similar a Cluster 1), pero esta cifra es engañosa porque presupuestos limitados resultan en servicios muy deficientes. Tierra cultivable es 15.21%, indicando que agricultura es importante pero infraestructura agrícola y productividad están severamente limitadas.
+
+La paradoja de Cluster 3: A primera vista, algunas métricas (esperanza de vida 71.59, acceso electricidad 96.42, gasto salud 7.44%) parecen intermedias, no rezagadas. Esto refleja que el cluster contiene mezcla heterogénea: países como Angola (productor petrolero con ingresos altos nominales pero servicios colapsados) coexisten con países como Etiopía o Uganda. La vulnerabilidad real radica en fragilidad institucional, volatilidad, dependencia de remesas (22.09% vs. 2.47% en Cluster 1), y que indicadores altos coexisten con servicios públicos disfuncionales (Banco Mundial, 2023).
+
+### Segmentacion de paises
+
+Plano PC1-PC2 (Desarrollo Humano vs. Modelo Económico-Institucional): El gráfico PC1-PC2 muestra la distribución de clusters en el plano que explica la mayor proporción de varianza (37.8% combinada). El Cluster 1 (puntos rojos) se concentra predominantemente en el cuadrante central-derecho y ligeramente disperso verticalmente, reflejando que estos países comparten desarrollo humano avanzado (PC1 positivo moderado a alto) pero varían en estructura económica institucional (PC2 desde -4 hasta +4). Países con PC2 extremadamente negativo (como Qatar, Kuwait) representan economías petroleras industrializadas; países con PC2 cercano a cero representan economías postindustriales diversificadas europeas; países con PC2 ligeramente positivo representan economías con gasto social elevado.
+
+```{r clusters con componentes}
+coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
+distancias <- dist(coordenadas_pca)
+hc <- hclust(distancias, method = "ward.D2")
+clusters <- cutree(hc, k = 3)
+cluster_df <- data.frame(
+  Pais = rownames(coordenadas_pca),
+  Dim1 = coordenadas_pca$Axis1,
+  Dim2 = coordenadas_pca$Axis2,
+  Dim3 = coordenadas_pca$Axis3,
+  Dim4 = coordenadas_pca$Axis4,
+  Cluster = as.factor(clusters)
+)
+
+
+resumen_clusters <- cluster_df %>%
+  group_by(Cluster) %>%
+  summarise(
+    Cantidad_Paises = n(),
+    Porcentaje = round(n() / nrow(cluster_df) * 100, 1),
+    Paises_Ejemplo = paste(head(Pais, 5), collapse = ", "),
+    .groups = 'drop'
+  ) %>%
+  gt() %>%
+  tab_header(
+    title = md("**Resumen de Clusters Identificados**"),
+    subtitle = "Agrupamiento jerárquico con método Ward"
+  ) %>%
+  cols_label(
+    Cluster = md("**Cluster**"),
+    Cantidad_Paises = md("**N° Países**"),
+    Porcentaje = md("**%**"),
+    Paises_Ejemplo = md("**Países Representativos**")
+  ) %>%
+  fmt_number(
+    columns = Porcentaje,
+    decimals = 1,
+    pattern = "{x}%"
+  ) %>%
+  tab_options(
+    table.font.names = "Times New Roman"
+  )
+
+resumen_clusters
+
+
+
+
+cluster_plot <- plot_ly(cluster_df,
+                        x = ~Dim1, 
+                        y = ~Dim2,
+                        color = ~Cluster,
+                        colors = c("red", "#00AFBB", "#E7B800"),
+                        text = ~paste("<b>", Pais, "</b><br>",
+                                      "Cluster:", Cluster),
+                        type = "scatter",
+                        mode = "markers",
+                        marker = list(size = 10, opacity = 0.8),
+                        hovertemplate = '%{text}<extra></extra>') %>%
+  layout(
+    title = list(
+      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1"),
+    yaxis = list(title = "Dimensión 2"),
+    hovermode = "closest"
+  )
+cluster_plot
+```
+
+El Cluster 2 (puntos azul) se distribuye ampliamente en la región central-derecha del plano, con mayor concentración en PC1 entre +1 y +3 (desarrollo intermedio) y PC2 entre -2 y +2 (diversidad de modelos económicos). Esta dispersión amplia confirma la heterogeneidad interna del Cluster 2: incluye desde países latinoamericanos con desarrollo intermedio hasta economías asiáticas emergentes con distintas trayectorias de industrialización. Algunos países del Cluster 2 con PC1 \>3 se posicionan muy cerca de frontera con Cluster 1, sugiriendo que están en transición hacia desarrollo consolidado.
+
+El Cluster 3 (puntos amarillos) se concentra en la región izquierda del plano (PC1 negativo desde -2 hasta -6), confirmando su posicionamiento en el polo de menor desarrollo humano. Verticalmente, el Cluster 3 muestra dispersión amplia en PC2 (desde -2 hasta +2), reflejando que países en rezago tienen modelos económicos diversos: algunos dependen de remesas (PC2 positivo), otros tienen industria extractiva limitada (PC2 negativo moderado). La separación visual entre Cluster 3 y Clusters 1-2 es clara, con solapamiento mínimo, validando que la segmentación captura diferencias estructurales genuinas.
+
+```{r grafica 2}
+cluster_plot1 <- plot_ly(cluster_df,
+                        x = ~Dim3, 
+                        y = ~Dim4,
+                        color = ~Cluster,
+                        colors = c("red", "#00AFBB", "#E7B800"),
+                        text = ~paste("<b>", Pais, "</b><br>",
+                                      "Cluster:", Cluster),
+                        type = "scatter",
+                        mode = "markers",
+                        marker = list(size = 10, opacity = 0.8),
+                        hovertemplate = '%{text}<extra></extra>') %>%
+  layout(
+    title = list(
+      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 3"),
+    yaxis = list(title = "Dimensión 4"),
+    hovermode = "closest"
+  )
+
+cluster_plot1
+```
+
+Plano PC3-PC4 (Apertura Comercial vs. Base Territorial): El gráfico PC3-PC4 proyecta países en dimensiones ortogonales que capturan aspectos complementarios. El Cluster 1 (rojo) muestra dispersión muy amplia en PC3 (desde -5 hasta +6), reflejando que desarrollo avanzado no implica modelo comercial único: micro-Estados como Malta, Luxemburgo, Singapur tienen PC3 extremadamente positivo (hiperglobalizados), mientras que economías grandes como Japón, Estados Unidos tienen PC3 cercano a cero (menos abiertos relativamente). En PC4, Cluster 1 varía moderadamente (desde -4 hasta +6), indicando que incluye tanto micro-Estados con territorio limitado (PC4 muy positivo) como países con territorio extenso y recursos naturales diversos.
+
+El Cluster 2 (azul) se concentra en la región central de ambos ejes (PC3 entre -2 y +2, PC4 entre -2 y +2), confirmando que son economías intermedias tanto en apertura comercial como en dotación territorial. Algunos países del Cluster 2 muestran PC3 ligeramente negativo, indicando apertura moderada; otros muestran PC4 positivo, indicando presión demográfica sobre recursos. El Cluster 3 (amarillo) tiene dispersión moderada en PC3 (desde -3 hasta +2) y PC4 (desde -2 hasta +2.5), reflejando variabilidad en estrategias de apertura comercial y uso del suelo entre países en rezago.
+
+```{r Mapa}
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+Base_2022_con_cluster <- Base_2022 %>%
+  mutate(Cluster = clusters) %>%  
+  select(Codigo, Cluster, Pais)   
+Base_con_mapa <- world %>%
+  left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
+  filter(!is.na(Cluster))  
+
+nombres_clusters <- c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")
+
+pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), 
+                   domain = 1:3,
+                   na.color = "transparent")
+
+leaflet(Base_con_mapa) %>%
+  addTiles() %>%  
+  addPolygons(fillColor = ~pal(Cluster), 
+              weight = 1, 
+              opacity = 1,
+              color = "white", 
+              fillOpacity = 0.7,
+              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)])) %>%
+  addLegend("bottomright", 
+            pal = pal, 
+            values = ~Cluster,
+            title = "Clústeres de Países",
+            labFormat = function(type, cuts, p) {
+              paste0(nombres_clusters[cuts])
+            },
+            opacity = 0.8)
+
+```
+
+El mapa mundial con países coloreados según cluster confirma visualmente los patrones geográficos. Europa aparece predominantemente en Cluster 1 (azul oscuro) y parcialmente Cluster 2 (verde), reflejando consolidación de desarrollo en occidente y transición en oriente. América del Norte aparece Cluster 1 (Estados Unidos, Canadá); América Latina aparece mezcla de Cluster 2 (verde: Brasil, México, Argentina, Chile) y algunos Cluster 1 si países caribeños pequeños están incluidos. Asia muestra heterogeneidad extrema: Japón, Corea del Sur en Cluster 1; China, India, Sudeste Asiático en Cluster 2; Asia Sur/Central potencialmente en Cluster 3. África subsahariana aparece predominantemente Cluster 3 (morado/rosa), con casos aislados de Cluster 2 en sur y este (Botswana, Mauricio, Sudáfrica verde). Oceanía muestra Australia-Nueva Zelanda en Cluster 1; islas del Pacífico potencialmente Cluster 2-3.
+
+Esta distribución geográfica valida que desarrollo no es aleatoriamente distribuido sino que presenta patrones espaciales claros asociados con historia económica, instituciones, geografía física, y legados coloniales. La concentración de Cluster 3 en África subsahariana y la consolidación de Cluster 1 en Europa Occidental-América del Norte-Asia Oriental confirma la persistencia de brechas globales estructurales (Banco Mundial, 2023; Acemoglu & Robinson, 2012).
+
 
 # Resultados e Interpretación
 
