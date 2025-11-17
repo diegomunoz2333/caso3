@@ -2764,11 +2764,11 @@ p %>%
 
 El análisis de los distintos indicadores revela una marcada heterogeneidad entre países. Aquellos que lideran en una métrica no necesariamente mantienen posiciones similares en otras. Por ejemplo, Noruega encabeza el PIB per cápita, mientras que el crecimiento económico destaca en países distintos; Malta sobresale en inversión extranjera y Nepal en remesas.
 
-La composición del top 15 varía según el indicador: las economías europeas dominan en PIB per cápita, pero en crecimiento, inversión o remesas surgen países de otras regiones. Además, las magnitudes y dispersiones difieren entre variables, lo que sugiere que cada indicador refleja dimensiones particulares del desempeño económico nacional.
+Las economías europeas dominan en PIB per cápita, pero en crecimiento, inversión o remesas surgen países de otras regiones. Además, las magnitudes y dispersiones difieren entre variables, lo que sugiere que cada indicador refleja dimensiones particulares del desempeño económico nacional.
 
 ### Dimensión Salud y Bienestar
 
-La Figura XX presenta la relación bidimensional entre esperanza de vida al nacer y mortalidad infantil, dos indicadores fundamentales del desempeño sanitario global. Estos indicadores capturan realidades complementarias: mientras la esperanza de vida refleja el resultado acumulado de mejoras en salud a lo largo de toda la vida, la mortalidad infantil es particularmente sensible a la calidad inmediata de la atención materno-infantil, acceso a saneamiento e infraestructura básica (WHO, 2020).
+La Figura 2 presenta la relación bidimensional entre esperanza de vida al nacer y mortalidad infantil, dos indicadores fundamentales del desempeño sanitario global. Estos indicadores capturan realidades complementarias: mientras la esperanza de vida refleja el resultado acumulado de mejoras en salud a lo largo de toda la vida, la mortalidad infantil es particularmente sensible a la calidad inmediata de la atención materno-infantil, acceso a saneamiento e infraestructura básica (WHO, 2020).
 
 El gráfico interactivo es especialmente informativo: al pasar el cursor sobre cada punto (país), se despliegan simultáneamente tres dimensiones de salud—esperanza de vida, mortalidad infantil y gasto público en salud—permitiendo identificar si los países con mejor desempeño en longevidad genuinamente invierten recursos en su sistema de salud o si tienen patrones anómalos.
 
@@ -2942,14 +2942,14 @@ p <- plot_ly(
       bgcolor = 'rgba(10,14,26,0.95)',
       bordercolor = '#00e5ff',
       borderwidth = 2,
-      x = 0.99,  # Más pegado al borde derecho
-      y = 0.99,  # Más pegado al borde superior
+      x = 0.99,  
+      y = 0.99,  
       xanchor = "right",
       yanchor = "top",
       font = list(size = 13, color = "#e0e6ed")
     ),
     
-    margin = list(l = 80, r = 120, b = 60, t = 100),  # Margen derecho reducido
+    margin = list(l = 80, r = 120, b = 60, t = 100),  
     
     hovermode = 'closest',
     
@@ -3896,6 +3896,425 @@ fig_treemap
 
 India y China dominan por volumen (rectángulos enormes), pero con dinámicas opuestas: India en amarillo-verde (crecimiento 1-2%) versus China en naranja-rojo (crecimiento bajo). Estados Unidos, Indonesia y Brasil exhiben colores intermedios, reflejando transiciones demográficas distintas. Países africanos como Congo Democrático, Nigeria y Uganda aparecen en verde brillante, indicando crecimiento rápido (oportunidades de dividendo demográfico pero también presión sobre servicios). Europeos como Alemania y España muestran tonos rojos-naranjas, evidenciando declive poblacional y envejecimiento. Esta distribución muestra que presiones demográficas operan en direcciones opuestas según región, información que contextualizará el análisis multivariado posterior.
 
+## Distribución de Indicadores por continente 
+
+Mientras que el análisis dimensional anterior examina indicadores de forma global, 
+es fundamental entender cómo varía la heterogeneidad DENTRO de cada continente. 
+Dos preguntas clave emergen: ¿Son los continentes entidades homogéneas o existen 
+disparidades profundas dentro de cada región? ¿Qué países actúan como outliers 
+casos atípicos que desafían el patrón regional y qué factores específicos 
+explican sus desviaciones?
+
+La siguiente visualización interactiva explora la istribución por región de 
+10 indicadores estratégicos seleccionados de las cinco dimensiones del desarrollo. 
+Para cada indicador y continente, se visualizan: (1) el boxplot que resume 
+la distribución central (mediana, cuartiles, rango intercuartil), (2) los puntos 
+normales que representan países dentro del rango esperado, y 
+(3) los outliers que identifican casos anómalos. 
+
+Al pasar el cursor sobre cualquier punto, se desplegan simultáneamente el nombre 
+del país, su valor específico, su continente y clasificación (normal u outlier). 
+Esta visualización interactiva permite explorar dinámicamente qué países rompen 
+los patrones regionales esperados, información crucial para identificar posteriormente 
+qué características específicas crean estas anomalías—revelación que el Análisis de 
+Componentes Principales posteriormente contextualizará dentro de la estructura 
+multidimensional del desarrollo.
+
+Selecciona cualquier indicador con el menú desplegable para explorar cómo varían 
+las disparidades regionales según la dimensión analizada.
+
+```{r box plot,  fig.height=7.2, fig.width=25, out.width="100%"}
+
+asignar_continentes <- function(data) {
+  continentes_map <- c(
+    "Argentina" = "Americas", "Bahamas, The" = "Americas", "Barbados" = "Americas",
+    "Belize" = "Americas", "Bolivia" = "Americas", "Brazil" = "Americas",
+    "Canada" = "Americas", "Chile" = "Americas", "Colombia" = "Americas",
+    "Costa Rica" = "Americas", "Cuba" = "Americas", "Dominica" = "Americas",
+    "Dominican Republic" = "Americas", "Ecuador" = "Americas", "El Salvador" = "Americas",
+    "Grenada" = "Americas", "Guatemala" = "Americas", "Guyana" = "Americas",
+    "Haiti" = "Americas", "Honduras" = "Americas", "Jamaica" = "Americas",
+    "Mexico" = "Americas", "Nicaragua" = "Americas", "Panama" = "Americas",
+    "Paraguay" = "Americas", "Peru" = "Americas", "St. Kitts and Nevis" = "Americas",
+    "St. Lucia" = "Americas", "St. Vincent and the Grenadines" = "Americas",
+    "Suriname" = "Americas", "Trinidad and Tobago" = "Americas", "United States" = "Americas",
+    "Uruguay" = "Americas", "Venezuela, RB" = "Americas", "Antigua and Barbuda" = "Americas",
+    
+    "Albania" = "Europe", "Austria" = "Europe", "Belarus" = "Europe",
+    "Belgium" = "Europe", "Bosnia and Herzegovina" = "Europe", "Bulgaria" = "Europe",
+    "Croatia" = "Europe", "Cyprus" = "Europe", "Czech Republic" = "Europe",
+    "Czechia" = "Europe", "Denmark" = "Europe", "Estonia" = "Europe",
+    "Finland" = "Europe", "France" = "Europe", "Germany" = "Europe",
+    "Greece" = "Europe", "Hungary" = "Europe", "Iceland" = "Europe",
+    "Ireland" = "Europe", "Italy" = "Europe", "Kosovo" = "Europe",
+    "Latvia" = "Europe", "Lithuania" = "Europe", "Luxembourg" = "Europe",
+    "Malta" = "Europe", "Montenegro" = "Europe", "Netherlands" = "Europe",
+    "North Macedonia" = "Europe", "Norway" = "Europe", "Poland" = "Europe",
+    "Portugal" = "Europe", "Russian Federation" = "Europe", "Serbia" = "Europe",
+    "Slovak Republic" = "Europe", "Slovakia" = "Europe", "Slovenia" = "Europe",
+    "Spain" = "Europe", "Sweden" = "Europe", "Switzerland" = "Europe",
+    "Turkey" = "Europe", "Turkiye" = "Europe", "Ukraine" = "Europe",
+    "United Kingdom" = "Europe", "Armenia" = "Europe", "Azerbaijan" = "Europe",
+    "Georgia" = "Europe", "Moldova" = "Europe", "Romania" = "Europe",
+    "San Marino" = "Europe",
+    
+    "Afghanistan" = "Asia", "Bahrain" = "Asia", "Bangladesh" = "Asia",
+    "Bhutan" = "Asia", "Brunei Darussalam" = "Asia", "Cambodia" = "Asia",
+    "China" = "Asia", "Hong Kong SAR, China" = "Asia", "India" = "Asia",
+    "Indonesia" = "Asia", "Iran, Islamic Rep." = "Asia", "Iraq" = "Asia",
+    "Israel" = "Asia", "Japan" = "Asia", "Jordan" = "Asia",
+    "Kazakhstan" = "Asia", "Korea, Dem. People's rep." = "Asia", "Korea, Rep." = "Asia",
+    "Kuwait" = "Asia", "Kyrgyz Republic" = "Asia", "Lao PDR" = "Asia",
+    "Lebanon" = "Asia", "Macao SAR, China" = "Asia", "Malaysia" = "Asia",
+    "Maldives" = "Asia", "Mongolia" = "Asia", "Myanmar" = "Asia",
+    "Nepal" = "Asia", "Oman" = "Asia", "Pakistan" = "Asia",
+    "Philippines" = "Asia", "Qatar" = "Asia", "Saudi Arabia" = "Asia",
+    "Singapore" = "Asia", "Sri Lanka" = "Asia", "Syrian Arab Republic" = "Asia",
+    "Taiwan" = "Asia", "Tajikistan" = "Asia", "Thailand" = "Asia",
+    "Timor-Leste" = "Asia", "Turkmenistan" = "Asia", "United Arab Emirates" = "Asia",
+    "Uzbekistan" = "Asia", "Vietnam" = "Asia", "Viet Nam" = "Asia",
+    "West Bank and Gaza" = "Asia", "Yemen, Rep." = "Asia",
+    
+    "Algeria" = "Africa", "Angola" = "Africa", "Benin" = "Africa",
+    "Botswana" = "Africa", "Burkina Faso" = "Africa", "Burundi" = "Africa",
+    "Cabo Verde" = "Africa", "Cameroon" = "Africa", "Central African Republic" = "Africa",
+    "Chad" = "Africa", "Comoros" = "Africa", "Congo, Dem. Rep." = "Africa",
+    "Congo, Rep." = "Africa", "Cote d'Ivoire" = "Africa", "Djibouti" = "Africa",
+    "Egypt, Arab Rep." = "Africa", "Equatorial Guinea" = "Africa", "Eritrea" = "Africa",
+    "Eswatini" = "Africa", "Ethiopia" = "Africa", "Gabon" = "Africa",
+    "Gambia, The" = "Africa", "Ghana" = "Africa", "Guinea" = "Africa",
+    "Guinea-Bissau" = "Africa", "Kenya" = "Africa", "Lesotho" = "Africa",
+    "Liberia" = "Africa", "Libya" = "Africa", "Madagascar" = "Africa",
+    "Malawi" = "Africa", "Mali" = "Africa", "Mauritania" = "Africa",
+    "Mauritius" = "Africa", "Morocco" = "Africa", "Mozambique" = "Africa",
+    "Namibia" = "Africa", "Niger" = "Africa", "Nigeria" = "Africa",
+    "Rwanda" = "Africa", "Senegal" = "Africa", "Sierra Leone" = "Africa",
+    "Somalia" = "Africa", "South Africa" = "Africa", "South Sudan" = "Africa",
+    "Sudan" = "Africa", "Tanzania" = "Africa", "Togo" = "Africa",
+    "Tunisia" = "Africa", "Uganda" = "Africa", "Zambia" = "Africa",
+    "Zimbabwe" = "Africa",
+    
+    "Australia" = "Oceania", "Fiji" = "Oceania", "Kiribati" = "Oceania",
+    "Marshall Islands" = "Oceania", "Micronesia, Fed. Sts." = "Oceania",
+    "New Zealand" = "Oceania", "Palau" = "Oceania", "Samoa" = "Oceania",
+    "Solomon Islands" = "Oceania", "Tonga" = "Oceania", "Vanuatu" = "Oceania"
+  )
+  
+  data %>%
+    mutate(Continente = ifelse(Pais %in% names(continentes_map),
+                                continentes_map[Pais], NA))
+}
+
+# ========== FUNCIÓN: Detectar outliers ==========
+detectar_outliers <- function(data, var, grupo_col) {
+  data %>%
+    group_by(!!sym(grupo_col)) %>%
+    mutate(
+      Q1 = quantile(!!sym(var), 0.25, na.rm = TRUE),
+      Q3 = quantile(!!sym(var), 0.75, na.rm = TRUE),
+      IQR = Q3 - Q1,
+      limite_inferior = Q1 - 1.5 * IQR,
+      limite_superior = Q3 + 1.5 * IQR,
+      es_outlier = !!sym(var) < limite_inferior | !!sym(var) > limite_superior,
+      posicion_relativa = case_when(
+        !!sym(var) < limite_inferior ~ "Bajo",
+        !!sym(var) > limite_superior ~ "Alto",
+        TRUE ~ "Normal"
+      )
+    ) %>%
+    ungroup()
+}
+
+# ========== PREPARAR DATOS ==========
+datos_box <- Base_2022 %>%
+  asignar_continentes() %>%
+  filter(!is.na(Continente)) %>%
+  select(
+    Pais, Continente,
+    PIB_per, `Crecimiento PIB`, `Esperanza vida`,
+    `Mortalidad infantil`, `Acceso electricidad`, `Uso internet`,
+    `Inversion extranjera`, `Crecimiento poblacion`, `Gasto salud`, `Area boscosa`
+  )
+
+# ========== DEFINIR VARIABLES (SIN DUPLICAR) ==========
+vars_boxplot <- list(
+  list(var = "PIB_per", 
+       nombre = "PIB per cápita (US$)", 
+       color = "#00ff00"),
+  
+  list(var = "Crecimiento PIB", 
+       nombre = "Crecimiento PIB (% anual)", 
+       color = "#00d4ff"),
+  
+  list(var = "Esperanza vida", 
+       nombre = "Esperanza de vida (años)", 
+       color = "#ff00ff"),
+  
+  list(var = "Mortalidad infantil", 
+       nombre = "Mortalidad infantil (por 1,000)", 
+       color = "#ff3333"),
+  
+  list(var = "Acceso electricidad", 
+       nombre = "Acceso a electricidad (%)", 
+       color = "#00ffff"),
+  
+  list(var = "Uso internet", 
+       nombre = "Uso de internet (%)", 
+       color = "#ffff00"),
+  
+  list(var = "Inversion extranjera", 
+       nombre = "Inversión Extranjera (% PIB)", 
+       color = "#ff9900"),
+  
+  list(var = "Crecimiento poblacion", 
+       nombre = "Crecimiento poblacional (% anual)", 
+       color = "#ff00ff"),
+  
+  list(var = "Gasto salud", 
+       nombre = "Gasto en salud (% PIB)", 
+       color = "#00ff88"),
+  
+  list(var = "Area boscosa", 
+       nombre = "Área boscosa (% tierra)", 
+       color = "#00ff00")
+)
+
+# ========== CREAR FIGURA ==========
+p <- plot_ly()
+
+for (i in seq_along(vars_boxplot)) {
+  config <- vars_boxplot[[i]]
+  var_name <- config$var
+  nombre_variable <- config$nombre  # Guardar en variable local
+  color_variable <- config$color    # Guardar en variable local
+  
+  # Detectar outliers
+  datos_con_outliers <- detectar_outliers(datos_box, var_name, "Continente")
+  
+  # ===== TRACE 1: BOXPLOT =====
+  p <- p %>%
+    add_boxplot(
+      data = datos_con_outliers,
+      x = ~Continente,
+      y = as.formula(paste0("~`", var_name, "`")),
+      name = "Distribución",
+      marker = list(
+        color = color_variable,
+        opacity = 0.7,
+        size = 4
+      ),
+      line = list(color = color_variable, width = 2),
+      boxmean = FALSE,
+      visible = (i == 1),
+      showlegend = (i == 1),
+      hoverinfo = "y",
+      group = var_name,
+      quartilemethod = "inclusive"
+    )
+  
+  # ===== TRACE 2: SCATTER - TODOS LOS PUNTOS =====
+  datos_todos <- datos_con_outliers
+  
+  # Crear columnas temporales con los valores correctos
+  datos_todos$valor_actual <- datos_todos[[var_name]]
+  datos_todos$nombre_var <- nombre_variable
+  datos_todos$color_var <- color_variable
+  
+  p <- p %>%
+    add_trace(
+      data = datos_todos,
+      x = ~Continente,
+      y = as.formula(paste0("~`", var_name, "`")),
+      mode = "markers",
+      type = "scatter",
+      marker = list(
+        color = color_variable,
+        size = ifelse(datos_todos$es_outlier, 10, 4),
+        opacity = ifelse(datos_todos$es_outlier, 0.9, 0.25),
+        symbol = ifelse(datos_todos$es_outlier, "diamond", "circle"),
+        line = list(
+          color = ifelse(datos_todos$es_outlier, "#ffffff", "rgba(255,255,255,0)"),
+          width = ifelse(datos_todos$es_outlier, 1, 0)
+        )
+      ),
+      text = paste0(
+        "<b style='font-size:13px; color:#00e5ff;'>", datos_todos$Pais, "</b><br>",
+        "<span style='color:#8b92a0; font-size:11px;'>", datos_todos$Continente, "</span><br><br>",
+        "<b style='color:#e0e6ed;'>", datos_todos$nombre_var, ":</b><br>",
+        "<span style='color:", datos_todos$color_var, "; font-size:13px; font-weight:bold;'>",
+        round(datos_todos$valor_actual, 2),
+        "</span><br>",
+        ifelse(
+          datos_todos$es_outlier,
+          paste0("<span style='color:#ffff00; font-size:11px;'>⚠ OUTLIER (", datos_todos$posicion_relativa, ")</span>"),
+          "<span style='color:#a259ff; font-size:10px;'>✓ Normal</span>"
+        )
+      ),
+      hovertemplate = "%{text}<extra></extra>",
+      showlegend = FALSE,
+      visible = (i == 1),
+      group = var_name
+    )
+}
+
+# ========== LAYOUT ==========
+p %>%
+  layout(
+    title = list(
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 6: Distribución de Indicadores por Región</b><br>
+               <span style='color:#8b92a0; font-size:12px;'>PIB per cápita (US$) | Año 2022 | ◇ Diamantes = Outliers | Pasa el cursor para detalles</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.96
+    ),
+    
+    xaxis = list(
+      title = "<b style='font-size:13px; color:#00e5ff;'>Continente</b>",
+      tickfont = list(color = '#e0e6ed', size = 12),
+      titlefont = list(color = '#00e5ff', size = 13),
+      showgrid = FALSE,
+      showline = TRUE,
+      linewidth = 0.8,
+      linecolor = '#00e5ff',
+      categoryorder = "array",
+      categoryarray = c("Africa", "Americas", "Asia", "Europe", "Oceania")
+    ),
+    
+    yaxis = list(
+      title = "<b style='font-size:13px; color:#00e5ff;'>PIB per cápita (US$)</b>",
+      tickfont = list(color = '#8b92a0', size = 10),
+      titlefont = list(color = '#00e5ff', size = 13),
+      gridcolor = '#1a1a3e',
+      showgrid = TRUE,
+      gridwidth = 0.4,
+      zeroline = FALSE
+    ),
+    
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 11),
+    
+    legend = list(
+      bgcolor = 'rgba(10,14,26,0.95)',
+      bordercolor = '#00e5ff',
+      borderwidth = 1.5,
+      x = 0.02,
+      y = 0.98,
+      font = list(size = 11, color = "#00e5ff"),
+      orientation = "v"
+    ),
+    
+    margin = list(l = 80, r = 50, b = 80, t = 130),
+    hovermode = 'closest',
+    
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.98)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 11, family = "Arial"),
+      align = "left",
+      namelength = -1
+    ),
+    
+    updatemenus = list(
+      list(
+        buttons = lapply(seq_along(vars_boxplot), function(i) {
+          config <- vars_boxplot[[i]]
+          var_name <- config$var
+          
+          n_vars <- length(vars_boxplot)
+          visible_list <- rep(FALSE, n_vars * 2)
+          
+          visible_list[(i-1)*2 + 1] <- TRUE
+          visible_list[(i-1)*2 + 2] <- TRUE
+          
+          list(
+            label = strsplit(config$nombre, " \\(")[[1]][1],
+            method = "update",
+            args = list(
+              list(visible = visible_list),
+              list(
+                title = list(
+                  text = paste0(
+                    "<b style='color:#00e5ff; font-size:20px;'>Figura 6: Distribución de Indicadores por Región</b><br>",
+                    "<span style='color:#8b92a0; font-size:12px;'>",
+                    config$nombre,
+                    " | Año 2022 | ◇ Diamantes = Outliers | Pasa el cursor para detalles</span>"
+                  ),
+                  x = 0.5,
+                  xanchor = 'center',
+                  y = 0.96
+                ),
+                "yaxis.title" = paste0("<b style='font-size:13px; color:#00e5ff;'>", config$nombre, "</b>")
+              )
+            )
+          )
+        }),
+        
+        direction = "down",
+        pad = list(r = 10, t = 10),
+        showactive = TRUE,
+        x = 0.01,
+        xanchor = "left",
+        y = 1.10,
+        yanchor = "top",
+        bgcolor = "rgba(162, 89, 255, 0.25)",
+        bordercolor = "#a259ff",
+        borderwidth = 1.5,
+        font = list(size = 10, color = "#a259ff", family = "Arial"),
+        active = 0
+      )
+    ),
+    
+    annotations = list(
+      list(
+        x = 0.01,
+        y = 1.15,
+        xref = "paper",
+        yref = "paper",
+        text = "<b style='color:#00e5ff; font-size:11px; text-transform:uppercase; letter-spacing:1px;'>📊 Selecciona indicador:</b>",
+        showarrow = FALSE,
+        xanchor = "left",
+        yanchor = "top",
+        font = list(size = 11)
+      ),
+      list(
+        x = 0.5,
+        y = -0.14,
+        xref = "paper",
+        yref = "paper",
+        text = "<span style='color:#8b92a0; font-size:10px;'>
+                 <b>━</b> Caja (Q1-Q3) = 50% central | 
+                 <b>─</b> Líneas = Rango esperado | 
+                 <b>●</b> Puntos = Países dentro del rango | 
+                 <b>◇</b> Diamantes = Valores atípicos (outliers)
+               </span>",
+        showarrow = FALSE,
+        xanchor = "center",
+        yanchor = "top",
+        align = "center"
+      )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "figura_6_distribucion_continentes_2022",
+      width = 1600,
+      height = 900
+    )
+  )
+
+```
+
+La visualización anterior revela heterogeneidad significativa dentro de cada continente, desafiando la noción de bloques regionales homogéneos. En Africa, la dispersión es particularmente amplia en indicadores de salud: mientras algunos países aproximan estándares europeos en esperanza de vida, otros enfrentan desafíos críticos en mortalidad infantil. Americas muestra un patrón bifurcado donde algunos países desarrollados contrastan dramáticamente con economías emergentes, ejemplo: Bolivia registra esperanza de vida por debajo del promedio regional. En Asia, la heterogeneidad es extrema—Qatar emerge como outlier en crecimiento poblacional (5.91% anual, reflejo de inmigración laboral), mientras otros países asiáticos presentan dinámicas demográficas moderadas. Europe mantiene relativa homogeneidad en indicadores de bienestar, aunque Malta destaca como outlier extremo en inversión extranjera directa (126% del PIB, característico de economías muy pequeñas y financieras). En Oceania, la dispersión limitada contrasta con puntos aislados como Solomon Islands, con cobertura forestal excepcional.
+Estos patrones evidencian que el desarrollo no se distribuye geográficamente de forma uniforme sino que responde a factores estructurales, institucionales y geopolíticos específicos—información que el análisis multidimensional posterior contextualizará dentro de constructos sintéticos mediante componentes principales.
+
+
 ## Visualización Geoespacial
 
 La visualización geoespacial complementa el análisis dimensional anterior ofreciendo una perspectiva geográfica integrada que revela cómo las dinámicas de desarrollo se distribuyen espacialmente en el planeta. Esta sección presenta un mapa interactivo mundial donde cada territorio se colorea según el indicador seleccionado, permitiendo identificar patrones de concentración geográfica, grupos regionales y anomalías que anticipan la estructura latente del desarrollo global.
@@ -4227,7 +4646,7 @@ htmltools::tagList(
       text-transform: uppercase;
       letter-spacing: 2px;
     ">
-       Figura 6: Distribución Geoespacial de Indicadores de Desarrollo Global 2022
+       Figura 7: Distribución Geoespacial de Indicadores de Desarrollo Global 2022
     </div>'
   ),
   mapa
@@ -4307,7 +4726,7 @@ heatmap_interactivo <- plot_ly(
 ) %>%
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 7: Matriz de Correlaciones Multidimensional</b><br>
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 8: Matriz de Correlaciones Multidimensional</b><br>
              <span style='color:#8b92a0; font-size:13px;'>17 Variables de Desarrollo Global | Año 2022</span>",
       x = 0.05,
       y = 0.95,
@@ -4759,7 +5178,7 @@ g <- ggplot(eig_df, aes(x = Componente, y = Varianza)) +
   geom_text(aes(label = round(Varianza, 1)), color = "#ffffff", vjust = -0.4, fontface = "bold", size = 4) +
   theme_cyber() +
   labs(
-    title = "Figura 8: Varianza Explicada por Componente Principal",
+    title = "Figura 9: Varianza Explicada por Componente Principal",
     subtitle = "Autovalores del análisis de componentes principales",
     x = "Componentes Principales",
     y = "Porcentaje de Varianza Explicada (%)"
@@ -5039,7 +5458,7 @@ p1 <- plot_ly(ind_df,
   
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 9: Análisis de Componentes Principales</b><br>
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 10: Análisis de Componentes Principales</b><br>
              <span style='color:#8b92a0; font-size:14px;'>Individuos: Dimensión 1 vs Dimensión 2 | Coloreado por Contribución a Dim 1</span>",
       x = 0.5,
       xanchor = 'center',
@@ -5148,7 +5567,7 @@ p2 <- plot_ly(ind_df,
   
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 10: Análisis de Componentes Principales</b><br>
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 11: Análisis de Componentes Principales</b><br>
              <span style='color:#8b92a0; font-size:14px;'>Individuos: Dimensión 3 vs Dimensión 4 | Coloreado por Contribución a Dim 3</span>",
       x = 0.5,
       xanchor = 'center',
@@ -5290,7 +5709,7 @@ p1 <- plot_ly(var_df,
   
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 11: Variables-Dimensión 1 vs Dimensión 2</b><br>
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 12: Variables-Dimensión 1 vs Dimensión 2</b><br>
              <span style='color:#8b92a0; font-size:14px;'>Coloreado por Contribución a Dimensión 1</span>",
       x = 0.5,
       xanchor = 'center',
@@ -5416,7 +5835,7 @@ p2 <- plot_ly(var_df,
   
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 12: Variables-Dimensión 3 vs Dimensión 4</b><br>
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 13: Variables-Dimensión 3 vs Dimensión 4</b><br>
              <span style='color:#8b92a0; font-size:14px;'>Coloreado por Contribución a Dimensión 3</span>",
       x = 0.5,
       xanchor = 'center',
@@ -5602,7 +6021,7 @@ p1 <- plot_ly() %>%
   
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:22px;'>Figura 13: Biplot-Dimensión 1 vs Dimensión 2</b><br>
+      text = "<b style='color:#00e5ff; font-size:22px;'>Figura 14: Biplot-Dimensión 1 vs Dimensión 2</b><br>
              <span style='color:#8b92a0; font-size:13px;'></span>",
       x = 0.5,
       xanchor = 'center',
@@ -5742,7 +6161,7 @@ p2 <- plot_ly() %>%
   
   layout(
     title = list(
-      text = "<b style='color:#00e5ff; font-size:22px;'>Figura 14: Biplot-Dimensión 3 vs Dimensión 4</b><br>
+      text = "<b style='color:#00e5ff; font-size:22px;'>Figura 15: Biplot-Dimensión 3 vs Dimensión 4</b><br>
              <span style='color:#8b92a0; font-size:13px;'></span>",
       x = 0.5,
       xanchor = 'center',
