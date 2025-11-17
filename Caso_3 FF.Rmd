@@ -6589,7 +6589,6 @@ elbow_data <- data.frame(
   wss = wss_values
 )
 
-# ========== GRÁFICO CON GGPLOT2 ==========
 elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
   geom_line(size = 1.3, color = "#00e5ff") +
   geom_point(size = 4, color = "#00e5ff", alpha = 0.85) +
@@ -6603,13 +6602,11 @@ elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
   scale_x_continuous(breaks = 1:10) +
   theme_minimal(base_size = 12) +
   theme(
-    # ========== FONDOS ==========
     plot.background = element_rect(fill = "#000000", color = NA),
     panel.background = element_rect(fill = "#0a0e1a", color = NA),
     panel.grid.major = element_line(color = "#12161f", size = 0.4),
     panel.grid.minor = element_line(color = "#12161f", size = 0.2),
     
-    # ========== EJES ==========
     axis.title = element_text(
       face = "bold",
       color = "#e0e6ed",
@@ -6624,7 +6621,6 @@ elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
       size = 0.6
     ),
     
-    # ========== TÍTULOS ==========
     plot.title = element_text(
       face = "bold",
       size = 16,
@@ -6637,7 +6633,6 @@ elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
       color = "#8b92a0"
     ),
     
-    # ========== BORDES ==========
     panel.border = element_rect(
       color = "#00e5ff",
       fill = NA,
@@ -6647,13 +6642,11 @@ elbow_plot <- ggplot(elbow_data, aes(x = k, y = wss)) +
     plot.margin = margin(20, 20, 20, 20)
   )
 
-# ========== CONVERSIÓN A PLOTLY CON ESTILOS CYBER ==========
 elbow_plot_interactive <- ggplotly(
   elbow_plot,
   tooltip = c("x", "y")
 ) %>%
   layout(
-    # ========== TÍTULOS ==========
     title = list(
       text = "<b style='color:#00e5ff; font-size:18px;'>Figura 17: Método del Codo</b><br>
               <span style='color:#8b92a0; font-size:12px;'>Determinación del número óptimo de clusters | WCSS por k</span>",
@@ -6662,7 +6655,6 @@ elbow_plot_interactive <- ggplotly(
       y = 0.98
     ),
     
-    # ========== EJES ==========
     xaxis = list(
       title = "<b style='color:#e0e6ed; font-size:13px;'>Número de Clusters (k)</b>",
       gridcolor = "#12161f",
@@ -6687,13 +6679,10 @@ elbow_plot_interactive <- ggplotly(
       linewidth = 1
     ),
     
-    # ========== FONDOS ==========
     plot_bgcolor = "#000000",
     paper_bgcolor = "#0a0e1a",
     
-    # ========== ANOTACIONES ==========
     annotations = list(
-      # Anotación del codo (solo esto, sin interpretación)
       list(
         x = 3,
         y = max(wss_values) * 0.85,
@@ -6714,7 +6703,6 @@ elbow_plot_interactive <- ggplotly(
       )
     ),
     
-    # ========== HOVER ==========
     hovermode = "closest",
     hoverlabel = list(
       bgcolor = "rgba(10, 14, 26, 0.95)",
@@ -6727,10 +6715,8 @@ elbow_plot_interactive <- ggplotly(
       align = "left"
     ),
     
-    # ========== MÁRGENES ==========
     margin = list(l = 100, r = 50, b = 100, t = 160),
     
-    # ========== FUENTE ==========
     font = list(
       family = "Arial, sans-serif",
       color = "#e0e6ed",
@@ -6938,7 +6924,6 @@ estadisticas_por_cluster <- NuevaBase %>%
     .names = "{.col}_{.fn}"
   ))
 
-# Convertir a formato largo
 estadisticas_largas <- estadisticas_por_cluster %>%
   pivot_longer(
     cols = -Cluster,
@@ -7093,11 +7078,12 @@ La paradoja de Cluster 3: A primera vista, algunas métricas (esperanza de vida 
 
 Plano PC1-PC2 (Desarrollo Humano vs. Modelo Económico-Institucional): El gráfico PC1-PC2 muestra la distribución de clusters en el plano que explica la mayor proporción de varianza (37.8% combinada). El Cluster 1 (puntos rojos) se concentra predominantemente en el cuadrante central-derecho y ligeramente disperso verticalmente, reflejando que estos países comparten desarrollo humano avanzado (PC1 positivo moderado a alto) pero varían en estructura económica institucional (PC2 desde -4 hasta +4). Países con PC2 extremadamente negativo (como Qatar, Kuwait) representan economías petroleras industrializadas; países con PC2 cercano a cero representan economías postindustriales diversificadas europeas; países con PC2 ligeramente positivo representan economías con gasto social elevado.
 
-```{r clusters con componentes}
+```{r clusters-tabla-cyber}
 coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
 distancias <- dist(coordenadas_pca)
 hc <- hclust(distancias, method = "ward.D2")
 clusters <- cutree(hc, k = 3)
+
 cluster_df <- data.frame(
   Pais = rownames(coordenadas_pca),
   Dim1 = coordenadas_pca$Axis1,
@@ -7107,7 +7093,7 @@ cluster_df <- data.frame(
   Cluster = as.factor(clusters)
 )
 
-
+# ========== TABLA DE RESUMEN ==========
 resumen_clusters <- cluster_df %>%
   group_by(Cluster) %>%
   summarise(
@@ -7118,8 +7104,8 @@ resumen_clusters <- cluster_df %>%
   ) %>%
   gt() %>%
   tab_header(
-    title = md("**Resumen de Clusters Identificados**"),
-    subtitle = "Agrupamiento jerárquico con método Ward"
+    title = md("**Tabla XX**"),
+    subtitle = "Resumen de Clusters Identificados | Agrupamiento jerárquico con método Ward"
   ) %>%
   cols_label(
     Cluster = md("**Cluster**"),
@@ -7132,62 +7118,288 @@ resumen_clusters <- cluster_df %>%
     decimals = 1,
     pattern = "{x}%"
   ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", size = "medium", color = "#000000"),
+      cell_fill(color = "#00e5ff")
+    ),
+    locations = cells_column_labels()
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = c("top", "bottom"),
+      color = "#00e5ff",
+      weight = px(2)
+    ),
+    locations = list(
+      cells_column_labels(),
+      cells_body()
+    )
+  ) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "#00e5ff",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Cluster, Cantidad_Paises))
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#0a0e1a"),
+      cell_text(color = "#e0e6ed")
+    ),
+    locations = cells_body()
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold", color = "#00e5ff"),
+    locations = cells_body(columns = Cluster)
+  ) %>%
+  tab_style(
+    style = cell_text(size = "small", color = "#e0e6ed"),
+    locations = cells_body(columns = c(Cantidad_Paises, Porcentaje, Paises_Ejemplo))
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", color = "#00e5ff", size = "large")
+    ),
+    locations = cells_title(groups = "title")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(color = "#e0e6ed", size = "medium")
+    ),
+    locations = cells_title(groups = "subtitle")
+  ) %>%
   tab_options(
-    table.font.names = "Times New Roman"
+    table.font.names = "Arial",
+    table.width = pct(100),
+    table.border.top.style = "none",
+    table.border.bottom.style = "none",
+    column_labels.border.top.style = "solid",
+    column_labels.border.top.color = "#00e5ff",
+    column_labels.border.top.width = px(3),
+    column_labels.border.bottom.style = "solid",
+    column_labels.border.bottom.width = px(3),
+    column_labels.border.bottom.color = "#00e5ff",
+    table_body.border.bottom.style = "none",
+    table_body.border.top.style = "none",
+    table_body.hlines.style = "solid",
+    table_body.hlines.color = "#00e5ff",
+    table_body.hlines.width = px(1),
+    table.background.color = "#0a0e1a",
+    data_row.padding = px(10),
+    heading.title.font.size = 18,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(12),
+    heading.border.bottom.style = "solid",
+    heading.border.bottom.width = px(2),
+    heading.border.bottom.color = "#00e5ff",
+    footnotes.padding = px(10),
+    footnotes.font.size = 13,
+    source_notes.font.size = 13,
+    source_notes.padding = px(10)
+  ) %>%
+  tab_source_note(
+    source_note = md("**Fuentes:** Elaboración propia basada en agrupamiento Ward de componentes principales")
   )
 
 resumen_clusters
-
-
-
-
-cluster_plot <- plot_ly(cluster_df,
-                        x = ~Dim1, 
-                        y = ~Dim2,
-                        color = ~Cluster,
-                        colors = c("red", "#00AFBB", "#E7B800"),
-                        text = ~paste("<b>", Pais, "</b><br>",
-                                      "Cluster:", Cluster),
-                        type = "scatter",
-                        mode = "markers",
-                        marker = list(size = 10, opacity = 0.8),
-                        hovertemplate = '%{text}<extra></extra>') %>%
+```
+```{r clusters-scatter-cyber, fig.width=12, fig.height=8.2, out.width="100%"}
+cluster_plot <- plot_ly(
+  cluster_df,
+  x = ~Dim1,
+  y = ~Dim2,
+  color = ~Cluster,
+  colors = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"),
+  text = ~paste0(
+    "<b style='color:#00e5ff; font-size:13px;'>", Pais, "</b><br>",
+    "<span style='color:#a259ff; font-size:12px;'><b>Cluster:</b> ", Cluster, "</span><br>",
+    "<span style='color:#8b92a0; font-size:11px;'>Dim1: ", round(Dim1, 3), "</span><br>",
+    "<span style='color:#8b92a0; font-size:11px;'>Dim2: ", round(Dim2, 3), "</span>"
+  ),
+  type = "scatter",
+  mode = "markers",
+  marker = list(
+    size = 10,
+    opacity = 0.8,
+    line = list(width = 1.5, color = "#ffffff")
+  ),
+  hovertemplate = "%{text}<extra></extra>"
+) %>%
   layout(
     title = list(
-      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:18px;'>Figura 18: Clusters en el Espacio de Componentes Principales</b><br>
+              <span style='color:#8b92a0; font-size:12px;'>Proyección Dim1 vs Dim2 | Agrupamiento Ward (k=3)</span>",
+      x = 0.5,
+      xanchor = "center",
+      y = 0.98
     ),
-    xaxis = list(title = "Dimensión 1"),
-    yaxis = list(title = "Dimensión 2"),
-    hovermode = "closest"
+    xaxis = list(
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 1</b>",
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      showgrid = TRUE,
+      zeroline = TRUE,
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 1,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12),
+      linecolor = "#00e5ff",
+      linewidth = 1
+    ),
+    yaxis = list(
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 2</b>",
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      showgrid = TRUE,
+      zeroline = TRUE,
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 1,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12),
+      linecolor = "#00e5ff",
+      linewidth = 1
+    ),
+    plot_bgcolor = "#000000",
+    paper_bgcolor = "#0a0e1a",
+    font = list(
+      family = "Arial, sans-serif",
+      color = "#e0e6ed",
+      size = 12
+    ),
+    hovermode = "closest",
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    margin = list(l = 100, r = 50, b = 100, t = 140),
+    legend = list(
+      title = list(text = "<b style='color:#00e5ff; font-size:12px;'>Cluster</b>"),
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1.5,
+      font = list(color = "#e0e6ed", size = 11),
+      x = 0.98,
+      y = 0.98,
+      xanchor = "right",
+      yanchor = "top"
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "clusters_pca",
+      width = 1400,
+      height = 900
+    )
   )
+
 cluster_plot
 ```
-
 El Cluster 2 (puntos azul) se distribuye ampliamente en la región central-derecha del plano, con mayor concentración en PC1 entre +1 y +3 (desarrollo intermedio) y PC2 entre -2 y +2 (diversidad de modelos económicos). Esta dispersión amplia confirma la heterogeneidad interna del Cluster 2: incluye desde países latinoamericanos con desarrollo intermedio hasta economías asiáticas emergentes con distintas trayectorias de industrialización. Algunos países del Cluster 2 con PC1 \>3 se posicionan muy cerca de frontera con Cluster 1, sugiriendo que están en transición hacia desarrollo consolidado.
 
 El Cluster 3 (puntos amarillos) se concentra en la región izquierda del plano (PC1 negativo desde -2 hasta -6), confirmando su posicionamiento en el polo de menor desarrollo humano. Verticalmente, el Cluster 3 muestra dispersión amplia en PC2 (desde -2 hasta +2), reflejando que países en rezago tienen modelos económicos diversos: algunos dependen de remesas (PC2 positivo), otros tienen industria extractiva limitada (PC2 negativo moderado). La separación visual entre Cluster 3 y Clusters 1-2 es clara, con solapamiento mínimo, validando que la segmentación captura diferencias estructurales genuinas.
 
-```{r grafica 2}
-cluster_plot1 <- plot_ly(cluster_df,
-                        x = ~Dim3, 
-                        y = ~Dim4,
-                        color = ~Cluster,
-                        colors = c("red", "#00AFBB", "#E7B800"),
-                        text = ~paste("<b>", Pais, "</b><br>",
-                                      "Cluster:", Cluster),
-                        type = "scatter",
-                        mode = "markers",
-                        marker = list(size = 10, opacity = 0.8),
-                        hovertemplate = '%{text}<extra></extra>') %>%
+```{r clusters-dim3-dim4-cyber, fig.width=12, fig.height=8.2, out.width="100%"}
+cluster_plot1 <- plot_ly(
+  cluster_df,
+  x = ~Dim3,
+  y = ~Dim4,
+  color = ~Cluster,
+  colors = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"),
+  text = ~paste0(
+    "<b style='color:#00e5ff; font-size:13px;'>", Pais, "</b><br>",
+    "<span style='color:#a259ff; font-size:12px;'><b>Cluster:</b> ", Cluster, "</span><br>",
+    "<span style='color:#8b92a0; font-size:11px;'>Dim3: ", round(Dim3, 3), "</span><br>",
+    "<span style='color:#8b92a0; font-size:11px;'>Dim4: ", round(Dim4, 3), "</span>"
+  ),
+  type = "scatter",
+  mode = "markers",
+  marker = list(
+    size = 10,
+    opacity = 0.8,
+    line = list(width = 1.5, color = "#ffffff")
+  ),
+  hovertemplate = "%{text}<extra></extra>"
+) %>%
   layout(
     title = list(
-      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:18px;'>Figura 19: Clusters en el Espacio de Componentes Principales</b><br>
+              <span style='color:#8b92a0; font-size:12px;'>Proyección Dim3 vs Dim4 | Agrupamiento Ward (k=3)</span>",
+      x = 0.5,
+      xanchor = "center",
+      y = 0.98
     ),
-    xaxis = list(title = "Dimensión 3"),
-    yaxis = list(title = "Dimensión 4"),
-    hovermode = "closest"
+    xaxis = list(
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 3</b>",
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      showgrid = TRUE,
+      zeroline = TRUE,
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 1,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12),
+      linecolor = "#00e5ff",
+      linewidth = 1
+    ),
+    yaxis = list(
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 4</b>",
+      gridcolor = "#12161f",
+      gridwidth = 0.5,
+      showgrid = TRUE,
+      zeroline = TRUE,
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 1,
+      tickfont = list(color = "#8b92a0", size = 11),
+      titlefont = list(color = "#e0e6ed", size = 12),
+      linecolor = "#00e5ff",
+      linewidth = 1
+    ),
+    plot_bgcolor = "#000000",
+    paper_bgcolor = "#0a0e1a",
+    font = list(
+      family = "Arial, sans-serif",
+      color = "#e0e6ed",
+      size = 12
+    ),
+    hovermode = "closest",
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
+    ),
+    margin = list(l = 100, r = 50, b = 100, t = 140),
+    legend = list(
+      title = list(text = "<b style='color:#00e5ff; font-size:12px;'>Cluster</b>"),
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1.5,
+      font = list(color = "#e0e6ed", size = 11),
+      x = 0.98,
+      y = 0.98,
+      xanchor = "right",
+      yanchor = "top"
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "clusters_dim3_dim4",
+      width = 1400,
+      height = 900
+    )
   )
 
 cluster_plot1
@@ -7197,39 +7409,161 @@ Plano PC3-PC4 (Apertura Comercial vs. Base Territorial): El gráfico PC3-PC4 pro
 
 El Cluster 2 (azul) se concentra en la región central de ambos ejes (PC3 entre -2 y +2, PC4 entre -2 y +2), confirmando que son economías intermedias tanto en apertura comercial como en dotación territorial. Algunos países del Cluster 2 muestran PC3 ligeramente negativo, indicando apertura moderada; otros muestran PC4 positivo, indicando presión demográfica sobre recursos. El Cluster 3 (amarillo) tiene dispersión moderada en PC3 (desde -3 hasta +2) y PC4 (desde -2 hasta +2.5), reflejando variabilidad en estrategias de apertura comercial y uso del suelo entre países en rezago.
 
-```{r Mapa}
+```{r mapa-clusters-cyber, fig.height=7, fig.width=12, out.width="100%"}
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 Base_2022_con_cluster <- Base_2022 %>%
   mutate(Cluster = clusters) %>%  
   select(Codigo, Cluster, Pais)   
+
 Base_con_mapa <- world %>%
   left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
   filter(!is.na(Cluster))  
 
 nombres_clusters <- c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")
 
-pal <- colorFactor(palette = c("#2C5F8D", "#27AE60", "#8E44AD"), 
-                   domain = 1:3,
-                   na.color = "transparent")
+pal <- colorFactor(
+  palette = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"), 
+  domain = 1:3,
+  na.color = "#1a1a2e"
+)
 
-leaflet(Base_con_mapa) %>%
-  addTiles() %>%  
-  addPolygons(fillColor = ~pal(Cluster), 
-              weight = 1, 
-              opacity = 1,
-              color = "white", 
-              fillOpacity = 0.7,
-              popup = ~paste("País:", Pais, "<br>Clúster:", nombres_clusters[as.character(Cluster)])) %>%
-  addLegend("bottomright", 
-            pal = pal, 
-            values = ~Cluster,
-            title = "Clústeres de Países",
-            labFormat = function(type, cuts, p) {
-              paste0(nombres_clusters[cuts])
-            },
-            opacity = 0.8)
+mapa_clusters <- leaflet(
+  Base_con_mapa,
+  width = "100%",
+  height = "600px",
+  options = leafletOptions(
+    minZoom = 2,
+    maxZoom = 7,
+    worldCopyJump = TRUE
+  )
+) %>%
+  setView(lng = 15, lat = 20, zoom = 2.2) %>%
+  addProviderTiles("CartoDB.DarkMatter") %>%
+  addPolygons(
+    fillColor = ~pal(Cluster),
+    weight = 1.2,
+    opacity = 0.9,
+    color = "#00e5ff",
+    fillOpacity = 0.75,
+    popup = ~paste0(
+      "<div style='font-family: Arial; background: rgba(10, 14, 26, 0.95); padding: 12px; border-radius: 6px; border: 1px solid #00e5ff;'>",
+      "<strong style='color: #00e5ff; font-size: 14px;'>", Pais, "</strong><br/>",
+      "<span style='color: #8b92a0; font-size: 12px;'>─────────────────</span><br/>",
+      "<span style='color: #e0e6ed; font-size: 12px;'><b>Clúster:</b></span><br/>",
+      "<strong style='color: ", pal(Cluster), "; font-size: 13px;'>", nombres_clusters[as.character(Cluster)], "</strong>",
+      "</div>"
+    ),
+    popupOptions = popupOptions(
+      closeButton = TRUE,
+      className = "leaflet-popup-cyber"
+    ),
+    highlight = highlightOptions(
+      weight = 2.5,
+      color = "#00ffff",
+      fillOpacity = 0.9,
+      bringToFront = TRUE
+    ),
+    label = ~Pais,
+    labelOptions = labelOptions(
+      style = list(
+        "background" = "rgba(10, 14, 26, 0.95)",
+        "border" = "2px solid #00e5ff",
+        "border-radius" = "6px",
+        "padding" = "8px 12px",
+        "box-shadow" = "0 0 15px rgba(0, 229, 255, 0.6)",
+        "color" = "#00e5ff",
+        "font-weight" = "bold",
+        "font-size" = "12px"
+      ),
+      textsize = "12px"
+    )
+  ) %>%
+  addLegend(
+    "bottomright",
+    pal = pal,
+    values = ~Cluster,
+    title = "<span style='color: #00e5ff; font-weight: bold; text-transform: uppercase;'>🎯 Clústeres</span>",
+    labFormat = function(type, cuts, p) {
+      paste0(nombres_clusters[cuts])
+    },
+    opacity = 0.9,
+    className = "leaflet-legend-cyber"
+  )
 
+mapa_clusters <- mapa_clusters %>%
+  htmlwidgets::onRender("
+    function(el, x) {
+      // Estilizar leyenda
+      setTimeout(function() {
+        var legend = document.querySelector('.leaflet-legend-cyber');
+        if (legend) {
+          legend.style.background = 'linear-gradient(135deg, #0a0e1a, #12161f)';
+          legend.style.border = '2px solid #00e5ff';
+          legend.style.borderRadius = '10px';
+          legend.style.padding = '18px';
+          legend.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.9)';
+          legend.style.fontFamily = 'Arial, sans-serif';
+        }
+        
+        // Estilizar items de leyenda
+        var legendItems = document.querySelectorAll('.leaflet-legend-cyber span');
+        legendItems.forEach(function(item) {
+          item.style.color = '#e0e6ed';
+          item.style.fontSize = '12px';
+          item.style.fontWeight = '600';
+        });
+        
+        // Estilizar etiquetas de leyenda (colores)
+        var legendLabels = document.querySelectorAll('.leaflet-legend-cyber label');
+        legendLabels.forEach(function(label) {
+          label.style.color = '#e0e6ed';
+          label.style.fontSize = '12px';
+          label.style.fontWeight = '500';
+          label.style.margin = '6px 0';
+        });
+        
+        // Estilizar título
+        var legendTitle = document.querySelector('.leaflet-legend-cyber .legend-title');
+        if (legendTitle) {
+          legendTitle.style.color = '#00e5ff';
+          legendTitle.style.fontWeight = 'bold';
+          legendTitle.style.fontSize = '13px';
+          legendTitle.style.marginBottom = '10px';
+          legendTitle.style.textTransform = 'uppercase';
+          legendTitle.style.textShadow = '0 0 10px rgba(0, 229, 255, 0.5)';
+        }
+        
+        // Estilizar popup
+        var popup = document.querySelector('.leaflet-popup-cyber');
+        if (popup) {
+          popup.style.background = 'rgba(10, 14, 26, 0.95)';
+          popup.style.border = '2px solid #00e5ff';
+          popup.style.borderRadius = '8px';
+          popup.style.boxShadow = '0 8px 32px rgba(0, 229, 255, 0.6)';
+        }
+      }, 500);
+    }
+  ")
+
+htmltools::tagList(
+  htmltools::HTML(
+    '<div style=\"
+      text-align: center;
+      color: #00e5ff;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-family: Arial, sans-serif;
+    \">
+      Figura 20: Distribución Geoespacial de Clústeres de Desarrollo
+    </div>'
+  ),
+  mapa_clusters
+)
 ```
 
 El mapa mundial con países coloreados según cluster confirma visualmente los patrones geográficos. Europa aparece predominantemente en Cluster 1 (azul oscuro) y parcialmente Cluster 2 (verde), reflejando consolidación de desarrollo en occidente y transición en oriente. América del Norte aparece Cluster 1 (Estados Unidos, Canadá); América Latina aparece mezcla de Cluster 2 (verde: Brasil, México, Argentina, Chile) y algunos Cluster 1 si países caribeños pequeños están incluidos. Asia muestra heterogeneidad extrema: Japón, Corea del Sur en Cluster 1; China, India, Sudeste Asiático en Cluster 2; Asia Sur/Central potencialmente en Cluster 3. África subsahariana aparece predominantemente Cluster 3 (morado/rosa), con casos aislados de Cluster 2 en sur y este (Botswana, Mauricio, Sudáfrica verde). Oceanía muestra Australia-Nueva Zelanda en Cluster 1; islas del Pacífico potencialmente Cluster 2-3.
