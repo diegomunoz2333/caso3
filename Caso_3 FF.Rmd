@@ -5130,10 +5130,10 @@ p1 <- plot_ly(ind_df,
 
 p1
 ```
-Se puede observar que Qatar tiene una contribución alta en la dimension 2, la cual es de 11.66%, es algo esperable sabiendo que el país árabe tiene un gran comercio.
-Mientras que San Marino contribuye en la dimensión 2 con un 0.3%, contrariamente de su aporte en la dimensión 1 el cual es 3.14%, lo cual refiere a qué este país, tiene una baja tasa económica mientras que en factores como esperanza de vida es muy fuerte.
 
-Al contrario podemos ver países como Niger el cual la dimensión 2 tiene un aporte de 0,64%, lo cual nos da a pensar que este país tiene deficiencia en lo económico
+En la dimensión 1, Níger emerge como el mayor contribuidor, posicionándose en el extremo negativo del eje que representa el déficit en desarrollo humano y conectividad tecnológica, reflejando severas limitaciones en acceso a servicios básicos, mortalidad infantil elevada y baja penetración digital. Le sigue San Marino, ubicado en el extremo positivo, representando un microestado con indicadores de bienestar consolidados en salud y esperanza de vida. En la dimensión 2, Qatar lidera como mayor contribuidor, posicionándose en el extremo inferior del eje, consolidándose como economía petroquímica ultraespecializada con estructura industrial dominada por hidrocarburos y dinámicas demográficas atípicas. Islas Marshall emerge como segundo mayor contribuidor, ubicándose en el extremo superior, caracterizándose como Estado insular vulnerable con alta dependencia de ayuda externa y servicios financieros.
+
+En la Gráfica 2 observamos la proyección de los países en el espacio reducido de las dos ultimas dimensiones del análisis de componentes principales.
 
 ```{r individuos DIM 3 Y DIM 4, fig.height=8, fig.width=14, out.width="100%"}
 p2 <- plot_ly(ind_df,
