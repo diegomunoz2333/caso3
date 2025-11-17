@@ -1310,31 +1310,19 @@ La matriz de correlación entre todas las variables de desarrollo es fundamental
 El Análisis de Componentes Principales fue aplicado al conjunto de 17 variables estandarizadas para identificar las dimensiones latentes subyacentes de variabilidad en el desarrollo internacional. El procedimiento consiste en la descomposición espectral de la matriz de covarianza estandarizada, identificando vectores propios (componentes) ordenados según sus valores propios (autovalores) en orden descendente. Cada componente principal es una combinación lineal ortogonal de las variables originales, diseñada para capturar la máxima varianza posible de manera sucesiva (Jolliffe, 2002; Hastie et al., 2009).
 
 ```{r ACP}
-
-
+#cambios
+res.pca <- prcomp(datos_analisis, scale = TRUE)
 acp_temp <- dudi.pca(datos_analisis, center = TRUE, scale = TRUE, scannf = FALSE, nf = ncol(datos_analisis))
-
 varianza_acum <- cumsum(acp_temp$eig) / sum(acp_temp$eig) * 100
-
-n_componentes <- which(varianza_acum >= 70)[1]
-
-acp_resultado <- dudi.pca(
-  df = datos_analisis,
-  center = TRUE,
-  scale = TRUE,
-  scannf = FALSE,
-  nf = n_componentes
-)
-
-factores <- acp_resultado$li
+factores <- acp_temp$li
 
 ```
 
 ```{r Tabla varianza}
-
+#cambios
 varianza_df <- data.frame(
-  Componente = factor(1:length(acp_resultado$eig)),
-  Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
+  Componente = factor(1:length(acp_temp$eig)),
+  Varianza = acp_temp$eig / sum(acp_temp$eig) * 100,
   VarianzaAcum = varianza_acum
 ) %>%  gt() %>%
   tab_header(
@@ -1429,8 +1417,8 @@ varianza_df <- data.frame(
 varianza_df 
 
 varianza_df <- data.frame(
-  Componente = paste0("PC", 1:length(acp_resultado$eig)),
-  Varianza = acp_resultado$eig / sum(acp_resultado$eig) * 100,
+  Componente = paste0("PC", 1:length(acp_temp$eig)),
+  Varianza = acp_temp$eig / sum(acp_temp$eig) * 100,
   VarianzaAcum = varianza_acum
 )
 
@@ -1438,15 +1426,13 @@ pc1_var <- round(varianza_df$Varianza[1], 1)
 pc2_var <- round(varianza_df$Varianza[2], 1)
 pc3_var <- round(varianza_df$Varianza[3], 1)
 pc4_var <- round(varianza_df$Varianza[4], 1)
-pc5_var <- round(varianza_df$Varianza[5], 1)
-pc6_var <- round(varianza_df$Varianza[6], 1)
+
 
 pc1_acum <- round(varianza_df$VarianzaAcum[1], 1)
 pc2_acum <- round(varianza_df$VarianzaAcum[2], 1)
 pc3_acum <- round(varianza_df$VarianzaAcum[3], 1)
 pc4_acum <- round(varianza_df$VarianzaAcum[4], 1)
-pc5_acum <- round(varianza_df$VarianzaAcum[5], 1)
-pc6_acum <- round(varianza_df$VarianzaAcum[6], 1)
+
 
 
 ```
@@ -1489,7 +1475,7 @@ fviz_eig(res.pca,
 
 ```{r, include=FALSE}
 res.var <- get_pca_var(res.pca)
-res.pca$coord          
+res.var$coord         
 res.var$contrib        
 res.var$cos2  
 ```
@@ -1505,21 +1491,23 @@ La comprensión de cómo cada variable original contribuye a la definición de l
 Adicionalmente, la calidad de representación ( $cos²$ ) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un $cos²$ cercano a 1 significa que la variable está casi completamente explicada por ese componente; un $cos²$ cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
 
 ```{r contribucion}
-
-contribuciones <- as.data.frame(acp_resultado$co)
+#cambios
+contribuciones <- as.data.frame(res.pca$rotation)  
 contribuciones$Variable <- rownames(contribuciones)
 
-cos2_df <- as.data.frame(acp_resultado$co^2)
+cos2_df <- as.data.frame(res.pca$rotation^2)  
 cos2_df$Variable <- rownames(cos2_df)
 
 crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo, tabla_num) {
+  comp_col <- paste0("PC", componente_num)
+  
   comp_data <- contrib_df %>%
-    select(Variable, paste0("Comp", componente_num)) %>%
-    rename(Loading = paste0("Comp", componente_num))
+    select(Variable, all_of(comp_col)) %>%
+    rename(Loading = all_of(comp_col))
   
   cos2_data <- cos2_df %>%
-    select(Variable, paste0("Comp", componente_num)) %>%
-    rename(Cos2 = paste0("Comp", componente_num))
+    select(Variable, all_of(comp_col)) %>%
+    rename(Cos2 = all_of(comp_col))
   
   comp_data <- comp_data %>%
     left_join(cos2_data, by = "Variable") %>%
@@ -1530,22 +1518,32 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
       Loading = round(Loading, 4),
       Cos2 = round(Cos2, 4)
     )
-  
   descripciones <- c(
     "PIB_per" = "PIB per cápita (US$)",
     "Poblacion" = "Población total",
-    "Esperanza vida" = "Esperanza de vida al nacer (años)",
+    "Esperanza.vida" = "Esperanza de vida al nacer (años)",  # Posiblemente con punto
+    "Esperanza vida" = "Esperanza de vida al nacer (años)",  # O con espacio
+    "Acceso.electricidad" = "Acceso a electricidad (% población)",
     "Acceso electricidad" = "Acceso a electricidad (% población)",
+    "Area.boscosa" = "Área boscosa (% territorio)",
     "Area boscosa" = "Área boscosa (% territorio)",
+    "Suscripciones.movil" = "Suscripciones móviles (cada 100 hab.)",
     "Suscripciones movil" = "Suscripciones móviles (cada 100 hab.)",
+    "Crecimiento.PIB" = "Crecimiento del PIB (% anual)",
     "Crecimiento PIB" = "Crecimiento del PIB (% anual)",
+    "Mortalidad.infantil" = "Mortalidad infantil (cada 1,000 nac.)",
     "Mortalidad infantil" = "Mortalidad infantil (cada 1,000 nac.)",
+    "Inversion.extranjera" = "Inversión extranjera (% PIB)",
     "Inversion extranjera" = "Inversión extranjera (% PIB)",
+    "Gasto.salud" = "Gasto en salud (% PIB)",
     "Gasto salud" = "Gasto en salud (% PIB)",
+    "Uso.internet" = "Uso de internet (% población)",
     "Uso internet" = "Uso de internet (% población)",
     "Importaciones" = "Importaciones (% PIB)",
     "Exportaciones" = "Exportaciones (% PIB)",
+    "Tierra.cultivable" = "Tierra cultivable (% territorio)",
     "Tierra cultivable" = "Tierra cultivable (% territorio)",
+    "Crecimiento.poblacion" = "Crecimiento poblacional (% anual)",
     "Crecimiento poblacion" = "Crecimiento poblacional (% anual)",
     "Industria" = "Industria (% PIB)",
     "Remesas" = "Remesas recibidas (% PIB)"
@@ -1553,15 +1551,19 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
   
   comp_data <- comp_data %>%
     mutate(
-      Descripcion = descripciones[Variable],
+      Descripcion = ifelse(
+        Variable %in% names(descripciones), 
+        descripciones[Variable], 
+        Variable  
+      ),
       Interpretacion = paste0(
         "Loading: ", Loading, 
         " | Cos²: ", Cos2,
         case_when(
-          abs(Loading) >= 0.3 ~ " (Contribución muy fuerte)",
-          abs(Loading) >= 0.2 ~ " (Contribución fuerte)", 
-          abs(Loading) >= 0.1 ~ " (Contribución moderada)",
-          abs(Loading) >= 0.05 ~ " (Contribución débil)",
+          abs(Loading) >= 0.8 ~ " (Contribución muy fuerte)",
+          abs(Loading) >= 0.6 ~ " (Contribución fuerte)", 
+          abs(Loading) >= 0.4 ~ " (Contribución moderada)",
+          abs(Loading) >= 0.2 ~ " (Contribución débil)",
           TRUE ~ " (Contribución muy débil)"
         )
       )
@@ -1634,10 +1636,10 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
       footnotes.padding = px(4)
     ) %>%
     tab_source_note(
-      source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP")
+      source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP (prcomp)")
     ) %>%
     tab_footnote(
-      footnote = "Loading: contribución de la variable al componente (valores absolutos >0.3 indican contribución fuerte)",
+      footnote = "Loading: contribución de la variable al componente (valores absolutos >0.6 indican contribución fuerte)",
       locations = cells_title(groups = "subtitle")
     ) %>%
     tab_footnote(
@@ -1651,20 +1653,21 @@ crear_tabla_contribucion <- function(componente_num, contrib_df, cos2_df, titulo
   return(tabla)
 }
 
-
 tabla_pc1 <- crear_tabla_contribucion(1, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 1 (24.3% de varianza)",
                                      6)
+
 tabla_pc2 <- crear_tabla_contribucion(2, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 2 (13.5% de varianza)", 
                                      7)
+
 tabla_pc3 <- crear_tabla_contribucion(3, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 3 (9.1% de varianza)",
                                      8)
+
 tabla_pc4 <- crear_tabla_contribucion(4, contribuciones, cos2_df,
                                      "Contribución de Variables al Componente Principal 4 (7.5% de varianza)",
                                      9)
-
 tabla_pc1
 tabla_pc2
 tabla_pc3
@@ -1733,7 +1736,7 @@ p1
 
 <!-- cambios -->
 
-En la dimensión 1, Níger emerge como el mayor contribuidor, posicionándose en el extremo negativo del eje que representa el déficit en desarrollo humano y conectividad tecnológica, reflejando severas limitaciones en acceso a servicios básicos, mortalidad infantil elevada y baja penetración digital. Le sigue San Marino, ubicado en el extremo positivo, representando un microestado con indicadores de bienestar consolidados en salud y esperanza de vida. En la dimensión 2, Qatar lidera como mayor contribuidor, posicionándose en el extremo inferior del eje, consolidándose como economía petroquímica ultraespecializada con estructura industrial dominada por hidrocarburos y dinámicas demográficas atípicas. Islas Marshall emerge como segundo mayor contribuidor, ubicándose en el extremo superior, caracterizándose como Estado insular vulnerable con alta dependencia de ayuda externa y servicios financieros.
+En la dimensión 1, Níger emerge como el mayor contribuidor, posicionándose en el extremo negativo del eje que representa el déficit en desarrollo humano y conectividad tecnológica, reflejando severas limitaciones en acceso a servicios básicos, mortalidad infantil elevada y baja penetración digital. Le sigue San Marino, ubicado en el extremo positivo, representando un microestado con indicadores de bienestar consolidados en salud y esperanza de vida. En la dimensión 2, Qatar lidera como mayor contribuidor, posicionándose en el extremo inferior del eje, consolidándose como economía petroquímica ultraespecializada con estructura industrial dominada por hidrocarburos y dinámicas demográficas atípicas. Islas Marshall emerge como segundo mayor contribuidor, ubicándose en el extremo superior, caracterizándose como Estado insular vulnerable con alta dependencia de ayuda externa y servicios financieros.﻿
 
 En la Gráfica 2 observamos la proyección de los países en el espacio reducido de las dos ultimas dimensiones del análisis de componentes principales.
 
@@ -2054,49 +2057,6 @@ p2
 Guinea se posiciona en la dirección de crecimiento poblacional, indicando valores altos en esta variable. Kuwait y Djibouti se alinean con importaciones, indicando ratios elevados. Senegal e Irlanda se alinean con exportaciones, indicando orientación exportadora. Burkina Faso y Qatar se alinean con mortalidad infantil, indicando valores en esta variable. Macedonia del Norte se alinea con PIB per cápita, indicando ingreso por habitante en esa dirección.
 
 ### Caracterizacion de los componentes principales
-
-```{r caracterizacion dimensiones}
-
-dimensiones_tabla <- tribble(
-  ~`Dimensión`, ~`Descripción`, ~`Variables`, ~`Ejemplo de Países`,
-  "Dimensión 1", "Nivel de desarrollo humano y tecnológico ", 
-  "Uso.internet, Esperanza.vida, Mortalidad.infantil", 
-  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
-  
-  "Dimensión 2", "Industrialización y crecimiento demográfico", 
-  "Industria, Crecimiento.poblacion, Remesas", 
-  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
-  
-  "Dimensión 3", "Comercio internacional", 
-  "Importaciones, Exportaciones, Inversión.Extranjera", 
-  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
-  
-  "Dimensión 4", "Uso del suelo y demografía ", 
-  "Área.boscosa, Tierra.cultivable, Población", 
-  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, -); China (Poca, Poca, Mucha)",
-)
-dimensiones_tabla %>%
-  knitr::kable(
-    caption = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)",
-    col.names = c("Dimensión", "Descripción", "Variables Asociadas", "Ejemplo de Países"),
-    align = c("c", "l", "l", "l"),
-    format = "html",
-    escape = FALSE
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE,
-    position = "center",
-    font_size = 13
-  ) %>%
-  row_spec(0, bold = TRUE, color = "white", background = "#2E86AB") %>%
-  column_spec(1, bold = TRUE, width = "8em") %>%
-  column_spec(2, width = "22em") %>%
-  column_spec(3, width = "16em") %>%
-  column_spec(4, width = "18em")
-
-
-```
 
 ## Segmentación: Clusterización
 
@@ -2645,12 +2605,11 @@ La paradoja de Cluster 3: A primera vista, algunas métricas (esperanza de vida 
 
 Plano PC1-PC2 (Desarrollo Humano vs. Modelo Económico-Institucional): El gráfico PC1-PC2 muestra la distribución de clusters en el plano que explica la mayor proporción de varianza (37.8% combinada). El Cluster 1 (puntos rojos) se concentra predominantemente en el cuadrante central-derecho y ligeramente disperso verticalmente, reflejando que estos países comparten desarrollo humano avanzado (PC1 positivo moderado a alto) pero varían en estructura económica institucional (PC2 desde -4 hasta +4). Países con PC2 extremadamente negativo (como Qatar, Kuwait) representan economías petroleras industrializadas; países con PC2 cercano a cero representan economías postindustriales diversificadas europeas; países con PC2 ligeramente positivo representan economías con gasto social elevado.
 
-```{r dendograma}
+```{r clusters con componentes}
 coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
 distancias <- dist(coordenadas_pca)
 hc <- hclust(distancias, method = "ward.D2")
 clusters <- cutree(hc, k = 3)
-
 cluster_df <- data.frame(
   Pais = rownames(coordenadas_pca),
   Dim1 = coordenadas_pca$Axis1,
@@ -2659,30 +2618,6 @@ cluster_df <- data.frame(
   Dim4 = coordenadas_pca$Axis4,
   Cluster = as.factor(clusters)
 )
-
-cluster_plot <- plot_ly(cluster_df,
-                        x = ~Dim1, 
-                        y = ~Dim2,
-                        color = ~Cluster,
-                        colors = c("red", "#00AFBB", "#E7B800"),
-                        text = ~paste("<b>", Pais, "</b><br>",
-                                      "Cluster:", Cluster),
-                        type = "scatter",
-                        mode = "markers",
-                        marker = list(size = 10, opacity = 0.8),
-                        hovertemplate = '%{text}<extra></extra>') %>%
-  layout(
-    title = list(
-      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
-      font = list(size = 16, color = "#2C5F8D")
-    ),
-    xaxis = list(title = "Dimensión 1"),
-    yaxis = list(title = "Dimensión 2"),
-    hovermode = "closest"
-  )
-
-cluster_plot
-
 
 
 resumen_clusters <- cluster_df %>%
@@ -2716,6 +2651,29 @@ resumen_clusters <- cluster_df %>%
 resumen_clusters
 
 
+
+
+cluster_plot <- plot_ly(cluster_df,
+                        x = ~Dim1, 
+                        y = ~Dim2,
+                        color = ~Cluster,
+                        colors = c("red", "#00AFBB", "#E7B800"),
+                        text = ~paste("<b>", Pais, "</b><br>",
+                                      "Cluster:", Cluster),
+                        type = "scatter",
+                        mode = "markers",
+                        marker = list(size = 10, opacity = 0.8),
+                        hovertemplate = '%{text}<extra></extra>') %>%
+  layout(
+    title = list(
+      text = "<b>Clusters en el Espacio de Componentes Principales</b>",
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(title = "Dimensión 1"),
+    yaxis = list(title = "Dimensión 2"),
+    hovermode = "closest"
+  )
+cluster_plot
 ```
 
 El Cluster 2 (puntos azul) se distribuye ampliamente en la región central-derecha del plano, con mayor concentración en PC1 entre +1 y +3 (desarrollo intermedio) y PC2 entre -2 y +2 (diversidad de modelos económicos). Esta dispersión amplia confirma la heterogeneidad interna del Cluster 2: incluye desde países latinoamericanos con desarrollo intermedio hasta economías asiáticas emergentes con distintas trayectorias de industrialización. Algunos países del Cluster 2 con PC1 \>3 se posicionan muy cerca de frontera con Cluster 1, sugiriendo que están en transición hacia desarrollo consolidado.
@@ -3075,8 +3033,8 @@ colnames(coordenadas_predichas)[1:4] <- c("PC1", "PC2", "PC3", "PC4")
 
 # Combinar los datos
 datos_completos <- rbind(
-  coordenadas_originales[, c("Pais", "PC1", "PC2", "Tipo")],
-  coordenadas_predichas[, c("Pais", "PC1", "PC2", "Tipo")]
+  coordenadas_originales[, c("Pais", "PC1", "PC2", "Tipo","Pais", "PC3", "PC4", "Tipo")],
+  coordenadas_predichas[, c("Pais", "PC1", "PC2", "Tipo","Pais", "PC3", "PC4", "Tipo")]
 )
 
 # Crear el gráfico plotly SIN nombres visibles
@@ -3194,11 +3152,247 @@ p_animado <- plot_ly() %>%
     )
   )
 
-# Mostrar el gráfico
 p_animado
+
+p_animado1 <- plot_ly() %>%
+  add_trace(
+    data = datos_completos[datos_completos$Tipo == "Original", ],
+    x = ~PC3, y = ~PC4,
+    type = 'scatter',
+    mode = 'markers',
+    marker = list(
+      color = 'black',
+      size = 8,
+      opacity = 0.7,
+      line = list(width = 1, color = 'white')
+    ),
+    name = "Países originales",
+    hoverinfo = 'text',
+    hovertext = ~paste("<b>", Pais, "</b><br>",
+                       "Tipo: Original<br>",
+                       "Dimensión 3: ", round(PC3, 3), "<br>",
+                       "Dimensión 4: ", round(PC4, 3))
+  ) %>%
+  add_trace(
+    data = datos_completos[datos_completos$Tipo == "Predicho", ],
+    x = ~PC3, y = ~PC4,
+    type = 'scatter',
+    mode = 'markers',
+    marker = list(
+      color = 'blue',
+      size = 12,
+      opacity = 0.8,
+      symbol = 'star',
+      line = list(width = 1.5, color = 'white')
+    ),
+    name = "Países predichos",
+    hoverinfo = 'text',
+    hovertext = ~paste("<b>", Pais, "</b><br>",
+                       "Tipo: Predicho<br>",
+                       "Dimensión 3: ", round(PC3, 3), "<br>",
+                       "Dimensión 4: ", round(PC4, 3)),
+    visible = FALSE 
+  ) %>%
+  
+  layout(
+    title = list(
+      text = "<b>PCA - Países originales (negro) y países predichos (azul)</b>",
+      x = 0.05,
+      font = list(size = 16, color = "#2C5F8D")
+    ),
+    xaxis = list(
+      title = "Dimensión 1 - Desarrollo Humano y Tecnológico (24.3%)",
+      zeroline = TRUE,
+      zerolinecolor = "gray",
+      gridcolor = "lightgray"
+    ),
+    yaxis = list(
+      title = "Dimensión 2 - Modelo Económico-Institucional (13.5%)",
+      zeroline = TRUE,
+      zerolinecolor = "gray",
+      gridcolor = "lightgray"
+    ),
+    hovermode = "closest",
+    plot_bgcolor = "white",
+    paper_bgcolor = "white",
+    showlegend = TRUE,
+    legend = list(
+      x = 0.02,
+      y = 0.98,
+      bgcolor = "rgba(255,255,255,0.8)"
+    ),
+    annotations = list(
+      list(
+        x = 0.5,
+        y = -0.15,
+        text = "● Países originales | ★ Países predichos • Pasa el cursor sobre los puntos para ver información",
+        showarrow = FALSE,
+        xref = "paper",
+        yref = "paper",
+        font = list(size = 12, color = "gray")
+      )
+    )
+  ) %>%
+  
+  # Configurar animación con botones
+  layout(
+    updatemenus = list(
+      list(
+        type = "buttons",
+        direction = "right",
+        x = 0.1,
+        y = 1.15,
+        buttons = list(
+          list(
+            method = "update",
+            args = list(
+              list(visible = c(TRUE, FALSE)),
+              list(title = "PCA - Solo países originales")
+            ),
+            label = "Solo Originales"
+          ),
+          list(
+            method = "update",
+            args = list(
+              list(visible = c(TRUE, TRUE)),
+              list(title = "PCA - Países originales (negro) y países predichos (azul)")
+            ),
+            label = "Mostrar Predichos"
+          )
+        )
+      )
+    )
+  )
+
+
+# Mostrar el gráfico
+p_animado1
 
 ```
 
 Luxemburgo obtiene coordenada 2.9075 en PC1 (desarrollo extremo), junto a San Marino en la élite ultra-desarrollada, confirmando su posición como micro-Estado financiero con esperanza de vida de 85 años e hiperconectividad digital. Uruguay (1.4145 en PC1) se posiciona como país emergente latinoamericano con desarrollo humano consolidado. Jordania (0.1673) y Belice (-0.4472) son casos intermedios de ingresos medios con vulnerabilidades persistentes. Angola (-3.6127) lidera el rezago extremo, caracterizada por baja esperanza de vida (61 años), alta mortalidad infantil (56 por 1,000) y acceso limitado a servicios. En Dimensión 2, Luxemburgo (-1.0540) representa industrialización postindustrial consolidada; Angola (-1.7126) representa industrialización petroquímica sin beneficios distributivos. En Dimensión 3, Luxemburgo (-7.6090) es hiperglobalizado (comercio \>300% PIB); Angola (-0.1232) es básicamente cerrada con dependencia petrolera. En Dimensión 4, Luxemburgo (4.9379) tiene escasa presión demográfica; Angola (1.7885) tiene tierra cultivable disponible pero sin transformación agrícola.
 
+# Concluciones
+
+El principal hallazgo es que el desarrollo mundial no funciona de manera lineal ni se puede reducir a una sola característica. Por el contrario, existe un orden invisible que organiza a los países según cuatro dimensiones principales que explican más de la mitad de las diferencias que observamos entre ellos.
+
+Estas cuatro dimensiones son: primero, acceso a salud, educación y tecnología (esperanza de vida, acceso a internet, mortalidad infantil); segundo, tipo de economía que tiene cada país (si depende del petróleo, de la agricultura o de múltiples industrias); tercero, qué tan abierto está el país al comercio internacional; y cuarto, el equilibrio entre población y naturaleza (cuántos bosques quedan, cuánta presión hay sobre los recursos naturales).
+
+El análisis identificó tres grupos claros de países: un grupo de países ricos con indicadores muy buenos en salud, educación y tecnología (Europa, América del Norte, Japón, Corea del Sur); un grupo intermedio de países emergentes que están mejorando pero aún tienen brechas (Brasil, México, Tailandia, Sudáfrica); y un tercer grupo de países con desafíos estructurales profundos, principalmente en África, donde la salud, educación y acceso a tecnología aún son limitados.
+
+Sí, el análisis permitió identificar patrones claros y sorprendentes. Lo más importante es que estos patrones no siguen las líneas geográficas que esperaríamos. Por ejemplo, Uruguay (en Sudamérica) se parece más a países europeos del este como Polonia en cómo está organizado su desarrollo, mientras que Vietnam (en Asia) comparte características similares con Colombia (en Sudamérica). Esto muestra que la geografía no es destino.
+
+Un caso muy revelador es Costa Rica: este país tiene una esperanza de vida de 80 años (igual que Alemania o Japón), pero su PIB per cápita es mucho menor. ¿Cómo es posible? Porque Costa Rica invirtió fuertemente en salud y educación pública aunque no fuera el país más rico. Esto demuestra que no hay una única forma de desarrollarse. Algunos países ricos lo lograron por industria, otros por finanzas, otros por turismo y agricultura sostenible.
+
+También descubrimos que algunos países aparentemente exitosos (como Qatar) tienen una fragilidad oculta: sus economías dependen casi completamente del petróleo. Cuando bajan los precios del petróleo, estos países se hunden. En cambio, países como Singapur o Corea del Sur diversificaron sus economías y por eso son más estables.
+
+El patrón fundamental que emerge es que los países que logran buen desarrollo son aquellos que invierten simultáneamente en tres cosas: salud, educación, y diversificación económica. Puede hacerse en diferentes órdenes y con diferentes estrategias, pero estos tres pilares aparecen una y otra vez en los países exitosos del análisis.
+
+Este tipo de análisis tiene aplicaciones concretas y muy prácticas para los gobiernos y organismos internacionales:
+
+Primero, diseñar políticas adaptadas a cada tipo de país. En lugar de que organismos como el Banco Mundial digan a todos los países lo mismo (por ejemplo "reduzcan el gasto público"), podrían identificar qué tipo de problema tiene cada país específicamente y diseñar soluciones adaptadas. Un país con crisis de salud infantil necesita expandir hospitales, no reducir gasto. Un país que depende solo del petróleo necesita crear nuevas industrias, no seguir extrayendo más petróleo
+
+Segundo, aprender de pares exitosos en tu propia situación. Si Bolivia quiere mejorar su sistema de salud, en lugar de escuchar a expertos europeos, podría estudiar cómo Costa Rica o Cuba lo hicieron con presupuestos similares. Si Sudáfrica quiere reducir la corrupción, podría aprender de Uruguay que lo logró en contexto latinoamericano similar. Este tipo de aprendizaje entre pares funciona mejor que imposiciones externas.
+
+Tercero, identificar riesgos ocultos antes de que se conviertan en crisis. Los gobiernos y bancos multilaterales podrían usar este análisis para detectar que un país se está volviendo muy dependiente de una sola industria, o que aunque tenga números macroeconómicos buenos, su sistema de salud se está colapsando. Con esta información temprana, podrían actuar preventivamente.
+
+Cuarto, priorizar inversiones de forma inteligente. Cuando un país tiene presupuesto limitado, necesita saber dónde invertir para obtener máximos beneficios. Este análisis muestra que invertir en educación y salud simultáneamente genera un efecto multiplicador: gente más sana estudia mejor, gente educada hace mejores decisiones sobre salud. Así que gastar en ambas cosas a la vez genera más impacto que gastar en una sola.
+
+Quinto, monitorear el progreso hacia objetivos globales. Las Naciones Unidas tienen un conjunto de 17 Objetivos de Desarrollo Sostenible que todos los países deberían alcanzar (acabar pobreza, garantizar salud, educación, etc.). Este análisis permite ver objetivamente si un país está avanzando hacia estos objetivos o se está alejando, y cuáles son sus mayores brechas comparado con países similares.
+
+
+En conclusión, este ejercicio académico prueba que el desarrollo de las naciones es un fenómeno complejo que requiere análisis sofisticados, pero una vez que lo entendemos, podemos actuar de manera mucho más efectiva. No existe una sola receta para el éxito, pero sí existen patrones que se repiten. Los países que tienen éxito son los que invierten equilibradamente en su gente (salud y educación), diversifican su economía, y toman decisiones conscientes sobre cuánto comerciar con el mundo y cómo proteger su ambiente.
+
+Para gobiernos, este análisis es útil porque les muestra en qué están bien y en qué deben mejorar comparados con países similares. Para organismos internacionales, es útil porque permite diseñar ayuda realmente adaptada a necesidades específicas. Y para la sociedad en general, es útil porque explica por qué algunos países prosperan y otros no—no es misterio ni destino, sino resultado de decisiones políticas concretas que otros países ya han tomado exitosamente.
+
 # Bibliografia
+
+Acemoglu, D., & Robinson, J. A. (2012). Why nations fail: The origins of power, prosperity, and poverty. Crown Publishers.
+
+Agencia Presidencial de Cooperación Internacional de Colombia. (2023). Estrategia Nacional de Cooperación Internacional. https://www.apccolombia.gov.co
+
+Andini, M., Ciani, E., de Blasio, G., D'Ignazio, A., & Salvestrini, V. (2018a). Targeting with machine learning: An application to a tax rebate program in Italy. Journal of Economic Behavior & Organization, 156, 86-102.
+
+Andini, M., Ciani, E., de Blasio, G., D'Ignazio, A., & Salvestrini, V. (2018b). Targeting policy with machine learning. VoxEU CEPR. https://voxeu.org/article/targeting-policy-machine-learning
+
+ArcGIS. (2024). Distancia euclidiana: Cómo funciona. Environmental Systems Research Institute. https://pro.arcgis.com
+
+Athey, S. (2017). Beyond prediction: Using big data for policy problems. Science, 355(6324), 483-485.
+
+Athey, S., & Imbens, G. W. (2016). Recursive partitioning for heterogeneous causal effects. Proceedings of the National Academy of Sciences, 113(27), 7353-7360.
+
+Banco Interamericano de Desarrollo. (2022). Informe macroeconómico de América Latina y el Caribe 2022: El sendero hacia la recuperación. BID.
+
+Banco Mundial. (2022). Perspectivas económicas mundiales 2022: Crisis superpuestas. Grupo Banco Mundial.
+
+Behar, A., & Mok, J. (2024). The World Development Indicators database: Structure, coverage, and quality assurance. World Bank Technical Paper.
+
+Brookings Institution. (2016). Making sense of clusters: Regional competitiveness and economic development. Metropolitan Policy Program.
+
+Centro de Documentación de Barcelona. (2022). Economía global 2022: Perspectivas post-pandemia. CIDOB.
+
+Cervellati, M., Esposito, E., Sunde, U., & Valmori, S. (2022). Long-term growth and demographic change. CEPR Discussion Paper, DP17385.
+
+Charrad, M., Ghazzali, N., Boiteau, V., & Niknafs, A. (2014). NbClust: An R package for determining the relevant number of clusters in a data set. Journal of Statistical Software, 61(6), 1-36.
+
+Ciencia de Datos. (2016). Estandarización de variables: Importancia en machine learning. https://www.cienciadedatos.net
+
+Comisión Económica para América Latina y el Caribe. (2023). Balance preliminar de las economías de América Latina y el Caribe 2023. CEPAL.
+
+European Central Bank. (2018). Foreign direct investment and economic growth. ECB Economic Bulletin, Issue 4/2018.
+
+Fondo Monetario Internacional. (2023). Perspectivas de la economía mundial: Resiliencia en tiempos de incertidumbre. FMI.
+
+Fritz, M., & Koch, M. (2016). Economic development and prosperity patterns around the world: Structural challenges for a global steady-state economy. Global Environmental Change, 38, 41-48.
+
+Hastie, T., Tibshirani, R., & Friedman, J. (2009). The elements of statistical learning: Data mining, inference, and prediction (2nd ed.). Springer.
+
+Hidalgo, C. A. (2022). The policy implications of economic complexity. arXiv preprint arXiv:2205.02164.
+
+Jeanty, P. W. (2010). A guide to interpreting the World Development Indicators. World Bank Data Group Working Paper.
+
+Jolliffe, I. T. (2002). Principal component analysis (2nd ed.). Springer.
+
+KeepCoding. (2025). ¿Qué es el análisis de componentes principales (PCA)? https://keepcoding.io/blog/que-es-pca/
+
+Kim, Y. K. (2017). Patterns of economic development: Correlations affecting economic growth. Korean Journal of Policy Studies, 32(2), 1-24.
+
+Kleinberg, J., Ludwig, J., Mullainathan, S., & Obermeyer, Z. (2015). Prediction policy problems. American Economic Review, 105(5), 491-495.
+
+LinkedIn Learning. (2023). Estandarización y normalización en análisis de datos. https://www.linkedin.com/learning
+
+Mullainathan, S., & Spiess, J. (2017). Machine learning: An applied econometric approach. Journal of Economic Perspectives, 31(2), 87-106.
+
+OpenWebinars. (2025). Tutorial de análisis de componentes principales en R. https://openwebinars.net
+
+Organización para la Cooperación y el Desarrollo Económicos. (2024). Health at a Glance 2024: OECD indicators. OECD Publishing.
+
+Piketty, T. (2022). Una breve historia de la igualdad. Editorial Planeta.
+
+Programa de las Naciones Unidas para el Desarrollo. (2023). Informe sobre Desarrollo Humano 2023-2024. PNUD.
+
+Sachs, J. D., Lafortune, G., Fuller, G., & Drumm, E. (2022). Sustainable Development Report 2022. Cambridge University Press.
+
+Saraiva, M. V., Ferreira, F. A., Pais, M. C., & Ferreira, N. C. (2025). Clustering analysis on Sustainable Development Goal indicators for forty-five Asian countries. Sustainability, 15(7), 5728.
+
+Shkolnikov, V. M., Andreev, E. M., McKee, M., & Leon, D. A. (2019). Components and possible determinants of the decrease in Russian mortality in 2004-2010. Demographic Research, 28, 917-950.
+
+TIBCO Software. (2024). Ward's hierarchical clustering method. Statistica Documentation. https://docs.tibco.com
+
+Conferencia de las Naciones Unidas sobre Comercio y Desarrollo. (2021). Technology and Innovation Report 2021: Catching technological waves. UNCTAD.
+
+Universidad de Granada. (2016). Medidas de similitud y distancia en análisis multivariante. Departamento de Estadística e Investigación Operativa.
+
+Ward, J. H. (1963). Hierarchical grouping to optimize an objective function. Journal of the American Statistical Association, 58(301), 236-244.
+
+Wikipedia. (2013). Ward's method. https://en.wikipedia.org/wiki/Ward%27s_method
+
+Wolman, H., & Hincapie, D. (2014). Clusters and cluster-based development policy. Economic Development Quarterly, 29(2), 135-149.
+
+World Bank. (2015). World Development Report 2015: Mind, society, and behavior. World Bank Publications.
+
+World Bank. (2019). World Development Indicators: Methodology and compilation practices. World Bank Data Group.
+
+World Bank. (2023). World Development Indicators 2023. World Bank Open Data. https://data.worldbank.org
+
+World Health Organization. (2020). World Health Statistics 2020: Monitoring health for the SDGs. WHO Press.
