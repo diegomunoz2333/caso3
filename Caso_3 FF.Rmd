@@ -4807,7 +4807,7 @@ El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica a
 
 La comprensión de cómo cada variable original contribuye a la definición de los componentes principales es esencial para interpretar las dimensiones latentes descubiertas. La contribución de una variable a un componente cuantifica el grado en el cual esa variable particular "explica" o "define" la dirección de ese componente en el espacio multidimensional original. Matemáticamente, la contribución se expresa como porcentaje de la varianza del componente que puede atribuirse a cada variable (Hastie et al., 2009; Jolliffe, 2002).
 
-Adicionalmente, la calidad de representación (cos²) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un cos² cercano a 1 significa que la variable está casi completamente explicada por ese componente; un cos² cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
+Adicionalmente, la calidad de representación ( $cos²$ ) de una variable en un componente indica qué proporción de la variabilidad total de esa variable es capturada por el componente. Un $cos²$ cercano a 1 significa que la variable está casi completamente explicada por ese componente; un $cos²$ cercano a 0 significa que la variable requiere componentes posteriores para ser bien representada (Jolliffe, 2002). Estas dos medidas—contribución y $cos^2$—son complementarias: la primera explica la importancia relativa de una variable en definir un componente; la segunda explica qué tan bien ese componente explica la variable (Hastie et al., 2009).
 
 ```{r contribucion}
 
@@ -5002,6 +5002,8 @@ tabla_pc4
 ### Análisis Multivariado: Interpretación de Componentes y Países
 
 Una vez identificados los componentes principales y cuantificadas las contribuciones de cada variable, es fundamental realizar un análisis multivariado que permita interpretar simultáneamente las relaciones entre países y variables en el espacio reducido de componentes principales. Este análisis se fundamenta en visualizaciones bidimensionales que proyectan tanto países (individuos) como variables sobre los planos definidos por pares de componentes principales, revelando patrones de similitud, agrupamientos naturales y características diferenciadoras entre grupos de países (Jolliffe, 2002; Hastie et al., 2009).
+
+En la Gráfica 1 observamos la proyección de los países en el espacio reducido de las dos primeras dimensiones del análisis de componentes principales.
 
 ```{r individuos DIM 1 Y DIM 2, fig.height=8, fig.width=14, out.width="100%"}
 ind_data <- get_pca_ind(res.pca)
