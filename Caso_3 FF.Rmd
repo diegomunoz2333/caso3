@@ -1979,7 +1979,7 @@ tabla_inicial <- datatable(
         'width': '100% !important'
       });
       
-      // ========== CONTENEDOR DE BOTONES MEJORADO ==========
+      // 
       var btnContainer = $(el).find('.dt-buttons');
       btnContainer.css({
         'padding': '20px 0',
@@ -1992,7 +1992,7 @@ tabla_inicial <- datatable(
         'padding-bottom': '20px'
       });
       
-      // ========== BOTONES CON COLORES BRILLANTES Y VISIBLES ==========
+      // 
       $(el).find('.dt-button').each(function() {
         $(this).css({
           'background': '#00e5ff !important',
@@ -2034,7 +2034,7 @@ tabla_inicial <- datatable(
         }
       );
       
-      // ========== APLICAR A TODOS LOS BOTONES POSIBLES ==========
+      // 
       setTimeout(function() {
         $(el).find('a.dt-button, button.dt-button, .btn-cyber-primary, .buttons-copy, .buttons-csv, .buttons-excel, .buttons-pdf, .buttons-print').css({
           'background': '#00e5ff !important',
@@ -2046,7 +2046,7 @@ tabla_inicial <- datatable(
         });
       }, 100);
       
-      // ========== CONTENEDOR DE SCROLL HORIZONTAL ARREGLADO ==========
+      // 
       $(el).find('.dataTables_scroll').css({
         'overflow-x': 'auto !important',
         'width': '100% !important'
@@ -2071,7 +2071,7 @@ tabla_inicial <- datatable(
         'table-layout': 'auto !important'
       });
       
-      // ========== ENCABEZADOS CYBER ==========
+      // 
       var thead = $(el).find('thead');
       thead.css({
         'background': 'linear-gradient(135deg, #00e5ff 0%, #0084ff 100%)',
@@ -2094,14 +2094,14 @@ tabla_inicial <- datatable(
         'min-width': '120px'
       });
       
-      // ========== CUERPO DE LA TABLA ==========
+      // 
       $(el).find('tbody tr').css({
         'background-color': '#0a0e1a !important',
         'border-bottom': '2px solid #12161f !important',
         'transition': 'all 0.2s ease'
       });
       
-      // PRIMERA COLUMNA - PAÍS OSCURA CON TEXTO CYAN
+      // 
       $(el).find('tbody tr td:first-child').css({
         'background-color': '#12161f !important',
         'color': '#00e5ff !important',
@@ -2115,7 +2115,7 @@ tabla_inicial <- datatable(
         'min-width': '150px'
       });
       
-      // RESTO DE COLUMNAS
+      // 
       $(el).find('tbody td').not(':first-child').css({
         'padding': '14px 10px !important',
         'border-right': '1px solid rgba(0, 229, 255, 0.2) !important',
@@ -2127,7 +2127,7 @@ tabla_inicial <- datatable(
         'min-width': '100px'
       });
       
-      // ========== HOVER EN FILAS - EFECTO GLOW CYBER ==========
+      // 
       $(el).find('tbody tr').hover(
         function() {
           $(this).css({
@@ -2189,7 +2189,7 @@ tabla_inicial <- datatable(
         });
       });
       
-      // ========== SELECT DE PAGINACIÓN ==========
+      //
       var lengthLabel = $(el).find('label:has(select)');
       lengthLabel.css({
         'color': '#e0e6ed',
@@ -2210,7 +2210,7 @@ tabla_inicial <- datatable(
         'box-shadow': '0 0 15px rgba(0, 229, 255, 0.2) inset'
       });
       
-      // ========== PAGINACIÓN CYBER ==========
+      // 
       $(el).find('.dataTables_paginate').css({
         'margin-top': '20px',
         'padding-top': '15px',
@@ -2265,7 +2265,7 @@ tabla_inicial <- datatable(
         'cursor': 'not-allowed !important'
       });
       
-      // ========== INFO DE LA TABLA ==========
+      // 
       $(el).find('.dataTables_info').css({
         'color': '#00e5ff !important',
         'font-size': '14px !important',
@@ -2275,7 +2275,7 @@ tabla_inicial <- datatable(
         'text-shadow': '0 0 10px rgba(0, 229, 255, 0.3)'
       });
       
-      // ========== SCROLLBAR PERSONALIZADA ==========
+      // 
       var style = document.createElement('style');
       style.textContent = `
         .dataTables_scrollBody::-webkit-scrollbar {
@@ -3052,7 +3052,7 @@ La marcada relación inversa evidencia que los sistemas de salud más robustos l
 
 La conectividad digital es un mecanismo contemporáneo fundamental de inclusión económica, pero no es unidimensional: requiere infraestructura energética (acceso a electricidad), conectividad informática (uso de internet) y penetración móvil (suscripciones por habitante). Estas variables son complementarias pero pueden desacoplarse—un país puede tener electricidad universal pero baja adopción de internet, o inversamente, penetración móvil extraordinaria sin acceso eléctrico generalizado.
 
-La Figura XX desagrega estos indicadores en cinco paneles geográficos, donde el eje horizontal representa acceso a electricidad, el eje vertical uso de internet, y el tamaño de cada burbuja codifica suscripciones móviles. Una línea diagonal de referencia actúa como benchmark: países sobre ella tienen penetración digital que compensa acceso eléctrico limitado; países bajo ella exhiben brechas donde energía no se traduce en conectividad informática. Al pasar el cursor sobre cada burbuja, se despliegan los tres indicadores de conectividad específicos del país y continente.
+La Figura 3 desagrega estos indicadores en cinco paneles geográficos, donde el eje horizontal representa acceso a electricidad, el eje vertical uso de internet, y el tamaño de cada burbuja codifica suscripciones móviles. Una línea diagonal de referencia actúa como benchmark: países sobre ella tienen penetración digital que compensa acceso eléctrico limitado; países bajo ella exhiben brechas donde energía no se traduce en conectividad informática. Al pasar el cursor sobre cada burbuja, se despliegan los tres indicadores de conectividad específicos del país y continente.
 
 ```{r scatter-facetado-tecnologia, fig.height=10, fig.width=14, out.width="90%"}
 
@@ -3342,7 +3342,7 @@ plotly_plot <- ggplotly(p_gg, tooltip = "text") %>%
   )
 
 plotly_plot <- plotly_plot %>%
-  style(showlegend = FALSE, traces = c(2:6))  # Ocultar leyendas de tamaño
+  style(showlegend = FALSE, traces = c(2:6))
 
 plotly_plot
 ```
@@ -3351,9 +3351,7 @@ En África, países como Níger y Mali se concentran en el cuadrante inferior iz
 
 ### Dimension ambiental y de recursos
 
-La Figura 4 muestra cómo los países distribuyen su territorio entre bosques y tierras cultivables, dos recursos fundamentales para conservación ambiental y seguridad alimentaria. El eje horizontal mide cobertura boscosa, el eje vertical tierra cultivable, y el gráfico divide el espacio en cuatro zonas: conservación (muchos bosques, poca agricultura), agrícola (mucha agricultura, pocos bosques), balance (ambas moderadas), y crítica (ambas limitadas).
-Al pasar el cursor sobre cada punto, aparece información del país: porcentaje de cobertura boscosa, porcentaje de tierra cultivable, el balance total entre ambas, y tamaño de población. Esto permite ver cómo el uso de tierra varía según demografía: India concentra alta agricultura (51.8% tierra cultivable) y baja cobertura boscosa, reflejando presión por alimentar su enorme población. Brasil y Bolivia se ubican en zona de balance con mayor cobertura forestal. Mauritania y Eritrea ocupan la zona crítica, con recursos limitados tanto para bosques como para agricultura.
-En la leyenda al hacer clic en un continente, el gráfico se filtra mostrando solo los países de esa región, permitiendo comparar patrones ambientales dentro de cada geografía. Esta visualización anticipa si la conservación ambiental es un lujo de países ricos o una estrategia viable en todos los contextos.
+La Figura 4 muestra cómo los países distribuyen su territorio entre bosques y tierras cultivables, dos recursos fundamentales para conservación ambiental y seguridad alimentaria. El eje horizontal mide cobertura boscosa, el eje vertical tierra cultivable, y el gráfico divide el espacio en cuatro zonas: conservación (muchos bosques, poca agricultura), agrícola (mucha agricultura, pocos bosques), balance (ambas moderadas), y crítica (ambas limitadas). Al pasar el cursor sobre cada punto, aparece información del país: porcentaje de cobertura boscosa, porcentaje de tierra cultivable, el balance total entre ambas, y tamaño de población. Esto permite ver cómo el uso de tierra varía según demografía: India concentra alta agricultura (51.8% tierra cultivable) y baja cobertura boscosa, reflejando presión por alimentar su enorme población. Brasil y Bolivia se ubican en zona de balance con mayor cobertura forestal. Mauritania y Eritrea ocupan la zona crítica, con recursos limitados tanto para bosques como para agricultura. En la leyenda al hacer clic en un continente, el gráfico se filtra mostrando solo los países de esa región, permitiendo comparar patrones ambientales dentro de cada geografía. Esta visualización anticipa si la conservación ambiental es un lujo de países ricos o una estrategia viable en todos los contextos.
 
 ```{r ambiental-scatter, fig.height=8, fig.width=25, out.width="100%"}
 
@@ -3667,8 +3665,7 @@ El gráfico revela una clara segregación geográfica en el uso de tierra: algun
 
 La dinámica poblacional condiciona fundamentalmente los desafíos de desarrollo: presión sobre recursos, mercado laboral, demanda por servicios públicos y sostenibilidad fiscal. Esta figura examina simultáneamente población y crecimiento poblacional en los 60 países más grandes, permitiendo visualizar si el crecimiento demográfico genera oportunidades (dividendo demográfico) o presiones críticas (declive o sobrepoblación).
 
-Estructura del Gráfico: Cada rectángulo representa un país donde el tamaño codifica población total. El color codifica crecimiento poblacional anual: verde indica crecimiento alto (2%+, potencial dividendo demográfico), amarillo transición moderada (0.5-2%), naranja-rojo crecimiento bajo o negativo (riesgo de declive poblacional).
-Al pasar el cursor sobre cada país, aparecen simultáneamente cinco indicadores demográficos y algunos de desarrollo para complementar: población en millones, tasa de crecimiento anual, esperanza de vida, mortalidad infantil, y PIB per cápita. También se muestra la clasificación demográfica del país (Dividendo Demográfico, Madurez Estable o Declive Poblacional).
+Estructura del Gráfico: Cada rectángulo representa un país donde el tamaño codifica población total. El color codifica crecimiento poblacional anual: verde indica crecimiento alto (2%+, potencial dividendo demográfico), amarillo transición moderada (0.5-2%), naranja-rojo crecimiento bajo o negativo (riesgo de declive poblacional). Al pasar el cursor sobre cada país, aparecen simultáneamente cinco indicadores demográficos y algunos de desarrollo para complementar: población en millones, tasa de crecimiento anual, esperanza de vida, mortalidad infantil, y PIB per cápita. También se muestra la clasificación demográfica del país (Dividendo Demográfico, Madurez Estable o Declive Poblacional).
 
 ```{r treemap-oportunidades-riesgos, fig.height=9, fig.width=25, out.width="100%"}
 
@@ -3898,32 +3895,15 @@ fig_treemap
 
 India y China dominan por volumen (rectángulos enormes), pero con dinámicas opuestas: India en amarillo-verde (crecimiento 1-2%) versus China en naranja-rojo (crecimiento bajo). Estados Unidos, Indonesia y Brasil exhiben colores intermedios, reflejando transiciones demográficas distintas. Países africanos como Congo Democrático, Nigeria y Uganda aparecen en verde brillante, indicando crecimiento rápido (oportunidades de dividendo demográfico pero también presión sobre servicios). Europeos como Alemania y España muestran tonos rojos-naranjas, evidenciando declive poblacional y envejecimiento. Esta distribución muestra que presiones demográficas operan en direcciones opuestas según región, información que contextualizará el análisis multivariado posterior.
 
-## Distribución de Indicadores por continente 
+## Distribución de Indicadores por continente
 
-Mientras que el análisis dimensional anterior examina indicadores de forma global, 
-es fundamental entender cómo varía la heterogeneidad DENTRO de cada continente. 
-Dos preguntas clave emergen: ¿Son los continentes entidades homogéneas o existen 
-disparidades profundas dentro de cada región? ¿Qué países actúan como outliers 
-casos atípicos que desafían el patrón regional y qué factores específicos 
-explican sus desviaciones?
+Mientras que el análisis dimensional anterior examina indicadores de forma global, es fundamental entender cómo varía la heterogeneidad DENTRO de cada continente. Dos preguntas clave emergen: ¿Son los continentes entidades homogéneas o existen disparidades profundas dentro de cada región? ¿Qué países actúan como outliers casos atípicos que desafían el patrón regional y qué factores específicos explican sus desviaciones?
 
-La siguiente visualización interactiva explora la istribución por región de 
-10 indicadores estratégicos seleccionados de las cinco dimensiones del desarrollo. 
-Para cada indicador y continente, se visualizan: (1) el boxplot que resume 
-la distribución central (mediana, cuartiles, rango intercuartil), (2) los puntos 
-normales que representan países dentro del rango esperado, y 
-(3) los outliers que identifican casos anómalos. 
+La siguiente visualización interactiva explora la istribución por región de 10 indicadores estratégicos seleccionados de las cinco dimensiones del desarrollo. Para cada indicador y continente, se visualizan: (1) el boxplot que resume la distribución central (mediana, cuartiles, rango intercuartil), (2) los puntos normales que representan países dentro del rango esperado, y (3) los outliers que identifican casos anómalos.
 
-Al pasar el cursor sobre cualquier punto, se desplegan simultáneamente el nombre 
-del país, su valor específico, su continente y clasificación (normal u outlier). 
-Esta visualización interactiva permite explorar dinámicamente qué países rompen 
-los patrones regionales esperados, información crucial para identificar posteriormente 
-qué características específicas crean estas anomalías—revelación que el Análisis de 
-Componentes Principales posteriormente contextualizará dentro de la estructura 
-multidimensional del desarrollo.
+Al pasar el cursor sobre cualquier punto, se desplegan simultáneamente el nombre del país, su valor específico, su continente y clasificación (normal u outlier). Esta visualización interactiva permite explorar dinámicamente qué países rompen los patrones regionales esperados, información crucial para identificar posteriormente qué características específicas crean estas anomalías—revelación que el Análisis de Componentes Principales posteriormente contextualizará dentro de la estructura multidimensional del desarrollo.
 
-Selecciona cualquier indicador con el menú desplegable para explorar cómo varían 
-las disparidades regionales según la dimensión analizada.
+Selecciona cualquier indicador con el menú desplegable para explorar cómo varían las disparidades regionales según la dimensión analizada.
 
 ```{r box plot,  fig.height=7.2, fig.width=25, out.width="100%"}
 
@@ -4007,7 +3987,6 @@ asignar_continentes <- function(data) {
                                 continentes_map[Pais], NA))
 }
 
-# ========== FUNCIÓN: Detectar outliers ==========
 detectar_outliers <- function(data, var, grupo_col) {
   data %>%
     group_by(!!sym(grupo_col)) %>%
@@ -4027,7 +4006,6 @@ detectar_outliers <- function(data, var, grupo_col) {
     ungroup()
 }
 
-# ========== PREPARAR DATOS ==========
 datos_box <- Base_2022 %>%
   asignar_continentes() %>%
   filter(!is.na(Continente)) %>%
@@ -4038,7 +4016,6 @@ datos_box <- Base_2022 %>%
     `Inversion extranjera`, `Crecimiento poblacion`, `Gasto salud`, `Area boscosa`
   )
 
-# ========== DEFINIR VARIABLES (SIN DUPLICAR) ==========
 vars_boxplot <- list(
   list(var = "PIB_per", 
        nombre = "PIB per cápita (US$)", 
@@ -4081,19 +4058,16 @@ vars_boxplot <- list(
        color = "#00ff00")
 )
 
-# ========== CREAR FIGURA ==========
 p <- plot_ly()
 
 for (i in seq_along(vars_boxplot)) {
   config <- vars_boxplot[[i]]
   var_name <- config$var
-  nombre_variable <- config$nombre  # Guardar en variable local
-  color_variable <- config$color    # Guardar en variable local
+  nombre_variable <- config$nombre  
+  color_variable <- config$color    
   
-  # Detectar outliers
   datos_con_outliers <- detectar_outliers(datos_box, var_name, "Continente")
   
-  # ===== TRACE 1: BOXPLOT =====
   p <- p %>%
     add_boxplot(
       data = datos_con_outliers,
@@ -4114,10 +4088,8 @@ for (i in seq_along(vars_boxplot)) {
       quartilemethod = "inclusive"
     )
   
-  # ===== TRACE 2: SCATTER - TODOS LOS PUNTOS =====
   datos_todos <- datos_con_outliers
   
-  # Crear columnas temporales con los valores correctos
   datos_todos$valor_actual <- datos_todos[[var_name]]
   datos_todos$nombre_var <- nombre_variable
   datos_todos$color_var <- color_variable
@@ -4159,7 +4131,6 @@ for (i in seq_along(vars_boxplot)) {
     )
 }
 
-# ========== LAYOUT ==========
 p %>%
   layout(
     title = list(
@@ -4313,9 +4284,7 @@ p %>%
 
 ```
 
-La Figura 6 revela cierta heterogeneidad dentro de cada continente. En Africa, la dispersión es particularmente amplia en indicadores de salud: mientras algunos países aproximan estándares europeos en esperanza de vida, otros enfrentan desafíos críticos en mortalidad infantil. Americas muestra un patrón variado donde algunos países desarrollados contrastan dramáticamente con economías emergentes, ejemplo: Bolivia registra esperanza de vida por debajo del promedio regional. En Asia, la heterogeneidad es extrema, Qatar emerge como outlier en crecimiento poblacional (5.91% anual, reflejo de inmigración laboral), mientras otros países asiáticos presentan dinámicas demográficas moderadas. Europe mantiene relativa homogeneidad en indicadores de bienestar, aunque Malta destaca como outlier extremo en inversión extranjera directa (126% del PIB, característico de economías muy pequeñas y financieras). En Oceania, la dispersión limitada contrasta con puntos aislados como Solomon Islands, con cobertura forestal excepcional.
-Estos patrones evidencian que el desarrollo no se distribuye geográficamente de forma uniforme sino que responde a factores estructurales, institucionales y geopolíticos específicos, información que el análisis multidimensional posterior contextualizará dentro de constructos sintéticos mediante componentes principales.
-
+La Figura 6 revela cierta heterogeneidad dentro de cada continente. En Africa, la dispersión es particularmente amplia en indicadores de salud: mientras algunos países aproximan estándares europeos en esperanza de vida, otros enfrentan desafíos críticos en mortalidad infantil. Americas muestra un patrón variado donde algunos países desarrollados contrastan dramáticamente con economías emergentes, ejemplo: Bolivia registra esperanza de vida por debajo del promedio regional. En Asia, la heterogeneidad es extrema, Qatar emerge como outlier en crecimiento poblacional (5.91% anual, reflejo de inmigración laboral), mientras otros países asiáticos presentan dinámicas demográficas moderadas. Europe mantiene relativa homogeneidad en indicadores de bienestar, aunque Malta destaca como outlier extremo en inversión extranjera directa (126% del PIB, característico de economías muy pequeñas y financieras). En Oceania, la dispersión limitada contrasta con puntos aislados como Solomon Islands, con cobertura forestal excepcional. Estos patrones evidencian que el desarrollo no se distribuye geográficamente de forma uniforme sino que responde a factores estructurales, institucionales y geopolíticos específicos, información que el análisis multidimensional posterior contextualizará dentro de constructos sintéticos mediante componentes principales.
 
 ## Visualización Geoespacial
 
@@ -4655,7 +4624,6 @@ htmltools::tagList(
 )
 ```
 
-
 En crecimiento PIB, se observa segregación clara: Europa y América del Norte tienden a tonos amarillo-verde (crecimiento moderado), mientras muchas naciones africanas muestran tonos oscuros (estancamiento). Asia exhibe máxima variabilidad: gigantes como India y Bangladesh en verde (crecimiento dinámico), mientras Japón mantiene tonos amarillos (crecimiento moderado). En acceso a electricidad, la brecha digital-energética es evidente: Europa, América del Norte y gran parte de Asia en amarillo (acceso universal), mientras amplias regiones de África central permanecen en azul oscuro. América Latina exhibe transición: colores intermedios reflejando acceso extendido pero no universal. En crecimiento poblacional, se observa un patrón opuesto al desarrollo económico: Europa y Japón dominan tonos azules (declive demográfico), mientras África muestra naranjas y rojos intensos (presión poblacional extrema), y América Latina ocupa posiciones intermedias. Esta disociación geográfica entre prosperidad económica, acceso de servicios básicos y dinámica demográfica anticipa que el análisis multivariado revelará si estas dimensiones operan de forma integrada o representan trayectorias diferentes del desarrollo.
 
 ------------------------------------------------------------------------
@@ -4978,7 +4946,6 @@ factores <- acp_resultado$li
 
 ```
 
-
 ```{r Tabla varianza}
 
 varianza_df <- data.frame(
@@ -5004,7 +4971,6 @@ varianza_df <- data.frame(
     columns = c(Varianza, VarianzaAcum),
     decimals = 2
   ) %>%
-  # ========== ENCABEZADOS CYBER ==========
   tab_style(
     style = list(
       cell_text(weight = "bold", size = "medium", color = "#000000"),
@@ -5012,7 +4978,6 @@ varianza_df <- data.frame(
     ),
     locations = cells_column_labels()
   ) %>%
-  # ========== BORDES CYBER ==========
   tab_style(
     style = cell_borders(
       sides = c("top", "bottom"),
@@ -5032,7 +4997,6 @@ varianza_df <- data.frame(
     ),
     locations = cells_body(columns = c(Componente, Varianza))
   ) %>%
-  # ========== CUERPO DE LA TABLA ==========
   tab_style(
     style = list(
       cell_fill(color = "#0a0e1a"),
@@ -5040,17 +5004,14 @@ varianza_df <- data.frame(
     ),
     locations = cells_body()
   ) %>%
-  # ========== PRIMERA COLUMNA DESTACADA ==========
   tab_style(
     style = cell_text(weight = "bold", color = "#00e5ff"),
     locations = cells_body(columns = Componente)
   ) %>%
-  # ========== VALORES NUMÉRICOS ==========
   tab_style(
     style = cell_text(size = "small", color = "#e0e6ed"),
     locations = cells_body(columns = c(Varianza, VarianzaAcum))
   ) %>%
-  # ========== FILA CON MAYOR VARIANZA (PC1) - DESTACADA ==========
   tab_style(
     style = list(
       cell_fill(color = "#12161f"),
@@ -5058,42 +5019,35 @@ varianza_df <- data.frame(
     ),
     locations = cells_body(rows = 1)
   ) %>%
-  # ========== OPCIONES GENERALES ==========
   tab_options(
     table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
-    # Encabezados
     column_labels.border.top.style = "solid",
     column_labels.border.top.color = "#00e5ff",
     column_labels.border.top.width = px(3),
     column_labels.border.bottom.style = "solid",
     column_labels.border.bottom.width = px(3),
     column_labels.border.bottom.color = "#00e5ff",
-    # Cuerpo
     table_body.border.bottom.style = "none",
     table_body.border.top.style = "none",
     table_body.hlines.style = "solid",
     table_body.hlines.color = "#00e5ff",
     table_body.hlines.width = px(1),
-    # Fondo y padding
     table.background.color = "#0a0e1a",
     data_row.padding = px(12),
-    # Títulos
     heading.title.font.size = 18,
     heading.subtitle.font.size = 14,
     heading.padding = px(12),
     heading.border.bottom.style = "solid",
     heading.border.bottom.width = px(2),
     heading.border.bottom.color = "#00e5ff",
-    # Notas
     footnotes.padding = px(10),
     footnotes.font.size = 13,
     source_notes.font.size = 13,
     source_notes.padding = px(10)
   ) %>%
-  # Aplicar estilos a títulos
   tab_style(
     style = list(
       cell_text(weight = "bold", color = "#00e5ff", size = "large")
@@ -5106,7 +5060,6 @@ varianza_df <- data.frame(
     ),
     locations = cells_title(groups = "subtitle")
   ) %>%
-  # ========== NOTAS Y FUENTES ==========
   tab_source_note(
     source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP (Análisis de Componentes Principales)")
   ) %>%
@@ -5160,7 +5113,6 @@ En este análisis, el primer componente (**PC1**) capturó un **`r pc1_var`%** d
 
 El gráfico de sedimentación visualiza el concepto del "codo" (elbow) introducido por Kaiser (1960). La curva de los eigenvalores (representada como barras) exhibe un descenso pronunciado en los primeros componentes, indicando que capturan varianza sustancial. A partir de cierto componente, la pendiente se aplana significativamente, entrando en un régimen donde componentes posteriores explican proporciones cada vez menores de varianza residual (Hastie et al., 2009).
 
-
 ```{r sedimentacion-cyber, fig.height=7, fig.width=12, out.width="100%"}
 res.pca <- prcomp(datos_analisis, scale = TRUE)
 
@@ -5206,7 +5158,6 @@ res.pca$coord
 res.var$contrib        
 res.var$cos2  
 ```
-
 
 El punto donde esta curvatura cambia de pronunciada a plana (el "codo") indica aproximadamente el número de componentes que retienen información relevante; componentes posteriores al codo tienden a capturar principalmente ruido estadístico (Jolliffe, 2002). Y se selecciona 4 componentes ya que a partir de $k=4$ se comienza a aplanar la varianza explicada.
 
@@ -5805,7 +5756,6 @@ En la dimensión 1, la Esperanza de vida lidera, posicionándose en el extremo p
 
 En la Figura 11, correspondiente al círculo de correlaciones, observamos la proyección de las 17 variables originales en el plano definido por los componentes principales 3 y 4.
 
-
 ```{r Variables DIM 3 Y DIM 4, fig.height=7, fig.width=12, out.width="100%"}
 p2 <- plot_ly(var_df,
               x = ~Dim3, 
@@ -5926,7 +5876,7 @@ p2 <- plot_ly(var_df,
 p2
 ```
 
-En la dimensión 3, las Importaciones, Exportaciones e Inversión extranjera se posicionan en el extremo positivo, caracterizando economías altamente integradas en cadenas de valor globales con comercio y flujos de inversión exponenciados. Malta (comercio >260% del PIB), Singapur, Irlanda y otros micro-Estados/hubs financieros ocupan este polo.
+En la dimensión 3, las Importaciones, Exportaciones e Inversión extranjera se posicionan en el extremo positivo, caracterizando economías altamente integradas en cadenas de valor globales con comercio y flujos de inversión exponenciados. Malta (comercio \>260% del PIB), Singapur, Irlanda y otros micro-Estados/hubs financieros ocupan este polo.
 
 En el extremo negativo se ubican Área boscosa y Población, países que preservan ecosistemas naturales tienden a tener menor integración comercial. Esto refleja que naciones con biodiversidad conservada (Timor-Leste, algunos países amazónicos con 70%+ bosques) típicamente tienen economías más locales, menos insertadas en globalización, y mercados más pequeños.
 
@@ -6108,7 +6058,6 @@ En dirección opuesta: países desarrollados europeos se oponen a flechas de mor
 
 p2 <- plot_ly() %>%
   
-  # Vectores de variables
   add_segments(
     data = var_df,
     x = 0, xend = ~Dim3, y = 0, yend = ~Dim4,
@@ -6380,7 +6329,7 @@ Sobre la base de los k componentes principales retenidos del Análisis de Compon
 
 El método de Ward minimiza específicamente la suma total de cuadrados dentro de clusters (*within-cluster sum of squares*, WCSS), definida matemáticamente como:
 
- $$WCSS = \sum_{c=1}^{C} \sum_{i \in c} ||x_i - \bar{c}||^2$$
+$$WCSS = \sum_{c=1}^{C} \sum_{i \in c} ||x_i - \bar{c}||^2$$
 
 donde: $C$ es el número de clusters, $x_i$ es la posición de la observación $i$ en el espacio de componentes principales, $\bar{c}$ es el centroide (promedio) del cluster $c$.
 
@@ -6742,12 +6691,11 @@ elbow_plot_interactive
 
 La coherencia interpretativa valida que los clusters identificados tienen significado económico y social claro. En este análisis, se seleccionó $k=3$ clusters porque esta segmentación produce tres grupos conceptualmente diferenciados.
 
-### Caracterizacion de los clusters
+### Caracterización de los clusters
 
 La segmentación produjo una distribución desigual de países entre clusters. El Cluster 1 agrupa 84 países (61.8% del total), el Cluster 2 agrupa 32 países (23.5%), y el Cluster 3 agrupa 20 países (14.7%). Esta distribución refuerza la interpretación de que existe un pequeño grupo de países ultra-desarrollados (Cluster 1), un grupo intermedio significativo de emergentes (Cluster 2), y un grupo minoritario pero vulnerable de países en rezago extremo (Cluster 3). La concentración de 61.8% en Cluster 1 sugiere que la mayoría de países han logrado algún nivel de desarrollo básico, mientras que la minoría de 14.7% en Cluster 3 representa casos de vulnerabilidad persistente y multidimensional.
 
 ```{r tabla-distribucion-clusters-cyber}
-# ========== TABLA 15: DISTRIBUCIÓN DE CLUSTERS - SOLO ESTILO ==========
 distribucion_clusters <- table(clusters) %>%
   as.data.frame() %>%
   rename(Cluster = clusters, Frecuencia = Freq) %>%
@@ -6851,7 +6799,6 @@ tabla_distribucion
 ```
 
 ```{r tabla-estadisticas-descriptivas-cyber}
-# ========== TABLA 16: ESTADÍSTICAS DESCRIPTIVAS - SOLO ESTILO ==========
 nombres_variables <- c(
   "PIB_per" = "PIB per cápita (US$)",
   "Poblacion" = "Población total",
@@ -6966,8 +6913,8 @@ tabla_estadisticas <- estadisticas_clusters %>%
   ) %>%
   tab_style(
     style = list(
-      cell_fill(color = "#0a0e1a"),
-      cell_text(color = "#ffffff", weight = "bold", size = "large", transform = "uppercase")
+      cell_fill(color = "#ffffff"),
+      cell_text(color = "#ffffff", weight = "bold", size = "large") 
     ),
     locations = cells_row_groups()
   ) %>%
@@ -7001,6 +6948,10 @@ tabla_estadisticas <- estadisticas_clusters %>%
     table_body.hlines.width = px(1),
     table.background.color = "#0a0e1a",
     data_row.padding = px(8),
+    row_group.background.color = "#0a0e1a",
+    row_group.padding = px(12),
+    row_group.font.weight = "bold",
+    row_group.font.size = "large",
     heading.title.font.size = 18,
     heading.subtitle.font.size = 14,
     heading.padding = px(12),
@@ -7013,10 +6964,10 @@ tabla_estadisticas <- estadisticas_clusters %>%
   )
 
 tabla_estadisticas
+
 ```
 
 ```{r tabla-comparacion-medias-cyber}
-# ========== TABLA 17: COMPARACIÓN DE MEDIAS - SOLO ESTILO ==========
 estadisticas_por_cluster <- NuevaBase %>%
   group_by(Cluster) %>%
   summarise(across(
@@ -7153,6 +7104,7 @@ tabla_estadisticas_mejorada <- estadisticas_largas %>%
 
 tabla_estadisticas_mejorada
 ```
+
 #### Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada
 
 Perfil de variables: Cluster 1 se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
@@ -7312,6 +7264,7 @@ resumen_clusters <- cluster_df %>%
 
 resumen_clusters
 ```
+
 ```{r clusters-scatter-cyber, fig.width=12, fig.height=8.2, out.width="100%"}
 cluster_plot <- plot_ly(
   cluster_df,
@@ -7409,6 +7362,7 @@ cluster_plot <- plot_ly(
 
 cluster_plot
 ```
+
 El Cluster 2 (puntos azul) se distribuye ampliamente en la región central-derecha del plano, con mayor concentración en PC1 entre +1 y +3 (desarrollo intermedio) y PC2 entre -2 y +2 (diversidad de modelos económicos). Esta dispersión amplia confirma la heterogeneidad interna del Cluster 2: incluye desde países latinoamericanos con desarrollo intermedio hasta economías asiáticas emergentes con distintas trayectorias de industrialización. Algunos países del Cluster 2 con PC1 \>3 se posicionan muy cerca de frontera con Cluster 1, sugiriendo que están en transición hacia desarrollo consolidado.
 
 El Cluster 3 (puntos amarillos) se concentra en la región izquierda del plano (PC1 negativo desde -2 hasta -6), confirmando su posicionamiento en el polo de menor desarrollo humano. Verticalmente, el Cluster 3 muestra dispersión amplia en PC2 (desde -2 hasta +2), reflejando que países en rezago tienen modelos económicos diversos: algunos dependen de remesas (PC2 positivo), otros tienen industria extractiva limitada (PC2 negativo moderado). La separación visual entre Cluster 3 y Clusters 1-2 es clara, con solapamiento mínimo, validando que la segmentación captura diferencias estructurales genuinas.
@@ -7676,7 +7630,6 @@ El mapa mundial con países coloreados según cluster confirma visualmente los p
 
 Esta distribución geográfica valida que desarrollo no es aleatoriamente distribuido sino que presenta patrones espaciales claros asociados con historia económica, instituciones, geografía física, y legados coloniales. La concentración de Cluster 3 en África subsahariana y la consolidación de Cluster 1 en Europa Occidental-América del Norte-Asia Oriental confirma la persistencia de brechas globales estructurales (Banco Mundial, 2023; Acemoglu & Robinson, 2012).
 
-
 ## Resultados e interpretación
 
 ### Caracterizacion de los componentes principales
@@ -7713,28 +7666,36 @@ Timor-Leste encabeza el extremo positivo con coordenada 3.921, siendo joven naci
 
 India lidera el extremo negativo con coordenada -5.813, teniendo 1,400 millones de habitantes en 3.3 millones de km² (densidad: \~420 hab/km²), lo que ha convertido \~60% del territorio en tierra cultivable para arroz, trigo, algodón, caña de azúcar, reduciendo bosques a apenas 23%. China (-3.891) y Bangladesh (-3.049) presentan patrones similares: Bangladesh tiene densidad de \~1,250 hab/km² con \~70% tierra cultivable y bosques reducidos a 11%; China, aunque menos densamente poblada (\~145 hab/km²), tiene 1,400 millones de habitantes que han transformado casi toda tierra disponible en agricultura intensiva. Este componente revela el dilema del desarrollo: presión demográfica extrema obliga sacrificar ecosistemas naturales por seguridad alimentaria; solo países con baja densidad pueden permitirse preservar naturaleza (Banco Mundial, 2023).
 
-```{r caracterizacion }
+```{r caracterizacion_componentes, warning=FALSE, message=FALSE}
+
 caracterizacion_componentes <- data.frame(
   Componente = c("PC1", "PC2", "PC3", "PC4"),
-  Nombre = c("Desarrollo Humano y Conectividad Digital", 
-             "Modelo Económico-Institucional", 
-             "Integración Comercial Global", 
-             "Presión Territorial y Recursos Naturales"),
+  
+  Nombre = c(
+    "Desarrollo Humano y Conectividad Digital",
+    "Modelo Económico-Institucional",
+    "Integración Comercial Global",
+    "Presión Territorial y Recursos Naturales"
+  ),
+  
   Varianza_Explicada = c("24.3%", "13.5%", "9.1%", "7.5%"),
+  
   Variables_Positivas = c(
-    "Esperanza de vida (0.413), Uso de internet (0.4126), Acceso a electricidad (0.3709)",
-    "Remesas (0.3465), Gasto en salud (0.3038), Importaciones (0.2842), Tierra cultivable (0.2415)",
-    "Importaciones (0.5187), Exportaciones (0.5084), Inversión extranjera (0.3714), Crecimiento PIB (0.2562)",
-    "Área boscosa (0.5134)"
+    "Esperanza de vida (0.413), Uso de internet (0.413), Acceso a electricidad (0.371)",
+    "Remesas (0.347), Gasto en salud (0.304), Importaciones (0.284), Tierra cultivable (0.241)",
+    "Importaciones (0.519), Exportaciones (0.508), Inversión extranjera (0.371), Crecimiento PIB (0.256)",
+    "Área boscosa (0.513)"
   ),
+  
   Variables_Negativas = c(
-    "Mortalidad infantil (-0.4083)",
-    "Industria (-0.5145), Crecimiento poblacional (-0.4365)",
+    "Mortalidad infantil (-0.408)",
+    "Industria (-0.515), Crecimiento poblacional (-0.437)",
     "Área boscosa (-0.273), Población (-0.263)",
-    "Tierra cultivable (-0.5539), Población (-0.4713)"
+    "Tierra cultivable (-0.554), Población (-0.471)"
   ),
+  
   Interpretación = c(
-    "Países desarrollados con alta esperanza de vida, conectividad digital e infraestructura vs países en desarrollo con sistemas sanitarios frágiles",
+    "Países desarrollados con alta esperanza de vida, conectividad digital e infraestructura sanitaria vs países en desarrollo con sistemas sanitarios frágiles",
     "Economías industriales maduras vs economías dependientes de transferencias externas y remesas",
     "Economías pequeñas ultra-abiertas (hubs comerciales) vs economías grandes con mercados internos dominantes",
     "Países con ecosistemas preservados vs países con alta presión agrícola y demográfica"
@@ -7744,8 +7705,8 @@ caracterizacion_componentes <- data.frame(
 tabla_componentes <- caracterizacion_componentes %>%
   gt() %>%
   tab_header(
-    title = md("**Caracterización de Componentes Principales**"),
-    subtitle = "Análisis de componentes principales de indicadores de desarrollo global"
+    title = md("**Tabla 19**"),
+    subtitle = "Caracterización de Componentes Principales del Análisis de Desarrollo Global"
   ) %>%
   cols_label(
     Componente = md("**Comp.**"),
@@ -7761,16 +7722,16 @@ tabla_componentes <- caracterizacion_componentes %>%
   ) %>%
   tab_style(
     style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
+      cell_text(weight = "bold", size = "medium", color = "#000000"),
+      cell_fill(color = "#00e5ff")
     ),
     locations = cells_column_labels()
   ) %>%
   tab_style(
     style = cell_borders(
       sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
+      color = "#00e5ff",
+      weight = px(2)
     ),
     locations = list(
       cells_column_labels(),
@@ -7778,30 +7739,81 @@ tabla_componentes <- caracterizacion_componentes %>%
     )
   ) %>%
   tab_style(
-    style = cell_text(weight = "bold"),
-    locations = cells_body(columns = c(Componente, Nombre))
+    style = cell_borders(
+      sides = "right",
+      color = "#00e5ff",
+      weight = px(1)
+    ),
+    locations = cells_body(columns = c(Componente, Nombre, Varianza_Explicada, Variables_Positivas, Variables_Negativas))
   ) %>%
   tab_style(
-    style = cell_text(size = "small"),
-    locations = cells_body(columns = c(Variables_Positivas, Variables_Negativas, Interpretación))
+    style = list(
+      cell_fill(color = "#0a0e1a"),
+      cell_text(color = "#e0e6ed")
+    ),
+    locations = cells_body()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", color = "#00e5ff"),
+      cell_fill(color = "#12161f")
+    ),
+    locations = cells_body(columns = Componente)
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold", color = "#00e5ff"),
+    locations = cells_body(columns = Varianza_Explicada)
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", color = "#00e5ff", size = "large")
+    ),
+    locations = cells_title(groups = "title")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(color = "#8b92a0", size = "medium")
+    ),
+    locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
-    column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
+    column_labels.border.top.style = "solid",
+    column_labels.border.top.color = "#00e5ff",
+    column_labels.border.top.width = px(3),
+    column_labels.border.bottom.style = "solid",
+    column_labels.border.bottom.width = px(3),
+    column_labels.border.bottom.color = "#00e5ff",
     table_body.border.bottom.style = "none",
     table_body.border.top.style = "none",
-    data_row.padding = px(8),
-    heading.title.font.size = 14,
-    heading.subtitle.font.size = 12,
-    heading.padding = px(4)
+    table_body.hlines.style = "solid",
+    table_body.hlines.color = "#00e5ff",
+    table_body.hlines.width = px(1),
+    table.background.color = "#0a0e1a",
+    data_row.padding = px(12),
+    heading.title.font.size = 18,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(12),
+    heading.border.bottom.style = "solid",
+    heading.border.bottom.width = px(2),
+    heading.border.bottom.color = "#00e5ff",
+    footnotes.padding = px(10),
+    footnotes.font.size = 13,
+    source_notes.font.size = 13,
+    source_notes.padding = px(10)
   ) %>%
   tab_source_note(
-    source_note = md("**Fuente:** Elaboración propia con base en análisis PCA de indicadores globales (Banco Mundial, PNUD, FMI)")
+    source_note = md("**Fuente:** Elaboración propia con base en el Análisis de Componentes Principales de indicadores de desarrollo global (Banco Mundial, 2022)")
+  ) %>%
+  tab_footnote(
+    footnote = "Los valores en paréntesis representan las cargas (loadings) de cada variable en el componente principal",
+    locations = cells_body(
+      rows = c(1, 2, 3, 4),
+      columns = Variables_Positivas
+    )
   )
 
 tabla_componentes
@@ -7811,7 +7823,7 @@ tabla_componentes
 
 Tras construir el modelo ACP con aproximadamente 180 países de entrenamiento, se proyectaron cinco países adicionales (Angola, Belice, Jordania, Luxemburgo, Uruguay) sobre el espacio factorial ya definido. La proyección utiliza las medias y varianzas del conjunto de entrenamiento para estandarizar los nuevos datos, evitando que cambien la estructura de componentes. Se calcularon las coordenadas de estos cinco países en los cuatro primeros componentes principales, cuantificando su posición relativa respecto al espacio multidimensional de desarrollo ya identificado (Hastie et al., 2009).
 
-```{r Prediccion}
+```{r Prediccion-CYBER-STYLE}
 
 Prediccion <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.csv",
                  show_col_types = FALSE) %>%
@@ -7841,11 +7853,11 @@ Prediccion <- read_csv("f36a5086-3311-4b1a-9f0c-bda5cd4718df_Series - Metadata.c
 ind.test <- Prediccion[, 3:19] %>%
   mutate(across(everything(), as.numeric))
 
-
 ind.test_clean <- ind.test %>%
   mutate(across(everything(), ~ifelse(is.na(.), mean(., na.rm = TRUE), .)))
 
 ind.test.coord <- predict(res.pca, newdata = ind.test_clean)
+
 coordenadas_paises <- data.frame(
   País = Prediccion$Pais,
   `Código País` = Prediccion$Codigo,
@@ -7855,20 +7867,19 @@ coordenadas_paises <- data.frame(
   `Dimensión 4 - Recursos Naturales` = round(ind.test.coord[, 4], 4)
 )
 
-
 tabla_coordenadas <- coordenadas_paises %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 3: Coordenadas de Países en Componentes Principales**"),
-    subtitle = "Proyección de países seleccionados en las cuatro dimensiones del Análisis de Componentes Principales"
+    title = md("**Tabla 20**"),
+    subtitle = "Coordenadas de Países en Componentes Principales"
   ) %>%
   cols_label(
     País = md("**País**"),
     `Código.País` = md("**Código**"),
-    `Dimensión.1...Desarrollo.Humano` = md("**Dimensión 1**"),
-    `Dimensión.2...Industrialización` = md("**Dimensión 2**"),
-    `Dimensión.3...Apertura.Comercial` = md("**Dimensión 3**"),
-    `Dimensión.4...Recursos.Naturales` = md("**Dimensión 4**")
+    `Dimensión.1...Desarrollo.Humano` = md("**Dim 1<br>Desarrollo**"),
+    `Dimensión.2...Industrialización` = md("**Dim 2<br>Industrialización**"),
+    `Dimensión.3...Apertura.Comercial` = md("**Dim 3<br>Comercio**"),
+    `Dimensión.4...Recursos.Naturales` = md("**Dim 4<br>Recursos**")
   ) %>%
   cols_align(
     align = "center",
@@ -7881,16 +7892,16 @@ tabla_coordenadas <- coordenadas_paises %>%
   ) %>%
   tab_style(
     style = list(
-      cell_text(weight = "bold", size = "medium"),
-      cell_fill(color = "white")
+      cell_text(weight = "bold", size = "medium", color = "#000000"),
+      cell_fill(color = "#00e5ff")
     ),
     locations = cells_column_labels()
   ) %>%
   tab_style(
     style = cell_borders(
       sides = c("top", "bottom"),
-      color = "black",
-      weight = px(1)
+      color = "#00e5ff",
+      weight = px(2)
     ),
     locations = list(
       cells_column_labels(),
@@ -7900,171 +7911,214 @@ tabla_coordenadas <- coordenadas_paises %>%
   tab_style(
     style = cell_borders(
       sides = "right",
-      color = "gray80",
+      color = "#00e5ff",
       weight = px(1)
     ),
     locations = cells_body(columns = c(País, `Código.País`, `Dimensión.1...Desarrollo.Humano`, 
                                        `Dimensión.2...Industrialización`, `Dimensión.3...Apertura.Comercial`))
   ) %>%
   tab_style(
-    style = cell_text(weight = "bold"),
+    style = list(
+      cell_fill(color = "#0a0e1a"),
+      cell_text(color = "#e0e6ed")
+    ),
+    locations = cells_body()
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", color = "#00e5ff"),
+      cell_fill(color = "#12161f")
+    ),
     locations = cells_body(columns = País)
   ) %>%
   tab_style(
+    style = cell_text(weight = "bold", color = "#00e676"),
+    locations = cells_body(columns = c(`Dimensión.1...Desarrollo.Humano`, `Dimensión.2...Industrialización`,
+                                       `Dimensión.3...Apertura.Comercial`, `Dimensión.4...Recursos.Naturales`))
+  ) %>%
+  tab_style(
     style = cell_text(size = "small"),
-    locations = cells_body(columns = c(`Código.País`, `Dimensión.1...Desarrollo.Humano`,
-                                       `Dimensión.2...Industrialización`, `Dimensión.3...Apertura.Comercial`,
-                                       `Dimensión.4...Recursos.Naturales`))
+    locations = cells_body(columns = `Código.País`)
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold", color = "#00e5ff", size = "large")
+    ),
+    locations = cells_title(groups = "title")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(color = "#8b92a0", size = "medium")
+    ),
+    locations = cells_title(groups = "subtitle")
   ) %>%
   tab_options(
-    table.font.names = "Times New Roman",
+    table.font.names = "Arial",
     table.width = pct(100),
     table.border.top.style = "none",
     table.border.bottom.style = "none",
-    column_labels.border.top.style = "none",
-    column_labels.border.bottom.width = px(2),
-    column_labels.border.bottom.color = "black",
+    column_labels.border.top.style = "solid",
+    column_labels.border.top.color = "#00e5ff",
+    column_labels.border.top.width = px(3),
+    column_labels.border.bottom.style = "solid",
+    column_labels.border.bottom.width = px(3),
+    column_labels.border.bottom.color = "#00e5ff",
     table_body.border.bottom.style = "none",
     table_body.border.top.style = "none",
-    data_row.padding = px(8),
-    heading.title.font.size = 14,
-    heading.subtitle.font.size = 12,
-    heading.padding = px(4),
-    footnotes.padding = px(4)
+    table_body.hlines.style = "solid",
+    table_body.hlines.color = "#00e5ff",
+    table_body.hlines.width = px(1),
+    table.background.color = "#0a0e1a",
+    data_row.padding = px(12),
+    heading.title.font.size = 18,
+    heading.subtitle.font.size = 14,
+    heading.padding = px(12),
+    heading.border.bottom.style = "solid",
+    heading.border.bottom.width = px(2),
+    heading.border.bottom.color = "#00e5ff",
+    footnotes.padding = px(10),
+    footnotes.font.size = 13,
+    source_notes.font.size = 13,
+    source_notes.padding = px(10)
   ) %>%
   tab_source_note(
-    source_note = md("**Fuente:** Elaboración propia con base en proyección ACP de indicadores del World Bank (2023)")
+    source_note = md("**Fuente:** Elaboración propia con base en proyección PCA de indicadores del Banco Mundial (2022)")
   ) %>%
   tab_footnote(
-    footnote = "Dimensión 1: Desarrollo Humano y Tecnológico (24.3% varianza) | Dimensión 2: Industrialización y Dinámica Demográfica (13.5% varianza)",
-    locations = cells_title(groups = "subtitle")
-  ) %>%
-  tab_footnote(
-    footnote = "Dimensión 3: Apertura e Integración Comercial (9.1% varianza) | Dimensión 4: Base Territorial y Recursos Naturales (7.5% varianza)",
+    footnote = "Proyección de países seleccionados sobre los cuatro componentes principales del análisis",
     locations = cells_title(groups = "subtitle")
   )
 
 tabla_coordenadas
 
-library(plotly)
 coordenadas_originales <- as.data.frame(res.pca$x)
 coordenadas_originales$Pais <- rownames(coordenadas_originales)
 coordenadas_originales$Tipo <- "Original"
 
-# Las coordenadas de los países predichos ya están en ind.test.coord
 coordenadas_predichas <- as.data.frame(ind.test.coord)
 coordenadas_predichas$Pais <- Prediccion$Pais
 coordenadas_predichas$Tipo <- "Predicho"
 
-# Renombrar las columnas para que coincidan
 colnames(coordenadas_originales)[1:4] <- c("PC1", "PC2", "PC3", "PC4")
 colnames(coordenadas_predichas)[1:4] <- c("PC1", "PC2", "PC3", "PC4")
 
-# Combinar los datos
 datos_completos <- rbind(
-  coordenadas_originales[, c("Pais", "PC1", "PC2", "Tipo","Pais", "PC3", "PC4", "Tipo")],
-  coordenadas_predichas[, c("Pais", "PC1", "PC2", "Tipo","Pais", "PC3", "PC4", "Tipo")]
+  coordenadas_originales[, c("Pais", "PC1", "PC2", "PC3", "PC4", "Tipo")],
+  coordenadas_predichas[, c("Pais", "PC1", "PC2", "PC3", "PC4", "Tipo")]
 )
+```
 
-# Crear el gráfico plotly SIN nombres visibles
+```{r prediccion_animado_reorganizado, message=FALSE, warning=FALSE, fig.height=7.5, fig.width=12, out.width="100%"}
+
 p_animado <- plot_ly() %>%
   
-  # Países originales (solo puntos, sin texto)
   add_trace(
     data = datos_completos[datos_completos$Tipo == "Original", ],
     x = ~PC1, y = ~PC2,
     type = 'scatter',
     mode = 'markers',
     marker = list(
-      color = 'black',
+      color = '#8b92a0',
       size = 8,
-      opacity = 0.7,
-      line = list(width = 1, color = 'white')
+      opacity = 0.6,
+      line = list(width = 1, color = '#e0e6ed')
     ),
     name = "Países originales",
     hoverinfo = 'text',
-    hovertext = ~paste("<b>", Pais, "</b><br>",
-                       "Tipo: Original<br>",
-                       "Dimensión 1: ", round(PC1, 3), "<br>",
-                       "Dimensión 2: ", round(PC2, 3))
+    hovertext = ~paste(
+      "<b style='color:#00e5ff; font-size:13px;'>", Pais, "</b><br>",
+      "<span style='color:#8b92a0; font-size:11px;'><b>Tipo:</b> Original</span><br>",
+      "<b style='color:#00e676;'>Dim 1:</b> ", round(PC1, 3), "<br>",
+      "<b style='color:#00e5ff;'>Dim 2:</b> ", round(PC2, 3)
+    )
   ) %>%
   
-  # Países predichos (solo puntos, sin texto)
   add_trace(
     data = datos_completos[datos_completos$Tipo == "Predicho", ],
     x = ~PC1, y = ~PC2,
     type = 'scatter',
     mode = 'markers',
     marker = list(
-      color = 'blue',
-      size = 12,
-      opacity = 0.8,
+      color = '#00e5ff',
+      size = 14,
+      opacity = 0.95,
       symbol = 'star',
-      line = list(width = 1.5, color = 'white')
+      line = list(width = 2, color = '#ffffff')
     ),
     name = "Países predichos",
     hoverinfo = 'text',
-    hovertext = ~paste("<b>", Pais, "</b><br>",
-                       "Tipo: Predicho<br>",
-                       "Dimensión 1: ", round(PC1, 3), "<br>",
-                       "Dimensión 2: ", round(PC2, 3)),
-    visible = FALSE  # Inicialmente ocultos
+    hovertext = ~paste(
+      "<b style='color:#ffd600; font-size:13px;'>", Pais, "</b><br>",
+      "<span style='color:#a259ff; font-size:11px;'><b>Tipo:</b> Predicho</span><br>",
+      "<b style='color:#00e676;'>Dim 1:</b> ", round(PC1, 3), "<br>",
+      "<b style='color:#00e5ff;'>Dim 2:</b> ", round(PC2, 3)
+    ),
+    visible = FALSE
   ) %>%
   
   layout(
     title = list(
-      text = "<b>PCA - Países originales (negro) y países predichos (azul)</b>",
-      x = 0.05,
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 21: Proyección PCA Dim 1 vs Dim 2</b><br>
+             <span style='color:#8b92a0; font-size:12px;'>Países originales (gris) y predichos (cyan)</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.98
     ),
     xaxis = list(
-      title = "Dimensión 1 - Desarrollo Humano y Tecnológico (24.3%)",
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 1 - Desarrollo Humano y Tecnológico (24.3%)</b>",
       zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 11),
+      titlefont = list(color = '#e0e6ed', size = 12)
     ),
     yaxis = list(
-      title = "Dimensión 2 - Modelo Económico-Institucional (13.5%)",
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 2 - Modelo Económico (13.5%)</b>",
       zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 11),
+      titlefont = list(color = '#e0e6ed', size = 12)
     ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    showlegend = TRUE,
-    legend = list(
-      x = 0.02,
-      y = 0.98,
-      bgcolor = "rgba(255,255,255,0.8)"
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 100, r = 80, b = 100, t = 140),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
     ),
-    annotations = list(
-      list(
-        x = 0.5,
-        y = -0.15,
-        text = "● Países originales | ★ Países predichos • Pasa el cursor sobre los puntos para ver información",
-        showarrow = FALSE,
-        xref = "paper",
-        yref = "paper",
-        font = list(size = 12, color = "gray")
-      )
-    )
-  ) %>%
-  
-  # Configurar animación con botones
-  layout(
+    legend = list(
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1.5,
+      x = 0.02,
+      y = 0.55,
+      xanchor = "left",
+      yanchor = "middle",
+      font = list(size = 11, color = "#e0e6ed")
+    ),
     updatemenus = list(
       list(
         type = "buttons",
-        direction = "right",
-        x = 0.1,
-        y = 1.15,
+        direction = "vertical",
+        x = 0.95,
+        y = 0.05,
+        xanchor = "right",
+        yanchor = "bottom",
         buttons = list(
           list(
             method = "update",
             args = list(
               list(visible = c(TRUE, FALSE)),
-              list(title = "PCA - Solo países originales")
+              list(title = "<b style='color:#00e5ff; font-size:20px;'>Figura 21: Proyección PCA Dim 1 vs Dim 2</b><br>
+                             <span style='color:#8b92a0; font-size:12px;'>Solo países originales</span>")
             ),
             label = "Solo Originales"
           ),
@@ -8072,111 +8126,144 @@ p_animado <- plot_ly() %>%
             method = "update",
             args = list(
               list(visible = c(TRUE, TRUE)),
-              list(title = "PCA - Países originales (negro) y países predichos (azul)")
+              list(title = "<b style='color:#00e5ff; font-size:20px;'>Figura 21: Proyección PCA Dim 1 vs Dim 2</b><br>
+                             <span style='color:#8b92a0; font-size:12px;'>Países originales (gris) y predichos (cyan)</span>")
             ),
             label = "Mostrar Predichos"
           )
-        )
+        ),
+        bgcolor = "rgba(0, 229, 255, 0.15)",
+        bordercolor = "#00e5ff",
+        borderwidth = 1.5,
+        font = list(size = 10, color = "#00e5ff", family = "Arial")
       )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "pca_prediccion_dim1_dim2",
+      width = 1400,
+      height = 900
     )
   )
 
 p_animado
 
 p_animado1 <- plot_ly() %>%
+  
   add_trace(
     data = datos_completos[datos_completos$Tipo == "Original", ],
     x = ~PC3, y = ~PC4,
     type = 'scatter',
     mode = 'markers',
     marker = list(
-      color = 'black',
+      color = '#8b92a0',
       size = 8,
-      opacity = 0.7,
-      line = list(width = 1, color = 'white')
+      opacity = 0.6,
+      line = list(width = 1, color = '#e0e6ed')
     ),
     name = "Países originales",
     hoverinfo = 'text',
-    hovertext = ~paste("<b>", Pais, "</b><br>",
-                       "Tipo: Original<br>",
-                       "Dimensión 3: ", round(PC3, 3), "<br>",
-                       "Dimensión 4: ", round(PC4, 3))
+    hovertext = ~paste(
+      "<b style='color:#00e5ff; font-size:13px;'>", Pais, "</b><br>",
+      "<span style='color:#8b92a0; font-size:11px;'><b>Tipo:</b> Original</span><br>",
+      "<b style='color:#00e676;'>Dim 3:</b> ", round(PC3, 3), "<br>",
+      "<b style='color:#00e5ff;'>Dim 4:</b> ", round(PC4, 3)
+    )
   ) %>%
+  
   add_trace(
     data = datos_completos[datos_completos$Tipo == "Predicho", ],
     x = ~PC3, y = ~PC4,
     type = 'scatter',
     mode = 'markers',
     marker = list(
-      color = 'blue',
-      size = 12,
-      opacity = 0.8,
+      color = '#ffd600',
+      size = 14,
+      opacity = 0.95,
       symbol = 'star',
-      line = list(width = 1.5, color = 'white')
+      line = list(width = 2, color = '#ffffff')
     ),
     name = "Países predichos",
     hoverinfo = 'text',
-    hovertext = ~paste("<b>", Pais, "</b><br>",
-                       "Tipo: Predicho<br>",
-                       "Dimensión 3: ", round(PC3, 3), "<br>",
-                       "Dimensión 4: ", round(PC4, 3)),
-    visible = FALSE 
+    hovertext = ~paste(
+      "<b style='color:#ffd600; font-size:13px;'>", Pais, "</b><br>",
+      "<span style='color:#a259ff; font-size:11px;'><b>Tipo:</b> Predicho</span><br>",
+      "<b style='color:#00e676;'>Dim 3:</b> ", round(PC3, 3), "<br>",
+      "<b style='color:#00e5ff;'>Dim 4:</b> ", round(PC4, 3)
+    ),
+    visible = FALSE
   ) %>%
   
   layout(
     title = list(
-      text = "<b>PCA - Países originales (negro) y países predichos (azul)</b>",
-      x = 0.05,
-      font = list(size = 16, color = "#2C5F8D")
+      text = "<b style='color:#00e5ff; font-size:20px;'>Figura 22: Proyección PCA Dim 3 vs Dim 4</b><br>
+             <span style='color:#8b92a0; font-size:12px;'>Países originales (gris) y predichos (dorado)</span>",
+      x = 0.5,
+      xanchor = 'center',
+      y = 0.98
     ),
     xaxis = list(
-      title = "Dimensión 1 - Desarrollo Humano y Tecnológico (24.3%)",
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 3 - Integración Comercial Global (9.1%)</b>",
       zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 11),
+      titlefont = list(color = '#e0e6ed', size = 12)
     ),
     yaxis = list(
-      title = "Dimensión 2 - Modelo Económico-Institucional (13.5%)",
+      title = "<b style='color:#e0e6ed; font-size:13px;'>Dimensión 4 - Presión Territorial (7.5%)</b>",
       zeroline = TRUE,
-      zerolinecolor = "gray",
-      gridcolor = "lightgray"
+      zerolinecolor = "rgba(0, 229, 255, 0.3)",
+      zerolinewidth = 2,
+      gridcolor = '#12161f',
+      showgrid = TRUE,
+      tickfont = list(color = '#8b92a0', size = 11),
+      titlefont = list(color = '#e0e6ed', size = 12)
     ),
     hovermode = "closest",
-    plot_bgcolor = "white",
-    paper_bgcolor = "white",
-    showlegend = TRUE,
-    legend = list(
-      x = 0.02,
-      y = 0.98,
-      bgcolor = "rgba(255,255,255,0.8)"
+    plot_bgcolor = '#000000',
+    paper_bgcolor = '#0a0e1a',
+    font = list(family = "Arial, sans-serif", color = '#e0e6ed', size = 12),
+    margin = list(l = 100, r = 80, b = 100, t = 140),
+    hoverlabel = list(
+      bgcolor = "rgba(10, 14, 26, 0.95)",
+      bordercolor = "#00e5ff",
+      font = list(color = "#e0e6ed", size = 12, family = "Arial")
     ),
-    annotations = list(
-      list(
-        x = 0.5,
-        y = -0.15,
-        text = "● Países originales | ★ Países predichos • Pasa el cursor sobre los puntos para ver información",
-        showarrow = FALSE,
-        xref = "paper",
-        yref = "paper",
-        font = list(size = 12, color = "gray")
-      )
-    )
-  ) %>%
-  
-  # Configurar animación con botones
-  layout(
+    legend = list(
+      bgcolor = "rgba(10, 14, 26, 0.9)",
+      bordercolor = "#00e5ff",
+      borderwidth = 1.5,
+      x = 0.02,
+      y = 0.55,
+      xanchor = "left",
+      yanchor = "middle",
+      font = list(size = 11, color = "#e0e6ed")
+    ),
     updatemenus = list(
       list(
         type = "buttons",
-        direction = "right",
-        x = 0.1,
-        y = 1.15,
+        direction = "vertical",
+        x = 0.95,
+        y = 0.05,
+        xanchor = "right",
+        yanchor = "bottom",
         buttons = list(
           list(
             method = "update",
             args = list(
               list(visible = c(TRUE, FALSE)),
-              list(title = "PCA - Solo países originales")
+              list(title = "<b style='color:#00e5ff; font-size:20px;'>Figura 22: Proyección PCA Dim 3 vs Dim 4</b><br>
+                             <span style='color:#8b92a0; font-size:12px;'>Solo países originales</span>")
             ),
             label = "Solo Originales"
           ),
@@ -8184,17 +8271,33 @@ p_animado1 <- plot_ly() %>%
             method = "update",
             args = list(
               list(visible = c(TRUE, TRUE)),
-              list(title = "PCA - Países originales (negro) y países predichos (azul)")
+              list(title = "<b style='color:#00e5ff; font-size:20px;'>Figura 19: Proyección PCA Dim 3 vs Dim 4</b><br>
+                             <span style='color:#8b92a0; font-size:12px;'>Países originales (gris) y predichos (dorado)</span>")
             ),
             label = "Mostrar Predichos"
           )
-        )
+        ),
+        bgcolor = "rgba(0, 229, 255, 0.15)",
+        bordercolor = "#00e5ff",
+        borderwidth = 1.5,
+        font = list(size = 10, color = "#00e5ff", family = "Arial")
       )
+    )
+  ) %>%
+  
+  config(
+    responsive = TRUE,
+    displayModeBar = TRUE,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = list('lasso2d', 'select2d'),
+    toImageButtonOptions = list(
+      format = "png",
+      filename = "pca_prediccion_dim3_dim4",
+      width = 1400,
+      height = 900
     )
   )
 
-
-# Mostrar el gráfico
 p_animado1
 
 ```
@@ -8205,8 +8308,7 @@ Luxemburgo obtiene coordenada 2.9075 en PC1 (desarrollo extremo), junto a San Ma
 
 El análisis de clusterización jerárquica mediante el método de Ward identificó tres grupos coherentes de países que trascienden clasificaciones geográficas tradicionales. La segmentación produjo una distribución desigual: el Cluster 1 agrupa 84 países (61.8% del total), el Cluster 2 agrupa 32 países (23.5%), y el Cluster 3 agrupa 20 países (14.7%).
 
-Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada (61.8% de países)
-Este grupo se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura tecnológica. La esperanza de vida promedio es de 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada y estabilidad sociopolítica. El acceso a electricidad alcanza 99.16%, reflejando electrificación prácticamente universal que define a economías desarrolladas. El uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo.
+Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada (61.8% de países) Este grupo se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura tecnológica. La esperanza de vida promedio es de 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada y estabilidad sociopolítica. El acceso a electricidad alcanza 99.16%, reflejando electrificación prácticamente universal que define a economías desarrolladas. El uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo.
 
 La mortalidad infantil es apenas 7.85 por cada 1,000 nacidos vivos, la más baja entre los clusters, reflejando que los sistemas de salud materno-infantil funcionan eficientemente. El PIB per cápita promedio es 26,489.97 USD, demostrando riqueza económica consolidada. El gasto en salud representa 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales.
 
@@ -8224,8 +8326,7 @@ Las remesas recibidas representan 4.94% del PIB, indicando dependencia moderada 
 
 Composición geográfica: Incluye principalmente economías latinoamericanas emergentes (Brasil, México, Colombia, Argentina, Chile, Perú), economías asiáticas en transición (Vietnam, Tailandia, Indonesia, Filipinas, India en su mayoría), economías africanas moderadamente desarrolladas (Botswana, Mauricio, Sudáfrica), y países del Oriente Medio con ingresos medios (Turquía, Jordania, Líbano).
 
-Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional (14.7% de países)
-Este grupo presenta características paradójicas que requieren interpretación cuidadosa. La esperanza de vida promedio es 71.59 años, aparentemente intermedia, pero esta cifra oculta volatilidad extrema: mientras algunos países tienen 75 años, otros tienen 55-58 años, con mortalidad adulta severamente elevada por VIH, conflictos armados y enfermedades tropicales. El acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona porque algunos países tienen cobertura urbana buena mientras zonas rurales están completamente sin electricidad.
+Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional (14.7% de países) Este grupo presenta características paradójicas que requieren interpretación cuidadosa. La esperanza de vida promedio es 71.59 años, aparentemente intermedia, pero esta cifra oculta volatilidad extrema: mientras algunos países tienen 75 años, otros tienen 55-58 años, con mortalidad adulta severamente elevada por VIH, conflictos armados y enfermedades tropicales. El acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona porque algunos países tienen cobertura urbana buena mientras zonas rurales están completamente sin electricidad.
 
 La mortalidad infantil es 18.11 por cada 1,000, intermedia entre Cluster 1 (7.85) y Cluster 2 (40.97), sugiriendo que este cluster contiene algunos países que han logrado mejoras en salud infantil. El uso de internet es 61.08%, sorprendentemente alto comparado con Cluster 2 (35.04%), pero se explica porque algunos países han adoptado tecnología móvil masivamente sin infraestructura de electricidad o salud consolidada.
 
@@ -8237,13 +8338,11 @@ La paradoja del Cluster 3: Algunas métricas (esperanza de vida 71.59, acceso el
 
 El análisis revela múltiples patrones fascinantes que trascienden clasificaciones geográficas tradicionales y desafían expectativas convencionales sobre desarrollo internacional.
 
-Patrones que Trascienden Fronteras Geográficas
-El hallazgo más sorprendente es que la geografía no determina el desarrollo. Uruguay y Chile en Sudamérica comparten características similares en desarrollo humano con países europeos orientales como Estonia y Polonia, mientras que economías asiáticas como Malasia y Tailandia exhiben perfiles comparables a países latinoamericanos de renta media alta como México y Colombia. Este patrón confirma que existen perfiles globales de desarrollo que operan independientemente de proximidad territorial o herencia cultural compartida.
+Patrones que Trascienden Fronteras Geográficas El hallazgo más sorprendente es que la geografía no determina el desarrollo. Uruguay y Chile en Sudamérica comparten características similares en desarrollo humano con países europeos orientales como Estonia y Polonia, mientras que economías asiáticas como Malasia y Tailandia exhiben perfiles comparables a países latinoamericanos de renta media alta como México y Colombia. Este patrón confirma que existen perfiles globales de desarrollo que operan independientemente de proximidad territorial o herencia cultural compartida.
 
 Vietnam en Asia comparte características similares con Colombia en Sudamérica en términos de industrialización y conectividad digital, a pesar de estar separados por océanos y tener historias completamente diferentes. Botswana en África muestra indicadores comparables a algunos países de Europa del Este, demostrando que países africanos pueden alcanzar desarrollo intermedio cuando implementan políticas correctas.
 
-La Paradoja de Costa Rica: Alto Desarrollo con Recursos Limitados
-Costa Rica emerge como caso emblemático de desarrollo inteligente. Este país tiene esperanza de vida de 80 años (comparable a Alemania o Japón), mortalidad infantil de 7.4 por cada 1,000 nacidos (similar a países europeos), y cobertura forestal del 52% (una de las más altas del mundo). Sin embargo, su PIB per cápita es apenas 12,500 USD, dramáticamente menor que los 40,000+ USD de Europa Occidental.
+La Paradoja de Costa Rica: Alto Desarrollo con Recursos Limitados Costa Rica emerge como caso emblemático de desarrollo inteligente. Este país tiene esperanza de vida de 80 años (comparable a Alemania o Japón), mortalidad infantil de 7.4 por cada 1,000 nacidos (similar a países europeos), y cobertura forestal del 52% (una de las más altas del mundo). Sin embargo, su PIB per cápita es apenas 12,500 USD, dramáticamente menor que los 40,000+ USD de Europa Occidental.
 
 ¿Cómo logra Costa Rica esto? Inversión estratégica sostenida en salud pública, educación universal, y conservación ambiental durante décadas, incluso cuando no era el país más rico de la región. Este patrón demuestra empíricamente que desarrollo humano alto no requiere riqueza económica absoluta, sino decisiones políticas deliberadas sobre priorización de gasto público.
 
@@ -8255,7 +8354,7 @@ El análisis identifica un cluster de países cuyas economías dependen crítica
 
 Este patrón revela una realidad invisible en estadísticas convencionales: millones de familias sobreviven porque algún miembro emigró y envía dinero mensualmente. Moldavia, una de las naciones más pobres de Europa, tiene 25% de su población trabajando en Rusia o Italia, con remesas representando 16% del PIB como principal fuente de divisas. La vulnerabilidad es evidente: cuando países receptores (Estados Unidos, Europa, Golfo Pérsico) enfrentan recesiones, los flujos de remesas colapsan instantáneamente.
 
- poblacional han sacrificado sistemáticamente bosques por tierra cultivable para seguridad alimentaria. India lidera este extremo con 1,400 millones de habitantes en 3.3 millones de km² (densidad 420 hab/km²), habiendo convertido 60% del territorio en tierra cultivable y reducido bosques a apenas 23%.
+poblacional han sacrificado sistemáticamente bosques por tierra cultivable para seguridad alimentaria. India lidera este extremo con 1,400 millones de habitantes en 3.3 millones de km² (densidad 420 hab/km²), habiendo convertido 60% del territorio en tierra cultivable y reducido bosques a apenas 23%.
 
 Bangladesh presenta el caso más extremo: densidad de 1,250 hab/km², 70% de tierra cultivable, y bosques reducidos a 11%. China, aunque menos densamente poblada (145 hab/km²), tiene 1,400 millones de habitantes que han transformado casi toda tierra disponible en agricultura intensiva.
 
@@ -8400,7 +8499,6 @@ World Bank. (2019). World Development Indicators: Methodology and compilation pr
 World Bank. (2023). World Development Indicators 2023. World Bank Open Data. <https://data.worldbank.org>
 
 World Health Organization. (2020). World Health Statistics 2020: Monitoring health for the SDGs. WHO Press.
-
 
 ------------------------------------------------------------------------
 
