@@ -7153,7 +7153,6 @@ tabla_estadisticas_mejorada <- estadisticas_largas %>%
 
 tabla_estadisticas_mejorada
 ```
-
 #### Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada
 
 Perfil de variables: Cluster 1 se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
