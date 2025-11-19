@@ -1,6 +1,6 @@
 ---
-title: "Análisis de Componentes Principales y Clusterización de Países"
-subtitle: "Aplicación de Técnicas de Aprendizaje No Supervisado con Datos del Banco Mundial"
+title: "Identificación de Patrones ocultos de Desarrollo Internacional Mediante Técnicas de Aprendizaje No Supervisado: "
+subtitle: "Un Estudio con Datos del Banco Mundial 2022"
 author: "Barros Rayo Alejandro (2415837), Muñoz Portela Diego Fernando (2415620), Portilla Aguirre Johan Camilo (2422468), Aguirre Aldana Joan Sebastian (2419550)"
 date: "`r format(Sys.Date(), '%d de %B de %Y')`"
 output: 
@@ -938,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
     highlightActiveRightToc();
   }, 600);
   
-  // MEJORADO: Manejar clicks en enlaces del TOC izquierdo
+  // ✅ MEJORADO: Manejar clicks en enlaces del TOC izquierdo
   document.querySelectorAll('#TOC a').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       const targetId = this.getAttribute('href');
@@ -1113,7 +1113,7 @@ El Banco Mundial proporciona 17 indicadores reconocidos internacionalmente que m
 
 El desafío es modelar una pregunta sin respuesta predefinida: ¿Qué agrupamientos naturales de países emergen cuando se analiza simultáneamente esta multiplicidad de indicadores? Este es precisamente el rol del aprendizaje no supervisado—un conjunto de técnicas que descubren patrones en datos sin etiquetas previas, sin clasificaciones arbitrarias impuestas externamente (Charrad et al., 2014; Jolliffe, 2002).
 
-Lo que sigue es una cartografía multidimensional de la economía global en el contexto post-pandemia: no solo se responde "¿en qué grupos se dividen los países?", sino, más profundamente, "¿qué revelan estos grupos sobre mecanismos reales del desarrollo, oportunidades compartidas, restricciones comunes y trayectorias viables para diferentes sociedades?" Los resultados no serán una clasificación administrativa sino un descubrimiento empírico basado en lo que los datos de 180 países en 2022 efectivamente revelan.
+Lo que sigue es una cartografía multidimensional de la economía global en el contexto post-pandemia: no solo se responde "¿en qué grupos se dividen los países?", sino, más profundamente, "¿qué revelan estos grupos sobre mecanismos reales del desarrollo, oportunidades compartidas, restricciones comunes y trayectorias viables para diferentes sociedades?" Los resultados no serán una clasificación administrativa sino un descubrimiento empírico basado en lo que los datos de 141 países en 2022 efectivamente revelan.
 
 ------------------------------------------------------------------------
 
@@ -1125,7 +1125,7 @@ La base de datos utilizada en este análisis proviene de la compilación World D
 
 La base WDI contiene aproximadamente 1,600 indicadores de series temporales para 217 economías y más de 40 grupos de países, con datos para muchos indicadores que se remontan más de 50 años (World Bank, 2023). Los datos son compilados mediante metodologías estandarizadas que garantizan comparabilidad internacional, transparencia metodológica y robustez estadística (World Bank, 2019). El proceso de selección de indicadores del WDI sigue cuatro criterios fundamentales: facilidad de uso (accesibilidad y claridad para usuarios diversos), confiabilidad (reputación y credibilidad de la fuente), cobertura (amplitud geográfica y temporal), y calidad (rigor metodológico y precisión) (Behar & Mok, 2024).
 
-Para este análisis, se filtro información exclusivamente para países individuales (eliminando bloques regionales o agrupaciones económicas) del año 2022. El dataset resultante contiene aproximadamente 180-200 países, según la disponibilidad de datos completos, donde cada observación representa una unidad soberana comparable en un único punto temporal.
+Para este análisis, se filtro información exclusivamente para países individuales (eliminando bloques regionales o agrupaciones económicas) del año 2022. El dataset resultante contiene 141 países, según la disponibilidad de datos completos, donde cada observación representa una unidad soberana comparable en un único punto temporal.
 
 El año 2022 marca un punto de inflexión crítico en la economía global, representa el momento post-pandemia en que las trayectorias de recuperación de cada país se hacen visibles y diferenciadas. Mientras algunos países desarrollados con capacidad fiscal recuperaron o superaron niveles pre-COVID-19, economías emergentes enfrentaban cicatrices estructurales persistentes en empleo, inflación descontrolada, y aumento de deuda pública (Banco Mundial, 2022; FMI, 2023; CEPAL, 2023). La desigualdad global se amplió drásticamente: el crecimiento proyectado para América Latina en 2022 era apenas 2.6%, mientras la desigualdad de ingresos aumentó significativamente después de dos décadas de mejoras (BID, 2022).
 
@@ -2156,7 +2156,7 @@ tabla_inicial <- datatable(
         }
       );
       
-      //
+      // ========== BÚSQUEDA CYBER ==========
       var searchLabel = $(el).find('label:has([type=search])');
       searchLabel.css({
         'color': '#e0e6ed !important',
@@ -2359,13 +2359,13 @@ En síntesis, el modelo integra: (1) estandarización para igualar contribucione
 
 # Análisis Descriptivo
 
-Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica relaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo—información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?" Las cinco dimensiones temáticas—económica, de salud, tecnológica, ambiental y demográfica—se examinan secuencialmente a través de visualizaciones interactivas que revelan líderes y rezagados en cada indicador, patrones de asociación entre variables dentro de dimensiones, y diferencias regionales que anticipan los agrupamientos posteriores. Este enfoque dimensional permite reconocer que el "desarrollo" no es una variable única sino un fenómeno multifacético donde países pueden destacar en algunas áreas mientras quedan rezagados en otras—precisamente la complejidad que justifica un análisis multivariado integrado.
+Antes de aplicar la reducción dimensional mediante Análisis de Componentes Principales y revelar agrupamientos multidimensionales de países, es fundamental explorar cómo se distribuyen y relacionan los indicadores individuales en el espacio observable. El análisis descriptivo identifica relaciones preliminares, heterogeneidades sistemáticas y anomalías en cada dimensión del desarrollo, información que prepara conceptualmente para el descubrimiento de clusters coherentes. En esencia: mientras que el ACP responderá "¿qué estructura latente subyace en los datos?", el análisis descriptivo responde "¿qué patrones visibles anticipan esa estructura?" Las cinco dimensiones temáticas económica, de salud, tecnológica, ambiental y demográficase, examinan secuencialmente a través de visualizaciones interactivas que revelan líderes y rezagados en cada indicador, patrones de asociación entre variables dentro de dimensiones, y diferencias regionales que anticipan los agrupamientos posteriores. Este enfoque dimensional permite reconocer que el "desarrollo" no es una variable única sino un fenómeno multifacético donde países pueden destacar en algunas áreas mientras quedan rezagados en otras—precisamente la complejidad que justifica un análisis multivariado integrado.
 
 ## Explorador Interactivo de Indicadores
 
 Con el propósito de facilitar el análisis exploratorio de cada una de las 17 variables de desarrollo de forma individual, se ha desarrollado un explorador interactivo que permite examinar dinámicamente la distribución, dispersión y rankings de cada indicador. Esta herramienta opera sobre todo el dataset y proporciona tres niveles de información complementarios: (1) estadísticas globales que resumen la concentración y dispersión de cada variable (media, mediana, desviación estándar, percentiles), (2) ranking de los 10 países líderes en cada indicador, y (3) variabilidad porcentual respecto a la media, que cuantifica cuánto cada país se desvía del patrón global.
 
-El explorador funciona mediante un sistema de pestañas interactivas: selecciona cualquier variable haciendo click en sus botonespara visualizar simultáneamente las estadísticas agregadas y el top 10 de desempeño. Esta estructura permite identificar patrones preliminares de concentración, identificar outliers extremos, y reconocer diferenciaciones regionales antes de proceder al análisis multidimensional integrado. A continuación se presentan dos ejemplos ilustrativos que ejemplifican la heterogeneidad fundamental del desarrollo global.
+El explorador funciona mediante un sistema de pestañas interactivas: selecciona cualquier variable haciendo click en sus botones para visualizar simultáneamente las estadísticas agregadas y el top 10 de desempeño. Esta estructura permite identificar patrones preliminares de concentración, identificar outliers extremos, y reconocer diferenciaciones regionales antes de proceder al análisis multidimensional integrado. A continuación se presentan dos ejemplos ilustrativos que ejemplifican la heterogeneidad fundamental del desarrollo global.
 
 ```{r preparar-datos-unificados}
 
@@ -2411,7 +2411,7 @@ crear_tabla_unificada <- function(data, variable) {
 
 ```{=html}
 <style>
-/* O */
+/* OCULTAR NÚMEROS DE SECCIONES EN PESTAÑAS */
 .section-number {
   display: none !important;
 }
@@ -2424,7 +2424,7 @@ h4 .header-section-number {
   display: none !important;
 }
 
-/* C */
+/* Contenedor de pestañas mejorado */
 .nav-pills {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -2476,7 +2476,7 @@ h4 .header-section-number {
   font-weight: 700 !important;
 }
 
-/* L */
+/* Layout de dos columnas lado a lado */
 .two-column-layout {
   display: grid;
   grid-template-columns: 48% 48%;
@@ -2491,7 +2491,7 @@ h4 .header-section-number {
   }
 }
 
-/* C */
+/* Contenedores de tablas */
 .table-container {
   background: linear-gradient(135deg, #0a0e1a 0%, #0d1117 100%);
   border: 2px solid rgba(0, 229, 255, 0.3);
@@ -2595,9 +2595,15 @@ El análisis del conjunto de los indicadores revela una característica fundamen
 
 ### Dimensión Económica
 
-A continuación se examinan siete indicadores económicos complementarios mediante un explorador interactivo que permite visualizar dinámicamente los top 15 países en cada métrica. Haz click en cualquier botón de variable (PIB per cápita, Crecimiento PIB, Inversión Extranjera, Remesas, Industria, Exportaciones, Importaciones) para cambiar el ranking y observar cómo la composición del liderazgo económico global cambia radicalmente según la dimensión analizada. Esta variabilidad específica a cada variable económica anticipa que el Análisis de Componentes Principales identificará factores latentes que sintetizan estas dimensiones de forma coherente, revelando la verdadera estructura de la diferenciación económica internacional.
+La economía de un país no puede resumirse en una sola métrica. Mientras que el PIB per cápita mide riqueza 
+acumulada, el crecimiento PIB revela dinamismo presente; la inversión extranjera indica atracción de capitales 
+internacionales, las remesas reflejan dependencia de migrantes, la industria representa capacidad productiva, 
+y exportaciones/importaciones capturan integración comercial global. Siete indicadores que juntos ofrecen 
+perspectiva más completa que ninguno por separado.
 
-Al seleccionar diferentes indicadores mediante los botones de variable, se modifica el orden de los países en el ranking. Este comportamiento evidencia que la posición relativa de cada país varía según la métrica considerada, lo que refleja que el concepto de una “economía fuerte” puede adoptar significados distintos dependiendo del criterio de evaluación utilizado.
+El explorador interactivo a continuación permite comparar dinámicamente cómo países lideran en dimensiones 
+distintas. Selecciona cualquier variable mediante los botones superiores para reordenar el ranking de top 15 
+países y observar cómo cambia el liderazgo económico según la métrica.
 
 ```{r economia-top15-interactivo-MEJORADO, fig.height=7, fig.width=30, out.width="100%"}
 
@@ -6191,137 +6197,6 @@ p2
 
 Guinea se posiciona en la dirección de crecimiento poblacional, indicando valores altos en esta variable. Kuwait y Djibouti se alinean con importaciones, indicando ratios elevados. Senegal e Irlanda se alinean con exportaciones, indicando orientación exportadora. Burkina Faso y Qatar se alinean con mortalidad infantil, indicando valores en esta variable. Macedonia del Norte se alinea con PIB per cápita, indicando ingreso por habitante en esa dirección.
 
-### Caracterizacion de los componentes principales
-
-```{r caracterizacion dimensiones}
-
-dimensiones_tabla <- tribble(
-  ~Dimensión, ~Descripción, ~Variables, ~Ejemplo_Países,
-  
-  "Dimensión 1", 
-  "Nivel de desarrollo humano y tecnológico", 
-  "Uso de internet, Esperanza de vida, Mortalidad infantil", 
-  "Burundi (Poca, Poca, Mucha); Australia (Mucha, Mucha, Poca); Cambodia (Media, Media, Media)",
-  
-  "Dimensión 2", 
-  "Industrialización y crecimiento demográfico", 
-  "Industria, Crecimiento poblacional, Remesas", 
-  "China (Mucha, Media, Poca); Comoros (Poca, Poca, Mucha); Algeria (Mucha, Mucha, Poca)",
-  
-  "Dimensión 3", 
-  "Comercio internacional", 
-  "Importaciones, Exportaciones, Inversión extranjera", 
-  "Malta (Mucha, Mucha, Mucha); Djibouti (Mucha, Mucha, Media); San Marino (Mucha, Mucha, Media)",
-  
-  "Dimensión 4", 
-  "Uso del suelo y demografía", 
-  "Área boscosa, Tierra cultivable, Población", 
-  "India (Poca, Mucha, Mucha); Timor Leste (Media, Poca, —); China (Poca, Poca, Mucha)"
-)
-
-dimensiones_tabla %>%
-  gt() %>%
-  tab_header(
-    title = md("**Tabla 14**"),
-    subtitle = "Interpretación de las Dimensiones obtenidas del Análisis de Componentes Principales (ACP)"
-  ) %>%
-  cols_label(
-    Dimensión = md("**Dimensión**"),
-    Descripción = md("**Descripción**"),
-    Variables = md("**Variables Asociadas**"),
-    Ejemplo_Países = md("**Ejemplo de Países**")
-  ) %>%
-  cols_align(
-    align = "left",
-    columns = everything()
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(weight = "bold", size = "medium", color = "#000000"),
-      cell_fill(color = "#00e5ff")
-    ),
-    locations = cells_column_labels()
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = c("top", "bottom"),
-      color = "#00e5ff",
-      weight = px(2)
-    ),
-    locations = list(
-      cells_column_labels(),
-      cells_body()
-    )
-  ) %>%
-  tab_style(
-    style = cell_borders(
-      sides = "right",
-      color = "#00e5ff",
-      weight = px(1)
-    ),
-    locations = cells_body(columns = c(Dimensión, Descripción, Variables))
-  ) %>%
-  tab_style(
-    style = list(
-      cell_fill(color = "#0a0e1a"),
-      cell_text(color = "#e0e6ed")
-    ),
-    locations = cells_body()
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(weight = "bold", color = "#00e5ff"),
-      cell_fill(color = "#12161f")
-    ),
-    locations = cells_body(columns = Dimensión)
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(weight = "bold", color = "#00e5ff", size = "large")
-    ),
-    locations = cells_title(groups = "title")
-  ) %>%
-  tab_style(
-    style = list(
-      cell_text(color = "#8b92a0", size = "medium")
-    ),
-    locations = cells_title(groups = "subtitle")
-  ) %>%
-  tab_options(
-    table.font.names = "Arial",
-    table.width = pct(100),
-    table.border.top.style = "none",
-    table.border.bottom.style = "none",
-    column_labels.border.top.style = "solid",
-    column_labels.border.top.color = "#00e5ff",
-    column_labels.border.top.width = px(3),
-    column_labels.border.bottom.style = "solid",
-    column_labels.border.bottom.width = px(3),
-    column_labels.border.bottom.color = "#00e5ff",
-    table_body.border.bottom.style = "none",
-    table_body.border.top.style = "none",
-    table_body.hlines.style = "solid",
-    table_body.hlines.color = "#00e5ff",
-    table_body.hlines.width = px(1),
-    table.background.color = "#0a0e1a",
-    data_row.padding = px(12),
-    heading.title.font.size = 18,
-    heading.subtitle.font.size = 14,
-    heading.padding = px(12),
-    heading.border.bottom.style = "solid",
-    heading.border.bottom.width = px(2),
-    heading.border.bottom.color = "#00e5ff",
-    footnotes.padding = px(10),
-    footnotes.font.size = 13,
-    source_notes.font.size = 13,
-    source_notes.padding = px(10)
-  ) %>%
-  tab_source_note(
-    source_note = md("**Fuentes:** Elaboración propia con base en los resultados del ACP")
-  )
-
-```
-
 ## Segmentación: Clusterización
 
 Sobre la base de los k componentes principales retenidos del Análisis de Componentes Principales, se aplicó el método de Ward para clusterización jerárquica aglomerativa. Este algoritmo organiza los datos con el objetivo de determinar clusters de países mediante un enfoque que se basa en la distancia entre los puntos para mostrar posibles agrupamientos. El procedimiento iterativo de fusión permite identificar estructuras naturales de similitud que trascienden clasificaciones geográficas o económicas convencionales, revelando en cambio grupos de países que comparten perfiles multidimensionales coherentes de desarrollo (Ward, 1963; Hastie et al., 2009).
@@ -6703,7 +6578,7 @@ distribucion_clusters <- table(clusters) %>%
 tabla_distribucion <- distribucion_clusters %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 15**"),
+    title = md("**Tabla 14**"),
     subtitle = "Distribución de Países por Cluster"
   ) %>%
   cols_label(
@@ -6850,7 +6725,7 @@ tabla_estadisticas <- estadisticas_clusters %>%
   arrange(Cluster, Variable_Descriptiva) %>%
   gt(groupname_col = "Cluster") %>%
   tab_header(
-    title = md("**Tabla 16**"),
+    title = md("**Tabla 15**"),
     subtitle = "Estadísticas Descriptivas por Cluster | Medias, desviaciones estándar y rangos"
   ) %>%
   cols_label(
@@ -7005,7 +6880,7 @@ tabla_estadisticas_mejorada <- estadisticas_largas %>%
   arrange(Variable_Descriptiva) %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 17**"),
+    title = md("**Tabla 16**"),
     subtitle = "Comparación de Clusters - Medias por Variable | Análisis comparativo de indicadores"
   ) %>%
   cols_label(
@@ -7104,17 +6979,17 @@ tabla_estadisticas_mejorada <- estadisticas_largas %>%
 tabla_estadisticas_mejorada
 ```
 
-#### Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada
+#### Cluster 1: Calidad de vida y Conectividad Digital Consolidada
 
-Perfil de variables: Cluster 1 se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
+Cluster 1 se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura. Acceso a electricidad alcanza 99.16%, reflejando electrificación universal que define economías desarrolladas. Esperanza de vida promedio es 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada, y estabilidad sociopolítica. Uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo. Mortalidad infantil es apenas 7.85 por 1,000 nacidos vivos, la más baja, reflejando que sistemas de salud materno-infantil funcionan eficientemente. PIB per cápita promedio es \$26,489.97 USD, demostrando riqueza económica consolidada.
 
 Simultáneamente, Cluster 1 muestra características económicas de economías maduras y globalizadas: exportaciones representan 55.30% del PIB (comercio orientado externamente), importaciones 54.55%, indicando que estos países son hubs comerciales internacionales. Crecimiento del PIB es 5.12% (moderado pero positivo), sugiriendo expansión económica sostenida. Industria representa 28.53% del PIB, confirmando que aunque estas economías son postindustriales (basadas en servicios), mantienen capacidad manufacturera significativa. Inversión extranjera directa es 5.08% del PIB, indicando que son destinos atractivos para capitales internacionales. Gasto en salud es 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales. Crecimiento poblacional es apenas 0.73% anual, reflejando que han completado transiciones demográficas con poblaciones envejecidas.
 
 Composición de países: Incluye principalmente naciones europeas desarrolladas (Alemania, Francia, Italia, España, Reino Unido, Suecia, Dinamarca, Finlandia, Noruega, Países Bajos), naciones norteamericanas (Estados Unidos, Canadá), economías asiáticas avanzadas (Japón, Corea del Sur, Singapur, Hong Kong), y destinos de desarrollo consolidado (Australia, Nueva Zelanda, Israel). La predominancia de economías OCDE valida que Cluster 1 captura efectivamente el grupo de desarrollo ultra-avanzado global (Banco Mundial, 2023).
 
-#### Cluster 2: Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes
+#### Cluster 2: Economias de transición con vulnerabilidades persistentes
 
-Perfil de variables: Cluster 2 representa el grupo de países con desarrollo humano intermedio pero altamente heterogéneo internamente. Esperanza de vida promedio es 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), pero superior a Cluster 3, indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. Acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta especialmente en zonas rurales. Uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que brecha digital es significativa. Mortalidad infantil es 40.97 por 1,000, aproximadamente 5 veces mayor que Cluster 1, indicando que sistemas de salud materno-infantil enfrentan capacidades limitadas.
+Cluster 2 representa el grupo de países con desarrollo humano intermedio pero altamente heterogéneo internamente. Esperanza de vida promedio es 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), pero superior a Cluster 3, indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. Acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta especialmente en zonas rurales. Uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que brecha digital es significativa. Mortalidad infantil es 40.97 por 1,000, aproximadamente 5 veces mayor que Cluster 1, indicando que sistemas de salud materno-infantil enfrentan capacidades limitadas.
 
 PIB per cápita promedio es \$1,578.46 USD, dramáticamente menor que Cluster 1 (95% de diferencia), confirmando que estos son países de ingresos medios bajos a medios. Crecimiento poblacional es 2.31% anual, significativamente más alto que Cluster 1, reflejando que están en transiciones demográficas incompletas donde natalidad sigue siendo elevada. Remesas recibidas representan 4.94% del PIB, indicando dependencia moderada de transferencias de migrantes. Inversión extranjera es 3.65% del PIB (inferior a Cluster 1), sugiriendo que son menos atractivos para capitales internacionales. Gasto en salud es 5.10% del PIB (menor que Cluster 1), limitando recursos disponibles para sistemas de salud.
 
@@ -7124,7 +6999,7 @@ Composición de países: Incluye principalmente economías latinoamericanas emer
 
 #### Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional
 
-Perfil de variables: Cluster 3 representa el grupo de rezago humano y económico extremo. Esperanza de vida promedio es apenas 71.59 años, superior a Cluster 2 en cifra pero esta cifra es engañosa porque oculta volatilidad extrema: mientras algunos países tienen \~75 años, otros tienen \~55-58 años, y mortalidad adulta es severamente elevada por VIH, conflictos armados, y enfermedades tropicales. Acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona por algunos países con cobertura urbana buena; zonas rurales en muchos países están completamente sin electricidad.
+Cluster 3 representa el grupo de rezago humano y económico extremo. Esperanza de vida promedio es apenas 71.59 años, superior a Cluster 2 en cifra pero esta cifra es engañosa porque oculta volatilidad extrema: mientras algunos países tienen \~75 años, otros tienen \~55-58 años, y mortalidad adulta es severamente elevada por VIH, conflictos armados, y enfermedades tropicales. Acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona por algunos países con cobertura urbana buena; zonas rurales en muchos países están completamente sin electricidad.
 
 Mortalidad infantil es 18.11 por 1,000, intermedia entre Cluster 1 (7.85) y Cluster 2 (40.97), sugiriendo que este cluster, aunque llamado "rezago", contiene algunos países que han logrado mejoras en salud infantil. Uso de internet es 61.08%, sorprendentemente alto comparado con Cluster 2 (35.04%), pero se explica porque algunos países han adoptado tecnología móvil massivamente sin infraestructura de electricidad o salud consolidada. PIB per cápita es \$3,776.68 USD, intermedio entre Cluster 2 (\$1,578) y Cluster 1 (\$26,489), contradictorio con la caracterización de "rezago extremo", pero refleja que algunos países tienen petróleo (Angola) o recursos (Zambia) que generan ingresos nominales sin beneficios distributivos amplios.
 
@@ -7134,7 +7009,7 @@ La paradoja de Cluster 3: A primera vista, algunas métricas (esperanza de vida 
 
 ### Segmentacion de paises
 
-Plano PC1-PC2 (Desarrollo Humano vs. Modelo Económico-Institucional): El gráfico PC1-PC2 muestra la distribución de clusters en el plano que explica la mayor proporción de varianza (37.8% combinada). El Cluster 1 (puntos rojos) se concentra predominantemente en el cuadrante central-derecho y ligeramente disperso verticalmente, reflejando que estos países comparten desarrollo humano avanzado (PC1 positivo moderado a alto) pero varían en estructura económica institucional (PC2 desde -4 hasta +4). Países con PC2 extremadamente negativo (como Qatar, Kuwait) representan economías petroleras industrializadas; países con PC2 cercano a cero representan economías postindustriales diversificadas europeas; países con PC2 ligeramente positivo representan economías con gasto social elevado.
+Plano PC1-PC2 (Desarrollo Humano vs. Modelo Económico-Institucional): El gráfico PC1-PC2 muestra la distribución de clusters en el plano que explica la mayor proporción de varianza (37.8% combinada). El Cluster 1  se concentra predominantemente en el cuadrante central-derecho y ligeramente disperso verticalmente, reflejando que estos países comparten Calidad de vida (PC1 positivo moderado a alto) pero varían en estructura económica institucional (PC2 desde -4 hasta +4). Países con PC2 extremadamente negativo (como Qatar, Kuwait) representan economías petroleras industrializadas; países con PC2 cercano a cero representan economías postindustriales diversificadas europeas; países con PC2 ligeramente positivo representan economías con gasto social elevado.
 
 ```{r clusters-tabla-cyber}
 coordenadas_pca <- as.data.frame(resultado_ACP$dudi$li[, 1:4])
@@ -7161,7 +7036,7 @@ resumen_clusters <- cluster_df %>%
   ) %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 18**"),
+    title = md("**Tabla 17**"),
     subtitle = "Resumen de Clusters Identificados | Agrupamiento jerárquico con método Ward"
   ) %>%
   cols_label(
@@ -7362,9 +7237,9 @@ cluster_plot <- plot_ly(
 cluster_plot
 ```
 
-El Cluster 2 (puntos azul) se distribuye ampliamente en la región central-derecha del plano, con mayor concentración en PC1 entre +1 y +3 (desarrollo intermedio) y PC2 entre -2 y +2 (diversidad de modelos económicos). Esta dispersión amplia confirma la heterogeneidad interna del Cluster 2: incluye desde países latinoamericanos con desarrollo intermedio hasta economías asiáticas emergentes con distintas trayectorias de industrialización. Algunos países del Cluster 2 con PC1 \>3 se posicionan muy cerca de frontera con Cluster 1, sugiriendo que están en transición hacia desarrollo consolidado.
+El Cluster 2  se distribuye ampliamente en la región central-derecha del plano, con mayor concentración en PC1 entre +1 y +3 (desarrollo intermedio) y PC2 entre -2 y +2 (diversidad de modelos económicos). Esta dispersión amplia confirma la heterogeneidad interna del Cluster 2: incluye desde países latinoamericanos con desarrollo intermedio hasta economías asiáticas emergentes con distintas trayectorias de industrialización. Algunos países del Cluster 2 con PC1 \>3 se posicionan muy cerca de frontera con Cluster 1, sugiriendo que están en transición hacia desarrollo consolidado.
 
-El Cluster 3 (puntos amarillos) se concentra en la región izquierda del plano (PC1 negativo desde -2 hasta -6), confirmando su posicionamiento en el polo de menor desarrollo humano. Verticalmente, el Cluster 3 muestra dispersión amplia en PC2 (desde -2 hasta +2), reflejando que países en rezago tienen modelos económicos diversos: algunos dependen de remesas (PC2 positivo), otros tienen industria extractiva limitada (PC2 negativo moderado). La separación visual entre Cluster 3 y Clusters 1-2 es clara, con solapamiento mínimo, validando que la segmentación captura diferencias estructurales genuinas.
+El Cluster 3 se concentra en la región izquierda del plano (PC1 negativo desde -2 hasta -6), confirmando su posicionamiento en el polo de menor desarrollo humano. Verticalmente, el Cluster 3 muestra dispersión amplia en PC2 (desde -2 hasta +2), reflejando que países en rezago tienen modelos económicos diversos: algunos dependen de remesas (PC2 positivo), otros tienen industria extractiva limitada (PC2 negativo moderado). La separación visual entre Cluster 3 y Clusters 1-2 es clara, con solapamiento mínimo, validando que la segmentación captura diferencias estructurales genuinas.
 
 ```{r clusters-dim3-dim4-cyber, fig.width=12, fig.height=8.2, out.width="100%"}
 cluster_plot1 <- plot_ly(
@@ -7479,7 +7354,7 @@ Base_con_mapa <- world %>%
   left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
   filter(!is.na(Cluster))  
 
-nombres_clusters <- c("1" = "Cluster 1", "2" = "Cluster 2", "3" = "Cluster 3")
+nombres_clusters <- c("1" = "Calidad de vida y conectividad digital", "2" = "Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes", "3" = "Rezago extremo y vulnerabilidad multidimensional")
 
 pal <- colorFactor(
   palette = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"), 
@@ -7633,7 +7508,7 @@ Esta distribución geográfica valida que desarrollo no es aleatoriamente distri
 
 ### Caracterizacion de los componentes principales
 
-#### Componente Principal 1: "Desarrollo Humano y Conectividad Digital" (24.3% de varianza)
+#### Componente Principal 1: "Tecnologia y mortalidad" (24.3% de varianza)
 
 El primer componente principal explica casi un cuarto de toda la variabilidad en desarrollo internacional, capturando la dimensión más fundamental que diferencia a países ricos de pobres. Se define por esperanza de vida (loading: 0.413), uso de internet (0.4126), acceso a electricidad (0.3709) contrapuestos a mortalidad infantil (-0.4083). Estas variables covarían porque todas requieren sistemas de salud consolidados, riqueza económica, infraestructura tecnológica y estabilidad política—es decir, reflejan la capacidad institucional de una sociedad para garantizar bienestar multidimensional. Países que han logrado esperanzas de vida de 80+ años han realizado décadas de inversión en salud pública, educación universal y desarrollo económico; simultáneamente, estos mismos países inevitablemente desarrollaron infraestructuras digitales avanzadas porque sus economías postindustriales dependen de servicios e innovación tecnológica.
 
@@ -7671,7 +7546,7 @@ caracterizacion_componentes <- data.frame(
   Componente = c("PC1", "PC2", "PC3", "PC4"),
   
   Nombre = c(
-    "Desarrollo Humano y Conectividad Digital",
+    "Tecnologia y mortalidad",
     "Modelo Económico-Institucional",
     "Integración Comercial Global",
     "Presión Territorial y Recursos Naturales"
@@ -7704,7 +7579,7 @@ caracterizacion_componentes <- data.frame(
 tabla_componentes <- caracterizacion_componentes %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 19**"),
+    title = md("**Tabla 18**"),
     subtitle = "Caracterización de Componentes Principales del Análisis de Desarrollo Global"
   ) %>%
   cols_label(
@@ -7820,7 +7695,7 @@ tabla_componentes
 
 ### Prediccion
 
-Tras construir el modelo ACP con aproximadamente 180 países de entrenamiento, se proyectaron cinco países adicionales (Angola, Belice, Jordania, Luxemburgo, Uruguay) sobre el espacio factorial ya definido. La proyección utiliza las medias y varianzas del conjunto de entrenamiento para estandarizar los nuevos datos, evitando que cambien la estructura de componentes. Se calcularon las coordenadas de estos cinco países en los cuatro primeros componentes principales, cuantificando su posición relativa respecto al espacio multidimensional de desarrollo ya identificado (Hastie et al., 2009).
+Tras construir el modelo ACP con 136 países de entrenamiento, se proyectaron cinco países adicionales (Angola, Belice, Jordania, Luxemburgo, Uruguay) sobre el espacio factorial ya definido. La proyección utiliza las medias y varianzas del conjunto de entrenamiento para estandarizar los nuevos datos, evitando que cambien la estructura de componentes. Se calcularon las coordenadas de estos cinco países en los cuatro primeros componentes principales, cuantificando su posición relativa respecto al espacio multidimensional de desarrollo ya identificado (Hastie et al., 2009).
 
 ```{r Prediccion-CYBER-STYLE}
 
@@ -7869,7 +7744,7 @@ coordenadas_paises <- data.frame(
 tabla_coordenadas <- coordenadas_paises %>%
   gt() %>%
   tab_header(
-    title = md("**Tabla 20**"),
+    title = md("**Tabla 19**"),
     subtitle = "Coordenadas de Países en Componentes Principales"
   ) %>%
   cols_label(
@@ -8307,7 +8182,7 @@ Luxemburgo obtiene coordenada 2.9075 en PC1 (desarrollo extremo), junto a San Ma
 
 El análisis de clusterización jerárquica mediante el método de Ward identificó tres grupos coherentes de países que trascienden clasificaciones geográficas tradicionales. La segmentación produjo una distribución desigual: el Cluster 1 agrupa 84 países (61.8% del total), el Cluster 2 agrupa 32 países (23.5%), y el Cluster 3 agrupa 20 países (14.7%).
 
-Cluster 1: Desarrollo Humano Avanzado y Conectividad Digital Consolidada (61.8% de países) Este grupo se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura tecnológica. La esperanza de vida promedio es de 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada y estabilidad sociopolítica. El acceso a electricidad alcanza 99.16%, reflejando electrificación prácticamente universal que define a economías desarrolladas. El uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo.
+**Cluster 1**: Calidad de vida y Conectividad Digital Consolidada (61.8% de países) Este grupo se caracteriza por valores extremadamente altos en indicadores de desarrollo humano e infraestructura tecnológica. La esperanza de vida promedio es de 77.44 años, el nivel más alto entre los tres clusters, indicando sistemas sanitarios consolidados, nutrición adecuada y estabilidad sociopolítica. El acceso a electricidad alcanza 99.16%, reflejando electrificación prácticamente universal que define a economías desarrolladas. El uso de internet es 86.05%, el más elevado, confirmando que la conectividad digital es característica definitoria de este grupo.
 
 La mortalidad infantil es apenas 7.85 por cada 1,000 nacidos vivos, la más baja entre los clusters, reflejando que los sistemas de salud materno-infantil funcionan eficientemente. El PIB per cápita promedio es 26,489.97 USD, demostrando riqueza económica consolidada. El gasto en salud representa 7.62% del PIB, el más alto, validando inversión sustancial en sistemas de salud universales.
 
@@ -8315,7 +8190,7 @@ Desde la perspectiva económica, las exportaciones representan 55.30% del PIB e 
 
 Composición geográfica: Incluye principalmente naciones europeas desarrolladas (Alemania, Francia, Italia, España, Reino Unido, Suecia, Dinamarca, Finlandia, Noruega, Países Bajos), naciones norteamericanas (Estados Unidos, Canadá), economías asiáticas avanzadas (Japón, Corea del Sur, Singapur, Hong Kong), y destinos de desarrollo consolidado (Australia, Nueva Zelanda, Israel).
 
-Cluster 2: Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes (23.5% de países)
+**Cluster 2**: Economias de transición con vulnerabilidades persistentes (23.5% de países)
 
 Este grupo representa países con desarrollo humano intermedio pero altamente heterogéneo internamente. La esperanza de vida promedio es de 64.29 años, sustancialmente menor que Cluster 1 (13 años de diferencia), indicando que estos países han logrado avances en salud básica pero enfrentan desafíos significativos. El acceso a electricidad es 54.59%, apenas por encima de la mitad, reflejando que la electrificación es incompleta, especialmente en zonas rurales. El uso de internet es 35.04%, menos de la mitad de Cluster 1, confirmando que la brecha digital es significativa.
 
@@ -8325,7 +8200,7 @@ Las remesas recibidas representan 4.94% del PIB, indicando dependencia moderada 
 
 Composición geográfica: Incluye principalmente economías latinoamericanas emergentes (Brasil, México, Colombia, Argentina, Chile, Perú), economías asiáticas en transición (Vietnam, Tailandia, Indonesia, Filipinas, India en su mayoría), economías africanas moderadamente desarrolladas (Botswana, Mauricio, Sudáfrica), y países del Oriente Medio con ingresos medios (Turquía, Jordania, Líbano).
 
-Cluster 3: Rezago Extremo y Vulnerabilidad Multidimensional (14.7% de países) Este grupo presenta características paradójicas que requieren interpretación cuidadosa. La esperanza de vida promedio es 71.59 años, aparentemente intermedia, pero esta cifra oculta volatilidad extrema: mientras algunos países tienen 75 años, otros tienen 55-58 años, con mortalidad adulta severamente elevada por VIH, conflictos armados y enfermedades tropicales. El acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona porque algunos países tienen cobertura urbana buena mientras zonas rurales están completamente sin electricidad.
+**Cluster 3**: Rezago Extremo y Vulnerabilidad Multidimensional (14.7% de países) Este grupo presenta características paradójicas que requieren interpretación cuidadosa. La esperanza de vida promedio es 71.59 años, aparentemente intermedia, pero esta cifra oculta volatilidad extrema: mientras algunos países tienen 75 años, otros tienen 55-58 años, con mortalidad adulta severamente elevada por VIH, conflictos armados y enfermedades tropicales. El acceso a electricidad es 96.42%, aparentemente alto, pero esta cifra promedio se distorsiona porque algunos países tienen cobertura urbana buena mientras zonas rurales están completamente sin electricidad.
 
 La mortalidad infantil es 18.11 por cada 1,000, intermedia entre Cluster 1 (7.85) y Cluster 2 (40.97), sugiriendo que este cluster contiene algunos países que han logrado mejoras en salud infantil. El uso de internet es 61.08%, sorprendentemente alto comparado con Cluster 2 (35.04%), pero se explica porque algunos países han adoptado tecnología móvil masivamente sin infraestructura de electricidad o salud consolidada.
 
