@@ -6222,6 +6222,8 @@ resultado_ACP <- FactoClass(
 clusters_asignados <- resultado_ACP$cluster
 
 NuevaBase <- data.frame(Cluster = clusters_asignados, datos_analisis)
+
+clusters <- clusters_asignados
 ```
 
 ### Numero optimo de clusters
@@ -6234,22 +6236,25 @@ distancias <- dist(coordenadas_pca)
 hc <- hclust(distancias, method = "ward.D2")
 k <- 3
 
-cluster_colors <- c("1" = "#00e676",   
-                    "2" = "#0084ff",    
+cluster_colors <- c("1" = "#0084ff",   
+                    "2" = "#00e676",    
                     "3" = "#ffd600")  
 
 clusters <- cutree(hc, k = k)
+clusters_display <- ifelse(clusters == 1, 2, ifelse(clusters == 2, 1, clusters))
+
+names(clusters_display) <- rownames(coordenadas_pca)
+
 dend <- as.dendrogram(hc)
 dend_data <- dendro_data(dend)
 leaf_x <- dend_data$labels$x
 leaf_names <- as.character(dend_data$labels$label)
-names(clusters) <- rownames(coordenadas_pca)
-label_clusters <- clusters[match(leaf_names, names(clusters))]
+label_clusters <- clusters_display[match(leaf_names, names(clusters_display))]
 
 if (any(is.na(label_clusters))) {
   idx_num <- suppressWarnings(as.integer(leaf_names))
   if (!all(is.na(idx_num))) {
-    label_clusters[is.na(label_clusters)] <- clusters[idx_num[is.na(label_clusters)]]
+    label_clusters[is.na(label_clusters)] <- clusters_display[idx_num[is.na(label_clusters)]]
   }
 }
 
@@ -7017,13 +7022,15 @@ distancias <- dist(coordenadas_pca)
 hc <- hclust(distancias, method = "ward.D2")
 clusters <- cutree(hc, k = 3)
 
+clusters_display <- ifelse(clusters == 1, 2, ifelse(clusters == 2, 1, clusters))
+
 cluster_df <- data.frame(
   Pais = rownames(coordenadas_pca),
   Dim1 = coordenadas_pca$Axis1,
   Dim2 = coordenadas_pca$Axis2,
   Dim3 = coordenadas_pca$Axis3,
   Dim4 = coordenadas_pca$Axis4,
-  Cluster = as.factor(clusters)
+  Cluster = as.character(clusters_display)
 )
 
 resumen_clusters <- cluster_df %>%
@@ -7144,8 +7151,8 @@ cluster_plot <- plot_ly(
   cluster_df,
   x = ~Dim1,
   y = ~Dim2,
-  color = ~Cluster,
-  colors = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"),
+ color = ~Cluster,
+colors = c("1" = "#0084ff", "2" = "#00e676", "3" = "#ffd600"),
   text = ~paste0(
     "<b style='color:#00e5ff; font-size:13px;'>", Pais, "</b><br>",
     "<span style='color:#a259ff; font-size:12px;'><b>Cluster:</b> ", Cluster, "</span><br>",
@@ -7246,8 +7253,8 @@ cluster_plot1 <- plot_ly(
   cluster_df,
   x = ~Dim3,
   y = ~Dim4,
-  color = ~Cluster,
-  colors = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"),
+ color = ~Cluster,
+  colors = c("1" = "#0084ff", "2" = "#00e676", "3" = "#ffd600"),
   text = ~paste0(
     "<b style='color:#00e5ff; font-size:13px;'>", Pais, "</b><br>",
     "<span style='color:#a259ff; font-size:12px;'><b>Cluster:</b> ", Cluster, "</span><br>",
@@ -7344,11 +7351,13 @@ Plano PC3-PC4 (Apertura Comercial vs. Base Territorial): El gráfico PC3-PC4 pro
 El Cluster 2 (azul) se concentra en la región central de ambos ejes (PC3 entre -2 y +2, PC4 entre -2 y +2), confirmando que son economías intermedias tanto en apertura comercial como en dotación territorial. Algunos países del Cluster 2 muestran PC3 ligeramente negativo, indicando apertura moderada; otros muestran PC4 positivo, indicando presión demográfica sobre recursos. El Cluster 3 (amarillo) tiene dispersión moderada en PC3 (desde -3 hasta +2) y PC4 (desde -2 hasta +2.5), reflejando variabilidad en estrategias de apertura comercial y uso del suelo entre países en rezago.
 
 ```{r mapa-clusters-cyber, fig.height=7, fig.width=12, out.width="100%"}
+clusters_display_mapa <- ifelse(clusters == 1, 2, ifelse(clusters == 2, 1, clusters))
+
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 Base_2022_con_cluster <- Base_2022 %>%
-  mutate(Cluster = clusters) %>%  
-  select(Codigo, Cluster, Pais)   
+  mutate(Cluster = clusters_display_mapa) %>%  
+  select(Codigo, Cluster, Pais)  
 
 Base_con_mapa <- world %>%
   left_join(Base_2022_con_cluster, by = c("iso_a3" = "Codigo")) %>%
@@ -7357,11 +7366,10 @@ Base_con_mapa <- world %>%
 nombres_clusters <- c("1" = "Calidad de vida y conectividad digital", "2" = "Desarrollo Intermedio Heterogéneo con Vulnerabilidades Persistentes", "3" = "Rezago extremo y vulnerabilidad multidimensional")
 
 pal <- colorFactor(
-  palette = c("1" = "#00e676", "2" = "#0084ff", "3" = "#ffd600"), 
+  palette = c("1" = "#0084ff", "2" = "#00e676", "3" = "#ffd600"), 
   domain = 1:3,
   na.color = "#1a1a2e"
 )
-
 mapa_clusters <- leaflet(
   Base_con_mapa,
   width = "100%",
@@ -7398,7 +7406,7 @@ mapa_clusters <- leaflet(
       fillOpacity = 0.9,
       bringToFront = TRUE
     ),
-    label = ~Pais,
+    label = ~paste0(Pais, " Cluster ", Cluster, ""),
     labelOptions = labelOptions(
       style = list(
         "background" = "rgba(10, 14, 26, 0.95)",
