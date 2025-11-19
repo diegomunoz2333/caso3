@@ -938,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
     highlightActiveRightToc();
   }, 600);
   
-  // ✅ MEJORADO: Manejar clicks en enlaces del TOC izquierdo
+  // MEJORADO: Manejar clicks en enlaces del TOC izquierdo
   document.querySelectorAll('#TOC a').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       const targetId = this.getAttribute('href');
@@ -2156,7 +2156,7 @@ tabla_inicial <- datatable(
         }
       );
       
-      // ========== BÚSQUEDA CYBER ==========
+      //
       var searchLabel = $(el).find('label:has([type=search])');
       searchLabel.css({
         'color': '#e0e6ed !important',
@@ -2411,7 +2411,7 @@ crear_tabla_unificada <- function(data, variable) {
 
 ```{=html}
 <style>
-/* OCULTAR NÚMEROS DE SECCIONES EN PESTAÑAS */
+/* O */
 .section-number {
   display: none !important;
 }
@@ -2424,7 +2424,7 @@ h4 .header-section-number {
   display: none !important;
 }
 
-/* Contenedor de pestañas mejorado */
+/* C */
 .nav-pills {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -2476,7 +2476,7 @@ h4 .header-section-number {
   font-weight: 700 !important;
 }
 
-/* Layout de dos columnas lado a lado */
+/* L */
 .two-column-layout {
   display: grid;
   grid-template-columns: 48% 48%;
@@ -2491,7 +2491,7 @@ h4 .header-section-number {
   }
 }
 
-/* Contenedores de tablas */
+/* C */
 .table-container {
   background: linear-gradient(135deg, #0a0e1a 0%, #0d1117 100%);
   border: 2px solid rgba(0, 229, 255, 0.3);
@@ -3900,7 +3900,7 @@ India y China dominan por volumen (rectángulos enormes), pero con dinámicas op
 
 Mientras que el análisis dimensional anterior examina indicadores de forma global, es fundamental entender cómo varía la heterogeneidad DENTRO de cada continente. Dos preguntas clave emergen: ¿Son los continentes entidades homogéneas o existen disparidades profundas dentro de cada región? ¿Qué países actúan como outliers casos atípicos que desafían el patrón regional y qué factores específicos explican sus desviaciones?
 
-La siguiente visualización interactiva explora la istribución por región de 10 indicadores estratégicos seleccionados de las cinco dimensiones del desarrollo. Para cada indicador y continente, se visualizan: (1) el boxplot que resume la distribución central (mediana, cuartiles, rango intercuartil), (2) los puntos normales que representan países dentro del rango esperado, y (3) los outliers que identifican casos anómalos.
+La siguiente visualización interactiva explora la distribución por región de 10 indicadores estratégicos seleccionados de las cinco dimensiones del desarrollo. Para cada indicador y continente, se visualizan: (1) el boxplot que resume la distribución central (mediana, cuartiles, rango intercuartil), (2) los puntos normales que representan países dentro del rango esperado, y (3) los outliers que identifican casos anómalos.
 
 Al pasar el cursor sobre cualquier punto, se desplegan simultáneamente el nombre del país, su valor específico, su continente y clasificación (normal u outlier). Esta visualización interactiva permite explorar dinámicamente qué países rompen los patrones regionales esperados, información crucial para identificar posteriormente qué características específicas crean estas anomalías—revelación que el Análisis de Componentes Principales posteriormente contextualizará dentro de la estructura multidimensional del desarrollo.
 
@@ -4628,8 +4628,6 @@ htmltools::tagList(
 En crecimiento PIB, se observa segregación clara: Europa y América del Norte tienden a tonos amarillo-verde (crecimiento moderado), mientras muchas naciones africanas muestran tonos oscuros (estancamiento). Asia exhibe máxima variabilidad: gigantes como India y Bangladesh en verde (crecimiento dinámico), mientras Japón mantiene tonos amarillos (crecimiento moderado). En acceso a electricidad, la brecha digital-energética es evidente: Europa, América del Norte y gran parte de Asia en amarillo (acceso universal), mientras amplias regiones de África central permanecen en azul oscuro. América Latina exhibe transición: colores intermedios reflejando acceso extendido pero no universal. En crecimiento poblacional, se observa un patrón opuesto al desarrollo económico: Europa y Japón dominan tonos azules (declive demográfico), mientras África muestra naranjas y rojos intensos (presión poblacional extrema), y América Latina ocupa posiciones intermedias. Esta disociación geográfica entre prosperidad económica, acceso de servicios básicos y dinámica demográfica anticipa que el análisis multivariado revelará si estas dimensiones operan de forma integrada o representan trayectorias diferentes del desarrollo.
 
 ------------------------------------------------------------------------
-
-## Visualizaciones Exploratorias
 
 # Resultados del modelo
 
